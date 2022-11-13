@@ -19,4 +19,4 @@ RUN dotnet publish "Minder.Api.csproj" -c Release -o /app/publish /p:UseAppHost=
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Minder.Api.dll"]
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet Minder.Api.dll
