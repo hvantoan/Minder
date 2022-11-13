@@ -9,7 +9,8 @@ using Minder.Extensions;
 using Minder.Services.Common;
 using Minder.Services.Hashers;
 using Minder.Services.Interfaces;
-using SeoTool.Models;
+using Minder.Services.Models.Auth;
+using Minder.Services.Resources;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,8 +20,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using ToolSeoViet.Database.Enums;
-using ToolSeoViet.Services.Models.Auth;
-using ToolSeoViet.Services.Resources;
 
 namespace Minder.Services.Implements {
 
@@ -41,7 +40,7 @@ namespace Minder.Services.Implements {
             if (!PasswordHashser.Verify(request.Password, user.Password))
                 throw new ManagedException(Messages.Auth.Login.User_IncorrectPassword);
 
-            var permissions = await this.db.Permisstions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
+            var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
             Role role = null;
 
             if (!string.IsNullOrWhiteSpace(user.RoleId)) {
@@ -61,7 +60,7 @@ namespace Minder.Services.Implements {
 
 
         public async Task<LoginResponse> WebLoginGoogle(LoginGoogleRequest request) {
-            var permissions = await this.db.Permisstions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
+            var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
             string url = googleUrl + request.ExternalToken;
             using (HttpClient client = new()) {
                 client.BaseAddress = new Uri(url);

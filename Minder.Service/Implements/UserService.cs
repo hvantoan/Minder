@@ -8,9 +8,9 @@ using Minder.Services.Common;
 using Minder.Services.Hashers;
 using Minder.Services.Interfaces;
 using Minder.Services.Models.User;
+using Minder.Services.Resources;
 using System;
 using System.Threading.Tasks;
-using ToolSeoViet.Services.Resources;
 
 namespace Minder.Services.Implements {
 
