@@ -48,15 +48,16 @@ namespace Minder.Services.Implements {
             }
 
             var userPermissions = UserPermissionDto.MapFromEntities(permissions, role?.RolePermissions?.ToList(), user.IsAdmin);
-            var expiredAt = GetTokenExpiredAt();
             var claims = this.GetClaimPermissions(userPermissions);
 
             return new() {
-                Token = this.GenerateToken(user.Id, user.Username, claims, expiredAt),
-                ExpiredTime = new DateTimeOffset(expiredAt).ToUnixTimeMilliseconds(),
+                Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(1)),
+                RefreshToken = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(30)),
+                ExpiredTime = new DateTimeOffset(GetTokenExpiredAt(1)).ToUnixTimeMilliseconds(),
                 Username = user.Username,
             };
         }
+
 
 
         public async Task<LoginResponse> WebLoginGoogle(LoginGoogleRequest request) {
@@ -111,30 +112,32 @@ namespace Minder.Services.Implements {
             }
 
             var userPermissions = UserPermissionDto.MapFromEntities(permissions, role?.RolePermissions?.ToList(), user.IsAdmin);
-            var expiredAt = GetTokenExpiredAt();
+            var expiredAt = GetTokenExpiredAt(1);
             var claims = this.GetClaimPermissions(userPermissions);
 
             return new() {
-                Token = this.GenerateToken(user.Id, user.Username, claims, expiredAt),
+                Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, expiredAt),
+                RefreshToken = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(30)),
                 ExpiredTime = new DateTimeOffset(expiredAt).ToUnixTimeMilliseconds(),
                 Username = user.Username,
+                Name = user.Name,
             };
         }
 
 
-        private static DateTime GetTokenExpiredAt() {
+        private static DateTime GetTokenExpiredAt(int day) {
             var now = DateTime.Now;
-            var midnight = now.AddDays(1).Date;
-            return midnight.Subtract(now).TotalMinutes > 60 ? midnight : midnight.AddDays(1);
+            return now.AddDays(day).Date;
         }
 
-        private string GenerateToken(string userId, string username, List<Claim> roleClaims, DateTime expiredAt) {
+        private string GenerateToken(string userId, string username, string name, List<Claim> roleClaims, DateTime expiredAt) {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.configuration["JwtSecret"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>() {
                 new Claim("UserId", userId),
-                new Claim("Username", username)
+                new Claim("Username", username),
+                new Claim("Name", name)
             };
 
             claims.AddRange(roleClaims);
@@ -158,6 +161,31 @@ namespace Minder.Services.Implements {
                 }
             }
             return claims;
+        }
+
+        public async Task<LoginResponse> LoginWithRefreshToken() {
+            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.currentUserId);
+            if (user == null)
+                throw new ManagedException(Messages.Auth.Login.User_NotFound);
+            if (!user.IsAdmin && !user.IsActive)
+                throw new ManagedException(Messages.Auth.Login.User_Inactive);
+
+            var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
+            Role role = null;
+
+            if (!string.IsNullOrWhiteSpace(user.RoleId)) {
+                role = await this.db.Roles.Include(o => o.RolePermissions).AsNoTracking().FirstOrDefaultAsync(o => o.Id == user.RoleId);
+            }
+
+            var userPermissions = UserPermissionDto.MapFromEntities(permissions, role?.RolePermissions?.ToList(), user.IsAdmin);
+            var claims = this.GetClaimPermissions(userPermissions);
+
+            return new() {
+                Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(1)),
+                ExpiredTime = new DateTimeOffset(GetTokenExpiredAt(1)).ToUnixTimeMilliseconds(),
+                Username = user.Username,
+                Name = user.Name,
+            };
         }
     }
 }

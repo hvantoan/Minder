@@ -1,1 +1,1 @@
-dotnet watch --project Minder.Api\Minder.Api.csproj run --urls=https://0.0.0.0:8000
+dotnet watch --project Minder.Api\Minder.Api.csproj run --urls=http://localhost:8000

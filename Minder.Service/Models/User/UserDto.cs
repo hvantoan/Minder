@@ -9,10 +9,8 @@ namespace Minder.Services.Models.User {
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string Password { get; set; }
         public string Name { get; set; }
-        public string Avatar { get; set; }
         public bool IsActive { get; set; }
         public bool IsAdmin { get; set; }
-
         public string RoleId { get; set; }
 
     }
@@ -24,6 +22,7 @@ namespace Minder.Services.Models.User {
             return new UserDto {
                 Id = entity.Id,
                 Username = entity.Username,
+                Name = entity.Name, 
                 IsActive = entity.IsActive,
                 IsAdmin = entity.IsAdmin,
                 RoleId = entity.RoleId,

@@ -13,7 +13,7 @@ namespace Minder.Database.Models {
         public string DisplayName { get; set; }
         public bool Default { get; set; }
         public bool IsActive { get; set; }
-        public EPermission Type { get; set; }
+        public EPermission  Type { get; set; }
 
         public virtual ICollection<RolePermission> RolePermissions { get; set; }
     }

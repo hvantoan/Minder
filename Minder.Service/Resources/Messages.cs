@@ -18,23 +18,16 @@
         }
 
         public static class User {
-
+            public const string User_NotFound = "Người dùng không tồn tại.";
             public static class CreateOrUpdate {
-                public const string Role_NotFound = "Phân quyền không tồn tại.";
-
                 public const string User_Existed = "Người dùng đã tồn tại.";
-                public const string User_NotFound = "Người dùng không tồn tại.";
                 public const string User_NotInactive = "Không thể dừng hoạt động với người quản trị.";
             }
 
             public static class ChangePassword {
-                public const string User_NotFound = "Người dùng không tồn tại.";
                 public const string User_IncorrentOldPassword = "Sai mật khẩu.";
             }
 
-            public static class ResetPassword {
-                public const string User_NotFound = "Người dùng không tồn tại.";
-            }
         }
         public static class Project {
             public const string Project_NotFound = "Dự án không tồn tại.";

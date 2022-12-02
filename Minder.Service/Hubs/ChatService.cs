@@ -5,7 +5,6 @@ using Minder.Service.Models.Chat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Hubs {
