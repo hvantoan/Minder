@@ -1,19 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Collections.Generic;
 
 namespace Minder.Database.Models {
 
     public partial class User {
-        public string Id { get; set; }
-        public string RoleId { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Name { get; set; }
-        public string Avatar { get; set; }
+        public string Id { get; set; } = null!;
+        public string? RoleId { get; set; }
+        public string? TeamId { get; set; }
+        public string Username { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public string? Avatar { get; set; }
         public bool IsActive { get; set; }
         public bool IsAdmin { get; set; }
-
-        public Role Role { get; set; }
+        public virtual Role? Role { get; set; }
+        public virtual Team? Team { get; set; }
+        public virtual ICollection<File>? Files { get; set; }
     }
 
     public class UserConfig : IEntityTypeConfiguration<User> {
@@ -33,6 +36,7 @@ namespace Minder.Database.Models {
 
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);
+            builder.HasOne(o => o.Team).WithMany(o => o.Users).HasForeignKey(o => o.TeamId);
 
             builder.HasData(new User() {
                 Avatar = "",
@@ -44,7 +48,6 @@ namespace Minder.Database.Models {
                 RoleId = "469b14225a79448c93e4e780aa08f0cc",
                 Username = "admin"
             });
-
         }
     }
 }
