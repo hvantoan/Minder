@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Minder.Database;
 using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
@@ -26,28 +23,24 @@ namespace Minder.Services.Implements {
     public class AuthService : BaseService, IAuthService {
         private const string googleUrl = $"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=";
 
-        public AuthService(MinderContext db, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
-            : base(db, httpContextAccessor, configuration) {
+        public AuthService(IServiceProvider serviceProvider) : base(serviceProvider) {
         }
 
         public async Task<LoginResponse> WebLogin(LoginRequest request) {
-
             var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim());
-            if (user == null)
-                throw new ManagedException(Messages.Auth.Login.User_NotFound);
-            if (!user.IsAdmin && !user.IsActive)
-                throw new ManagedException(Messages.Auth.Login.User_Inactive);
-            if (!PasswordHashser.Verify(request.Password, user.Password))
-                throw new ManagedException(Messages.Auth.Login.User_IncorrectPassword);
+
+            ManagedException.ThrowIf(user == null, Messages.Auth.Login.User_NotFound);
+            ManagedException.ThrowIf(!PasswordHashser.Verify(request.Password, user.Password), Messages.Auth.Login.User_IncorrectPassword);
 
             var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
-            Role role = null;
+            Role? role = null;
 
             if (!string.IsNullOrWhiteSpace(user.RoleId)) {
                 role = await this.db.Roles.Include(o => o.RolePermissions).AsNoTracking().FirstOrDefaultAsync(o => o.Id == user.RoleId);
             }
 
             var userPermissions = UserPermissionDto.MapFromEntities(permissions, role?.RolePermissions?.ToList(), user.IsAdmin);
+            ManagedException.ThrowIf(!userPermissions.Any(o => o.IsEnable), Messages.Auth.Login.User_NoPermission);
             var claims = this.GetClaimPermissions(userPermissions);
 
             return new() {
@@ -57,8 +50,6 @@ namespace Minder.Services.Implements {
                 Username = user.Username,
             };
         }
-
-
 
         public async Task<LoginResponse> WebLoginGoogle(LoginGoogleRequest request) {
             var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
@@ -82,7 +73,6 @@ namespace Minder.Services.Implements {
             }
             User userExists = db.Users.FirstOrDefault(o => o.Username == request.Email) ?? new User() { Id = "" };
             if (userExists.Id.IsNullOrEmpty()) {
-
                 userExists = new User() {
                     Id = Guid.NewGuid().ToStringN(),
                     Username = request.Email,
@@ -90,22 +80,16 @@ namespace Minder.Services.Implements {
                     Avatar = "",
                     Name = "",
                     Password = "",
-                    IsActive = true,
                     RoleId = "469b14225a79448c93e4e780aa08f0cc"
                 };
                 db.Users.Add(userExists);
                 db.SaveChanges();
-
             }
 
             User user = this.db.Users.FirstOrDefault(o => o.Username == request.Email) ?? new User() { Id = "" };
+            ManagedException.ThrowIf(user == null, Messages.Auth.Login.User_NotFound);
 
-            if (user == null)
-                throw new ManagedException(Messages.Auth.Login.User_NotFound);
-            if (!user.IsAdmin && !user.IsActive)
-                throw new ManagedException(Messages.Auth.Login.User_Inactive);
-
-            Role role = null;
+            Role? role = null;
             if (!string.IsNullOrWhiteSpace(user.RoleId) && !string.IsNullOrEmpty(user.RoleId)) {
                 role = await this.db.Roles.Include(o => o.RolePermissions).AsNoTracking()
                     .FirstOrDefaultAsync(o => o.Id == user.RoleId) ?? new Role() { Id = "" };
@@ -124,7 +108,6 @@ namespace Minder.Services.Implements {
             };
         }
 
-
         private static DateTime GetTokenExpiredAt(int day) {
             var now = DateTime.Now;
             return now.AddDays(day).Date;
@@ -135,9 +118,9 @@ namespace Minder.Services.Implements {
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>() {
-                new Claim("UserId", userId),
-                new Claim("Username", username),
-                new Claim("Name", name)
+                new Claim(Constant.TokenUserId, userId),
+                new Claim(Constant.TokenUserName, username),
+                new Claim(Constant.TokenName, name)
             };
 
             claims.AddRange(roleClaims);
@@ -154,7 +137,9 @@ namespace Minder.Services.Implements {
             List<Claim> claims = new();
             foreach (var item in permissions) {
                 if (!item.IsEnable) continue;
-                claims.Add(new Claim(ClaimTypes.Role, item.ClaimName));
+
+                if (item.IsClaim)
+                    claims.Add(new Claim(ClaimTypes.Role, item.ClaimName));
 
                 if (item.Items != null && item.Items.Any()) {
                     claims.AddRange(this.GetClaimPermissions(item.Items));
@@ -163,16 +148,12 @@ namespace Minder.Services.Implements {
             return claims;
         }
 
-        public async Task<LoginResponse> LoginWithRefreshToken() {
-            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.currentUserId);
-            if (user == null)
-                throw new ManagedException(Messages.Auth.Login.User_NotFound);
-            if (!user.IsAdmin && !user.IsActive)
-                throw new ManagedException(Messages.Auth.Login.User_Inactive);
+        public async Task<LoginResponse> Refresh() {
+            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
+            ManagedException.ThrowIf(user == null, Messages.Auth.Login.User_NotFound);
 
             var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
-            Role role = null;
-
+            Role? role = null;
             if (!string.IsNullOrWhiteSpace(user.RoleId)) {
                 role = await this.db.Roles.Include(o => o.RolePermissions).AsNoTracking().FirstOrDefaultAsync(o => o.Id == user.RoleId);
             }

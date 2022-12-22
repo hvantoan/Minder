@@ -5,6 +5,6 @@ namespace Minder.Services.Interfaces {
     public interface IAuthService {
         Task<LoginResponse> WebLogin(LoginRequest request);
         Task<LoginResponse> WebLoginGoogle(LoginGoogleRequest request);
-        Task<LoginResponse> LoginWithRefreshToken();
+        Task<LoginResponse> Refresh();
     }
 }

@@ -12,8 +12,8 @@ namespace Minder.Database.Models {
         public string Password { get; set; } = null!;
         public string Name { get; set; } = null!;
         public string? Avatar { get; set; }
-        public bool IsActive { get; set; }
         public bool IsAdmin { get; set; }
+        public bool IsDelete { get; set; }
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
         public virtual ICollection<File>? Files { get; set; }
@@ -41,7 +41,6 @@ namespace Minder.Database.Models {
             builder.HasData(new User() {
                 Avatar = "",
                 Id = "92dcba9b0bdd4f32a6170a1322472ead",
-                IsActive = true,
                 IsAdmin = true,
                 Name = "Hồ Văn Toàn",
                 Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",

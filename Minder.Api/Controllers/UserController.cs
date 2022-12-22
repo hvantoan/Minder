@@ -38,8 +38,8 @@ namespace Minder.Api.Controllers {
         [HttpPost, Route("create")]
         public async Task<BaseResponse> Create(CreateUserRequest request) {
             try {
-                await userService.Create(request.User, request.Role);
-                return BaseResponse.Ok();
+                var response = await userService.Create(request.User, request.Role);
+                return BaseResponse<string>.Ok(response);
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }

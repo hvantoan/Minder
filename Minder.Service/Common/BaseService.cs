@@ -1,41 +1,40 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Minder.Database;
+using Minder.Service.Models;
+using Minder.Services.Common.Lock;
+using System;
+using System.Threading.Tasks;
+using TuanVu.Services.Common;
 
 namespace Minder.Services.Common {
 
     public class BaseService {
-        protected readonly MinderContext db;
         protected readonly IHttpContextAccessor httpContextAccessor;
-        protected readonly string currentUserId;
-        protected readonly string currentUrl;
+        protected readonly IServiceProvider serviceProvider;
         protected readonly IConfiguration configuration;
+        protected readonly CurrentUser current;
+        protected readonly MinderContext db;
+        protected readonly ILogger logger;
 
-        protected BaseService(MinderContext db, IHttpContextAccessor httpContextAccessor, IConfiguration configuration) {
-            this.db = db;
-            this.httpContextAccessor = httpContextAccessor;
-            this.configuration = configuration;
-
-            var httpContext = httpContextAccessor.HttpContext;
-            if (httpContext != null) {
-                this.currentUserId = httpContext.User?.FindFirst(o => o.Type == "UserId")?.Value ?? "";
-                this.currentUrl = this.GetCurrentUrl(httpContext.Request);
-            }
-        }
-        protected BaseService(MinderContext db, IHttpContextAccessor httpContextAccessor) {
-            this.db = db;
-            this.httpContextAccessor = httpContextAccessor;
-
-            var httpContext = httpContextAccessor.HttpContext;
-            if (httpContext != null) {
-                this.currentUserId = httpContext.User?.FindFirst(o => o.Type == "UserId")?.Value ?? "";
-                this.currentUrl = this.GetCurrentUrl(httpContext.Request);
-            }
+        protected BaseService(IServiceProvider serviceProvider) {
+            this.serviceProvider = serviceProvider;
+            this.httpContextAccessor = this.serviceProvider.GetRequiredService<IHttpContextAccessor>();
+            this.configuration = this.serviceProvider.GetRequiredService<IConfiguration>();
+            this.current = this.serviceProvider.GetRequiredService<CurrentUser>();
+            this.db = this.serviceProvider.GetRequiredService<MinderContext>();
+            this.logger = Logger.Create("User", this.current.UserId);
         }
 
-        private string GetCurrentUrl(HttpRequest httpRequest) {
-            if (httpRequest == null) return default;
-            return $"{httpRequest.Scheme}://{httpRequest.Host.Value}/";
+        protected static async Task LockActionByKey(string key, Func<Task> action, int expirySec = 60) {
+            using var locker = await new Locker(key, expirySec).Lock();
+            await action.Invoke();
+        }
+
+        protected static async Task<T> LockActionByKey<T>(string key, Func<Task<T>> action, int expirySec = 60) {
+            using var locker = await new Locker(key, expirySec).Lock();
+            return await action.Invoke();
         }
     }
 }
