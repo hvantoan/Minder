@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +12,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Minder.Database;
 using Minder.Service.Hubs;
+using Minder.Service.Models;
 using Minder.Service.Models.Chat;
+using Minder.Services.Common;
+using Minder.Services.Helpers;
 using Minder.Services.Implements;
 using Minder.Services.Interfaces;
 using System.Collections.Generic;
@@ -21,18 +24,17 @@ using System.Net.Mime;
 using System.Text;
 
 namespace Minder.Api {
-    public class Startup {
 
-        const string CorsPolicy = nameof(CorsPolicy);
-        public IConfiguration Configuration { get; }
+    public class Startup {
+        private const string CorsPolicy = nameof(CorsPolicy);
 
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }
 
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services) {
-
             services.AddCors(options => {
                 options.AddPolicy(
                     name: CorsPolicy,
@@ -44,17 +46,17 @@ namespace Minder.Api {
             });
 
             services.AddDbContext<MinderContext>(options =>
-               options.UseNpgsql(Configuration.GetConnectionString(nameof(MinderContext))), ServiceLifetime.Transient);
+               options.UseNpgsql(Configuration.GetConnectionString(nameof(MinderContext))));
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
                     options.TokenValidationParameters = new TokenValidationParameters {
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        RequireExpirationTime = true,
                         RoleClaimType = "1",
+                        ValidateIssuer = false,
+                        ValidateLifetime = true,
+                        ValidateAudience = false,
+                        RequireExpirationTime = true,
+                        ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"]))
                     };
                 });
@@ -63,9 +65,8 @@ namespace Minder.Api {
                .RequireAuthenticatedUser().Build());
 
             services.AddControllers().AddNewtonsoftJson();
-
             services.AddSwaggerGen(c => {
-                c.SwaggerDoc("v0", new OpenApiInfo { Title = "Minder.Api", Version = "v0.1" });
+                c.SwaggerDoc("v0.1", new OpenApiInfo { Title = "Minder.Api", Version = "v0.1" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
                     Description = @"API KEY",
                     Name = "Authorization",
@@ -89,6 +90,18 @@ namespace Minder.Api {
                 });
             });
 
+            services.AddScoped(provider => {
+                var httpContext = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
+                if (httpContext != null) {
+                    string url = UrlHelper.GetCurrentUrl(httpContext.Request, Configuration, "ImageUrl");
+                    return new CurrentUser {
+                        UserId = httpContext.User?.FindFirst(o => o.Type == Constant.TokenUserId)?.Value ?? string.Empty,
+                        Url = url
+                    };
+                }
+                return new CurrentUser();
+            });
+
             services.AddResponseCompression(options => options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                   new[] { MediaTypeNames.Application.Octet }));
 
@@ -105,7 +118,7 @@ namespace Minder.Api {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseSwagger().UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v0/swagger.json", "Minder.Api v0.1"));
+            app.UseSwagger().UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v0.1/swagger.json", "Minder.Api v0.1"));
 
             app.UseRouting();
             app.UseCors(CorsPolicy);
@@ -117,6 +130,13 @@ namespace Minder.Api {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatService>("/chat");
             });
+            AutoMigrate(app);
+        }
+
+        private static void AutoMigrate(IApplicationBuilder app) {
+            using var scope = app.ApplicationServices.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<MinderContext>();
+            dbContext.Database.Migrate();
         }
     }
 }

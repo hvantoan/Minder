@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Minder.Database.Models {
 
     public partial class RolePermission {
-        public string RoleId { get; set; }
-        public string PermissionId { get; set; }
+        public string RoleId { get; set; } = null!;
+        public string PermissionId { get; set; } = null!;
         public bool IsEnable { get; set; }
-        public Role Role { get; set; }
-        public Permission Permission { get; set; }
+        public virtual Role? Role { get; set; }
+        public virtual Permission? Permission { get; set; }
     }
 
     public class RolePermissionConfig : IEntityTypeConfiguration<RolePermission> {

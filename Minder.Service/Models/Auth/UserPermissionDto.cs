@@ -5,17 +5,17 @@ using System.Linq;
 namespace Minder.Services.Models.Auth {
 
     public partial class UserPermissionDto {
-        public string Id { get; set; }
-        public string ClaimName { get; set; }
+        public string Id { get; set; } = null!;
+        public string ClaimName { get; set; } = string.Empty;
         public bool IsEnable { get; set; }
+        public bool IsClaim { get; set; }
 
         public List<UserPermissionDto> Items { get; set; } = new List<UserPermissionDto>();
     }
 
     public partial class UserPermissionDto {
 
-        public static List<UserPermissionDto> MapFromEntities(List<Permission> permissions,
-            List<RolePermission> rolePermissions, bool isAdmin) {
+        public static List<UserPermissionDto> MapFromEntities(List<Permission> permissions, List<RolePermission>? rolePermissions, bool isAdmin) {
             var items = GetUserPermissions(permissions, isAdmin);
 
             if (!isAdmin && rolePermissions != null && rolePermissions.Any()) {

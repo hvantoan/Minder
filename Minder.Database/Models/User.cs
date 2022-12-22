@@ -1,19 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Collections.Generic;
 
 namespace Minder.Database.Models {
 
     public partial class User {
-        public string Id { get; set; }
-        public string RoleId { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Name { get; set; }
-        public string Avatar { get; set; }
-        public bool IsActive { get; set; }
+        public string Id { get; set; } = null!;
+        public string? RoleId { get; set; }
+        public string? TeamId { get; set; }
+        public string Username { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public string? Avatar { get; set; }
         public bool IsAdmin { get; set; }
-
-        public Role Role { get; set; }
+        public bool IsDelete { get; set; }
+        public virtual Role? Role { get; set; }
+        public virtual Team? Team { get; set; }
+        public virtual ICollection<File>? Files { get; set; }
     }
 
     public class UserConfig : IEntityTypeConfiguration<User> {
@@ -33,18 +36,17 @@ namespace Minder.Database.Models {
 
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);
+            builder.HasOne(o => o.Team).WithMany(o => o.Users).HasForeignKey(o => o.TeamId);
 
             builder.HasData(new User() {
                 Avatar = "",
                 Id = "92dcba9b0bdd4f32a6170a1322472ead",
-                IsActive = true,
                 IsAdmin = true,
                 Name = "Hồ Văn Toàn",
                 Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
                 RoleId = "469b14225a79448c93e4e780aa08f0cc",
                 Username = "admin"
             });
-
         }
     }
 }

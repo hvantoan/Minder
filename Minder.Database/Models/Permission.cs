@@ -7,15 +7,15 @@ using ToolSeoViet.Database.Enums;
 namespace Minder.Database.Models {
 
     public partial class Permission {
-        public string Id { get; set; }
-        public string ParentId { get; set; }
-        public string ClaimName { get; set; }
-        public string DisplayName { get; set; }
+        public string Id { get; set; } = null!;
+        public string ParentId { get; set; } = string.Empty;
+        public string ClaimName { get; set; } = null!;
+        public string DisplayName { get; set; } = null!;
         public bool Default { get; set; }
         public bool IsActive { get; set; }
         public EPermission Type { get; set; }
 
-        public virtual ICollection<RolePermission> RolePermissions { get; set; }
+        public virtual ICollection<RolePermission>? RolePermissions { get; set; }
     }
 
     public class PermissionConfig : IEntityTypeConfiguration<Permission> {
@@ -37,8 +37,7 @@ namespace Minder.Database.Models {
 
             // seed data
 
-            builder.HasData(new Permission
-            {
+            builder.HasData(new Permission {
                 Id = "ec0f270b424249438540a16e9157c0c8",
                 ParentId = "",
                 ClaimName = "SEO",
@@ -48,8 +47,7 @@ namespace Minder.Database.Models {
                 Type = EPermission.Web,
             });
 
-            builder.HasData(new Permission
-            {
+            builder.HasData(new Permission {
                 Id = "dc1c2ce584d74428b4e5241a5502787d",
                 ParentId = "ec0f270b424249438540a16e9157c0c8",
                 ClaimName = "SEO.Setting",
@@ -59,8 +57,7 @@ namespace Minder.Database.Models {
                 Type = EPermission.Web,
             });
 
-            builder.HasData(new Permission
-            {
+            builder.HasData(new Permission {
                 Id = "296285809bac481890a454ea8aed6af4",
                 ParentId = "dc1c2ce584d74428b4e5241a5502787d",
                 ClaimName = "SEO.Setting.User",
@@ -68,8 +65,7 @@ namespace Minder.Database.Models {
                 Default = false,
                 IsActive = true,
                 Type = EPermission.Web,
-            }, new Permission
-            {
+            }, new Permission {
                 Id = "74e2235cc48d47529e080b62dc699b02",
                 ParentId = "296285809bac481890a454ea8aed6af4",
                 ClaimName = "SEO.Setting.User.Save",
@@ -77,8 +73,7 @@ namespace Minder.Database.Models {
                 Default = false,
                 IsActive = true,
                 Type = EPermission.Web,
-            }, new Permission
-            {
+            }, new Permission {
                 Id = "98873832ebcb4d9fb12e9b21a187f12c",
                 ParentId = "296285809bac481890a454ea8aed6af4",
                 ClaimName = "SEO.Setting.User.Reset",
@@ -86,8 +81,7 @@ namespace Minder.Database.Models {
                 Default = false,
                 IsActive = true,
                 Type = EPermission.Web,
-            }, new Permission
-            {
+            }, new Permission {
                 Id = "a8845d8773f345d9b572ef4ee04136cf",
                 ParentId = "296285809bac481890a454ea8aed6af4",
                 ClaimName = "SEO.Project",
@@ -95,8 +89,7 @@ namespace Minder.Database.Models {
                 Default = true,
                 IsActive = true,
                 Type = EPermission.Web,
-            }, new Permission
-            {
+            }, new Permission {
                 Id = "d6ee70dc6c7c468f8f35206085b1880f",
                 ParentId = "a8845d8773f345d9b572ef4ee04136cf",
                 ClaimName = "SEO.Project.Save",

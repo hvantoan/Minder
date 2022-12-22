@@ -14,27 +14,23 @@
                 public const string User_NotFound = "Người dùng không tồn tại.";
                 public const string User_Inactive = "Người dùng không hoạt động.";
                 public const string User_IncorrectPassword = "Sai mật khẩu.";
+                public const string User_NoPermission = "Bạn không có quyền đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hổ trợ.";
             }
         }
 
         public static class User {
-
+            public const string User_NotFound = "Người dùng không tồn tại.";
             public static class CreateOrUpdate {
-                public const string Role_NotFound = "Phân quyền không tồn tại.";
-
                 public const string User_Existed = "Người dùng đã tồn tại.";
-                public const string User_NotFound = "Người dùng không tồn tại.";
                 public const string User_NotInactive = "Không thể dừng hoạt động với người quản trị.";
+                public const string User_UsernameRequired = "Tên đăng nhập không được để trống.";
+                public const string User_PasswordRequired = "Mật khẩu không được để trống.";
             }
 
             public static class ChangePassword {
-                public const string User_NotFound = "Người dùng không tồn tại.";
                 public const string User_IncorrentOldPassword = "Sai mật khẩu.";
             }
 
-            public static class ResetPassword {
-                public const string User_NotFound = "Người dùng không tồn tại.";
-            }
         }
         public static class Project {
             public const string Project_NotFound = "Dự án không tồn tại.";

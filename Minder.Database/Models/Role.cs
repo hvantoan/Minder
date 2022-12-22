@@ -5,12 +5,13 @@ using System.Collections.Generic;
 namespace Minder.Database.Models {
 
     public partial class Role {
-        public string Id { get; set; }
-        public string Code { get; set; }
-        public string Name { get; set; }
+        public string Id { get; set; } = null!;
+        public string Code { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public bool IsDelete { get; set; }
 
-        public virtual ICollection<User> Users { get; set; }
-        public virtual ICollection<RolePermission> RolePermissions { get; set; }
+        public virtual ICollection<User>? Users { get; set; }
+        public virtual ICollection<RolePermission>? RolePermissions { get; set; }
     }
 
     public class RoleConfig : IEntityTypeConfiguration<Role> {
@@ -37,6 +38,6 @@ namespace Minder.Database.Models {
                 Code = "user",
                 Name = "Người dùng"
             });
-        }       
+        }
     }
 }

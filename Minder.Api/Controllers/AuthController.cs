@@ -7,11 +7,12 @@ using System;
 using System.Threading.Tasks;
 
 namespace Minder.Api.Controllers {
+
     [ApiController, AllowAnonymous, Route("api/auth")]
-    public class AuthenticationController : ControllerBase {
+    public class AuthController : ControllerBase {
         private readonly IAuthService authService;
 
-        public AuthenticationController(IAuthService authService) {
+        public AuthController(IAuthService authService) {
             this.authService = authService;
         }
 
@@ -24,10 +25,21 @@ namespace Minder.Api.Controllers {
                 return BaseResponse.Fail(ex.Message);
             }
         }
+
         [HttpPost, Route("login/google")]
         public async Task<BaseResponse> LoginGoogle(LoginGoogleRequest request) {
             try {
                 var response = await this.authService.WebLoginGoogle(request);
+                return BaseResponse<LoginResponse>.Ok(response);
+            } catch (Exception ex) {
+                return BaseResponse.Fail(ex.Message);
+            }
+        }
+
+        [HttpGet, Route("login/refresh")]
+        public async Task<BaseResponse> Refresh() {
+            try {
+                var response = await this.authService.Refresh();
                 return BaseResponse<LoginResponse>.Ok(response);
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
