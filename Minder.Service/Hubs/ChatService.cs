@@ -20,7 +20,7 @@ namespace Minder.Service.Hubs {
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
-            if (connections.TryGetValue(Context.ConnectionId, out UserRoom user)) {
+            if (connections.TryGetValue(Context.ConnectionId, out UserRoom? user)) {
                 connections.Remove(Context.ConnectionId);
                 Clients.Group(user.RoomId).SendAsync("ReceiveMessage", botUser, $"{user.UserId} has left");
                 SendUsersConnected(user.RoomId);
@@ -36,7 +36,7 @@ namespace Minder.Service.Hubs {
         }
 
         public async Task SendMessageToRoom(UserRoom userRoom, string message) {
-            if (connections.TryGetValue(Context.ConnectionId, out UserRoom User)) {
+            if (connections.TryGetValue(Context.ConnectionId, out UserRoom? User)) {
                 await Clients.Group(userRoom.RoomId).SendAsync("ReceiveMessage", User.UserId, message);
             }
         }
