@@ -27,6 +27,7 @@ namespace Minder.Services.Models {
 
         public static Response SystemFail() {
             return new Response() {
+                Success = false,
                 StatusCode = 99,
                 Message = "Lỗi hệ thống."
             };
@@ -37,6 +38,7 @@ namespace Minder.Services.Models {
 
             if (errorMessage == null) return SystemFail();
             return new Response() {
+                Success = false,
                 StatusCode = errorMessage.Code,
                 Message = errorMessage.Message,
             };
