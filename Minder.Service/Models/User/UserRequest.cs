@@ -16,7 +16,8 @@ namespace Minder.Service.Models.User {
         public string NewPassword { get; set; } = null!;
     }
 
-    public class ResetPasswordRequest {
+    public class ForgotPasswordRequest {
+        public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 }

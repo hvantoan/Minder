@@ -21,10 +21,10 @@ namespace Minder.Service.Implements {
             this.cacheManager = cacheManager;
         }
 
-        public async Task<bool> SendOTP(UserDto user) {
-            var otp = await this.cacheManager.CreateOrUpdate(user.Username!);
+        public async Task<bool> SendOTP<T>(T model, string key) {
+            var otp = await this.cacheManager.CreateOrUpdate(key, model);
             var body = EMailHelper.GetOTPBody(otp);
-            return await Send($"[Minder]XÁC NHẬN NGƯỜI DÙNG {user.Name}", user.Username!, body);
+            return await Send($"[Minder]XÁC NHẬN NGƯỜI DÙNG", key, body);
         }
 
         private async Task<bool> Send(string subject, string to, string body) {

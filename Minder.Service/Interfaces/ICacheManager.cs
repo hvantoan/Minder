@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using Minder.Service.Models.Auth;
+using System.Threading.Tasks;
 
 namespace Minder.Service.Interfaces {
 
     public interface ICacheManager {
-        bool VerifyOtp(string username, string? code);
-        Task<string> CreateOrUpdate(string username);
+        string VerifyOTP(Verify verify);
+
+        Task<string> CreateOrUpdate<T>(string username, T data);
     }
 }

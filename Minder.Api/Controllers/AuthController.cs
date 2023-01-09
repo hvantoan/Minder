@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Minder.Service.Models.Auth;
+using Minder.Service.Models.User;
 using Minder.Services.Interfaces;
 using Minder.Services.Models;
 using Minder.Services.Models.Auth;
@@ -27,11 +29,21 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpPost, Route("login/google")]
-        public async Task<BaseResponse> LoginGoogle(LoginGoogleRequest request) {
+        [HttpPost, Route("register")]
+        public async Task<BaseResponse> Register(UserDto model) {
             try {
-                var response = await this.authService.WebLoginGoogle(request);
-                return BaseResponse<LoginResponse>.Ok(response);
+                await authService.Register(model);
+                return BaseResponse.Ok();
+            } catch (Exception ex) {
+                return BaseResponse.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("forgot-password")]
+        public async Task<BaseResponse> ForgotPassword(ForgotPasswordRequest model) {
+            try {
+                await authService.ForgotPassword(model);
+                return BaseResponse.Ok();
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }
@@ -47,21 +59,21 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpPost, Route("register")]
-        public async Task<BaseResponse> Register(UserDto model) {
+        [HttpPost, Route("verify")]
+        public async Task<BaseResponse> Verify(Verify verify) {
             try {
-                var response = await authService.Register(model);
-                return BaseResponse<string>.Ok(response);
+                await authService.Verify(verify);
+                return BaseResponse.Ok();
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }
         }
 
-        [HttpPost, Route("register/check")]
-        public async Task<BaseResponse> Check(UserDto model) {
+        [HttpGet, Route("user/check")]
+        public async Task<BaseResponse> Check([FromQuery] string userName) {
             try {
-                var response = await authService.VerifyUser(model);
-                return BaseResponse<bool>.Ok(response);
+                var response = await authService.CheckUser(userName);
+                return BaseResponse<UserNameValidate>.Ok(response);
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }

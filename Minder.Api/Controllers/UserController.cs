@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Minder.Service.Models.User;
 using Minder.Services.Interfaces;
 using Minder.Services.Models;
 using Minder.Services.Models.User;
@@ -31,16 +30,6 @@ namespace Minder.Api.Controllers {
         public async Task<BaseResponse> Save(UserDto model) {
             try {
                 await userService.Update(model);
-                return BaseResponse.Ok();
-            } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
-            }
-        }
-
-        [HttpPost, Route("reset-password")]
-        public async Task<BaseResponse> ResetPassword(ResetPasswordRequest request) {
-            try {
-                await userService.ResetPassword(request.Password);
                 return BaseResponse.Ok();
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);

@@ -15,7 +15,6 @@ namespace Minder.Services.Models.Auth {
 
         public string Username { get; set; } = null!;
         public string Name { get; set; } = null!;
-        public long ExpiredTime { get; set; }
     }
 
     public class LoginGoogleRequest {

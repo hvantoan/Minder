@@ -1,4 +1,6 @@
-﻿using Minder.Services.Models.Auth;
+﻿using Minder.Service.Models.Auth;
+using Minder.Service.Models.User;
+using Minder.Services.Models.Auth;
 using Minder.Services.Models.User;
 using System.Threading.Tasks;
 
@@ -6,14 +8,16 @@ namespace Minder.Services.Interfaces {
 
     public interface IAuthService {
 
-        Task<string> Register(UserDto model);
-
-        Task<bool> VerifyUser(UserDto model);
-
         Task<LoginResponse> WebLogin(LoginRequest request);
 
-        Task<LoginResponse> WebLoginGoogle(LoginGoogleRequest request);
+        Task Register(UserDto model);
+
+        Task ForgotPassword(ForgotPasswordRequest request);
 
         Task<LoginResponse> Refresh();
+
+        Task<bool> Verify(Verify verify);
+
+        Task<UserNameValidate> CheckUser(string userName);
     }
 }

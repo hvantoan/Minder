@@ -3,6 +3,7 @@ using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Interfaces;
+using Minder.Service.Models.User;
 using Minder.Services.Common;
 using Minder.Services.Hashers;
 using Minder.Services.Interfaces;
@@ -55,20 +56,20 @@ namespace Minder.Services.Implements {
             return user.Id;
         }
 
-        public async Task ChangePassword(string oldPassword, string newPassword) {
+        public async Task ChangePassword(ChangePasswordRequest request) {
             var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
-            ManagedException.ThrowIf(!PasswordHashser.Verify(oldPassword, user.Password), Messages.User.User_IncorrentOldPassword);
+            ManagedException.ThrowIf(!PasswordHashser.Verify(request.OldPassword, user.Password), Messages.User.User_IncorrentOldPassword);
 
-            user.Password = PasswordHashser.Hash(newPassword);
+            user.Password = PasswordHashser.Hash(request.NewPassword);
             await this.db.SaveChangesAsync();
         }
 
-        public async Task ResetPassword(string password) {
-            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
+        public async Task ResetPassword(ForgotPasswordRequest request) {
+            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == request.Username);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
-            user.Password = PasswordHashser.Hash(password);
+            user.Password = PasswordHashser.Hash(request.Password);
             await this.db.SaveChangesAsync();
         }
 
