@@ -1,62 +1,35 @@
 ﻿namespace Minder.Services.Resources {
 
     public static class Messages {
-
-
+        public static ResponseMessage SuccessMessage { get; } = new() { Code = 0, Message = "Thành công." };
 
         public static class Auth {
-
-            public static class Login {
-                public const string Merchant_NotFound = "Cửa hàng không tồn tại.";
-                public const string Merchant_Inactive = "Cửa hàng không hoạt động.";
-                public const string Merchant_Expired = "Cửa hàng đã hết hạn.";
-
-                public const string User_NotFound = "Người dùng không tồn tại.";
-                public const string User_Inactive = "Người dùng không hoạt động.";
-                public const string User_IncorrectPassword = "Sai mật khẩu.";
-                public const string User_NoPermission = "Bạn không có quyền đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hổ trợ.";
-            }
+            public static ResponseMessage User_NotFound { get; } = new() { Code = 1, Message = "Người dùng không tồn tại." };
+            public static ResponseMessage User_Inactive { get; } = new() { Code = 2, Message = "Người dùng không hoạt động." };
+            public static ResponseMessage User_IncorrectPassword { get; } = new() { Code = 3, Message = "Sai mật khẩu." };
+            public static ResponseMessage User_NoPermission { get; } = new() { Code = 4, Message = "Bạn không có quyền đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hổ trợ." };
         }
 
         public static class User {
-            public const string User_NotFound = "Người dùng không tồn tại.";
-            public static class CreateOrUpdate {
-                public const string User_Existed = "Người dùng đã tồn tại.";
-                public const string User_NotInactive = "Không thể dừng hoạt động với người quản trị.";
-                public const string User_UsernameRequired = "Tên đăng nhập không được để trống.";
-                public const string User_PasswordRequired = "Mật khẩu không được để trống.";
-            }
-
-            public static class ChangePassword {
-                public const string User_IncorrentOldPassword = "Sai mật khẩu.";
-            }
-
-        }
-        public static class Project {
-            public const string Project_NotFound = "Dự án không tồn tại.";
-            public const string ProjectDetail_NotFound = "Từ khóa không tồn tại.";
-            public static class CreateOrUpdate {
-                public const string Project_NameNotNullOrEmplty = "Tên không được để trống.";
-                public const string Project_NameNotDuplicated = "Tên dự án đã được sử dụngs.";
-                public const string User_NotInactive = "Không thể dừng hoạt động với người quản trị.";
-            }
-            public static class Get {
-                public const string Project_NotFound = "Dự án không tồn tại.";
-
-            }
+            public static ResponseMessage User_IncorrentOldPassword { get; } = new() { Code = 10, Message = "Mật khẩu cũ không chính xác." };
+            public static ResponseMessage User_OTPIncorect { get; } = new() { Code = 11, Message = "Mã xác thực không chính xác." };
+            public static ResponseMessage User_NotFound { get; } = new() { Code = 12, Message = "Người dùng không tồn tại." };
+            public static ResponseMessage User_Existed { get; } = new() { Code = 13, Message = "Tên đăng nhập đã tồn tại." };
+            public static ResponseMessage User_NotInactive { get; } = new() { Code = 14, Message = "Không thể dừng hoạt động với người quản trị." };
+            public static ResponseMessage User_UsernameRequired { get; } = new() { Code = 15, Message = "Tên đăng nhập không được để trống." };
+            public static ResponseMessage User_UsernameRequest { get; } = new() { Code = 16, Message = "Tên đăng nhập là email." };
+            public static ResponseMessage User_PasswordRequired { get; } = new() { Code = 17, Message = "Mật khẩu không được để trống." };
+            public static ResponseMessage User_PasswordRequest { get; } = new() { Code = 18, Message = "Mật khẩu phải có ít nhất 8 ký tự, không chứa khoản trắng." };
+            public static ResponseMessage User_NameRequired { get; } = new() { Code = 19, Message = "Tên người dùng không được để trống." };
         }
 
-        public static class Seo {
+        public static class Email {
+            public static ResponseMessage User_NameRequired { get; } = new() { Code = 20, Message = "Gửi email thất bại." };
         }
+    }
 
-        public static class SearchContent {
-            public const string SearchContent_IsEmpty = "Không có lịch sử tìm kiếm nào.";
-            public const string SearchContent_NotFound = "Nội dung không tồn tại.";
-
-        }
-        public static class SearchIndex {
-            public const string Index_KeyNotEmpty = "Từ khóa không được để trống.";
-        }
-
+    public class ResponseMessage {
+        public int Code { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Minder.Services.Resources;
+using Newtonsoft.Json;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
@@ -29,14 +31,14 @@ namespace Minder.Exceptions {
             throw new ManagedException(message, ex);
         }
 
-        public static void ThrowIf([DoesNotReturnIf(true)] bool when, string message) {
-            if (when) throw new ManagedException(message);
+        public static void ThrowIf([DoesNotReturnIf(true)] bool when, ResponseMessage responseMessage) {
+            if (when) throw new ManagedException(JsonConvert.SerializeObject(responseMessage));
         }
 
-        public static void ThrowIf([DoesNotReturnIf(true)] bool when, string message, Action preThrow) {
+        public static void ThrowIf([DoesNotReturnIf(true)] bool when, ResponseMessage responseMessage, Action preThrow) {
             if (when) {
                 preThrow.Invoke();
-                throw new ManagedException(message);
+                throw new ManagedException(JsonConvert.SerializeObject(responseMessage));
             }
         }
     }

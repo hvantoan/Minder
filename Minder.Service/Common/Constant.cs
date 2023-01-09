@@ -4,5 +4,6 @@
         public const string TokenUserId = "UserId";
         public const string TokenUserName = "UserName";
         public const string TokenName = "Name";
+        public const string OTP = "Code";
     }
 }

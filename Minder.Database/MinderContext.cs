@@ -18,7 +18,7 @@ namespace Minder.Database {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             if (!optionsBuilder.IsConfigured) {
-                optionsBuilder.UseNpgsql("Data Source=.;Initial Catalog=Minder;Integrated Security=True");
+                optionsBuilder.UseNpgsql("");
             }
         }
 
