@@ -8,7 +8,8 @@ using System;
 using System.Threading.Tasks;
 
 namespace Minder.Api.Controllers {
-    [ApiController, Authorize ,Route("api/user")]
+
+    [ApiController, Authorize, Route("api/user")]
     public class UserController : ControllerBase {
         private readonly IUserService userService;
 
@@ -20,7 +21,7 @@ namespace Minder.Api.Controllers {
         public async Task<BaseResponse> Get() {
             try {
                 var data = await userService.Get();
-                return BaseResponse<UserDto>.Ok(data);
+                return BaseResponse<UserDto>.Ok(data!);
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }
@@ -28,18 +29,9 @@ namespace Minder.Api.Controllers {
 
         [HttpPost, Route("save")]
         public async Task<BaseResponse> Save(UserDto model) {
-            try {   
-              await userService.Update(model);
-                return BaseResponse.Ok();
-            } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
-            }
-        }
-        [HttpPost, Route("create")]
-        public async Task<BaseResponse> Create(CreateUserRequest request) {
             try {
-                var response = await userService.Create(request.User, request.Role);
-                return BaseResponse<string>.Ok(response);
+                await userService.Update(model);
+                return BaseResponse.Ok();
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }

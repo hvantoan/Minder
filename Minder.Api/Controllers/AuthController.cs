@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Minder.Services.Interfaces;
 using Minder.Services.Models;
 using Minder.Services.Models.Auth;
+using Minder.Services.Models.User;
 using System;
 using System.Threading.Tasks;
 
@@ -41,6 +42,26 @@ namespace Minder.Api.Controllers {
             try {
                 var response = await this.authService.Refresh();
                 return BaseResponse<LoginResponse>.Ok(response);
+            } catch (Exception ex) {
+                return BaseResponse.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("register")]
+        public async Task<BaseResponse> Register(UserDto model) {
+            try {
+                var response = await authService.Register(model);
+                return BaseResponse<string>.Ok(response);
+            } catch (Exception ex) {
+                return BaseResponse.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("register/check")]
+        public async Task<BaseResponse> Check(UserDto model) {
+            try {
+                var response = await authService.VerifyUser(model);
+                return BaseResponse<bool>.Ok(response);
             } catch (Exception ex) {
                 return BaseResponse.Fail(ex.Message);
             }

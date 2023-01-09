@@ -1,14 +1,20 @@
-﻿using Minder.Database.Enums;
-using Minder.Services.Models.User;
+﻿using Minder.Services.Models.User;
 using System.Threading.Tasks;
 
 namespace Minder.Services.Interfaces {
+
     public interface IUserService {
-        Task ChangePassword(string oldPassword, string newPassword);
-        Task<string> Create(UserDto model, ERoleType Role);
-        Task Update(UserDto model);
-        Task ResetPassword(string password);
+
         Task<UserDto?> Get();
+
+        Task<string> Create(UserDto model);
+
+        Task Update(UserDto model);
+
         Task Delete();
+
+        Task ChangePassword(string oldPassword, string newPassword);
+
+        Task ResetPassword(string password);
     }
 }

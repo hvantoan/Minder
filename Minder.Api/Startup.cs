@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Minder.Database;
 using Minder.Service.Hubs;
+using Minder.Service.Implements;
+using Minder.Service.Interfaces;
 using Minder.Service.Models;
 using Minder.Service.Models.Chat;
 using Minder.Services.Common;
@@ -44,6 +46,7 @@ namespace Minder.Api {
                             .AllowAnyHeader();
                     });
             });
+            services.AddMemoryCache();
 
             services.AddDbContext<MinderContext>(options =>
                options.UseNpgsql(Configuration.GetConnectionString(nameof(MinderContext))));
@@ -57,7 +60,7 @@ namespace Minder.Api {
                         ValidateAudience = false,
                         RequireExpirationTime = true,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"] ?? ""))
                     };
                 });
 
@@ -93,10 +96,11 @@ namespace Minder.Api {
             services.AddScoped(provider => {
                 var httpContext = provider.GetRequiredService<IHttpContextAccessor>().HttpContext;
                 if (httpContext != null) {
-                    string url = UrlHelper.GetCurrentUrl(httpContext.Request, Configuration, "ImageUrl");
+                    string? url = UrlHelper.GetCurrentUrl(httpContext.Request, Configuration, "ImageUrl");
                     return new CurrentUser {
                         UserId = httpContext.User?.FindFirst(o => o.Type == Constant.TokenUserId)?.Value ?? string.Empty,
-                        Url = url
+                        Url = url,
+                        OTP = httpContext?.Request.Headers[Constant.OTP]
                     };
                 }
                 return new CurrentUser();
@@ -110,6 +114,8 @@ namespace Minder.Api {
 
             services.AddScoped<IUserService, UserService>()
                     .AddScoped<IAuthService, AuthService>()
+                    .AddScoped<IEmailService, EmailService>()
+                    .AddScoped<ICacheManager, CacheManager>()
                     .AddSingleton<IDictionary<string, UserRoom>>(new Dictionary<string, UserRoom>());
         }
 

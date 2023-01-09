@@ -11,9 +11,11 @@ namespace Minder.Database.Models {
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
         public string Name { get; set; } = null!;
+        public string? Description { get; set; }
         public string? Avatar { get; set; }
         public bool IsAdmin { get; set; }
         public bool IsDelete { get; set; }
+        public bool IsActive { get; set; }
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
         public virtual ICollection<File>? Files { get; set; }
