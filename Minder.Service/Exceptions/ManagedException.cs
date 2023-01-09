@@ -22,8 +22,8 @@ namespace Minder.Exceptions {
         }
 
         [DoesNotReturn]
-        public static void Throw(string message) {
-            throw new ManagedException(message);
+        public static void Throw(ResponseMessage responseMessage) {
+            throw new ManagedException(JsonConvert.SerializeObject(responseMessage));
         }
 
         [DoesNotReturn]

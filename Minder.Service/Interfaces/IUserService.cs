@@ -1,4 +1,5 @@
-﻿using Minder.Services.Models.User;
+﻿using Minder.Service.Models.User;
+using Minder.Services.Models.User;
 using System.Threading.Tasks;
 
 namespace Minder.Services.Interfaces {
@@ -13,8 +14,8 @@ namespace Minder.Services.Interfaces {
 
         Task Delete();
 
-        Task ChangePassword(string oldPassword, string newPassword);
+        Task ChangePassword(ChangePasswordRequest request);
 
-        Task ResetPassword(string password);
+        Task ResetPassword(ForgotPasswordRequest request);
     }
 }

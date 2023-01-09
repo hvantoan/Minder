@@ -4,10 +4,11 @@
         public static ResponseMessage SuccessMessage { get; } = new() { Code = 0, Message = "Thành công." };
 
         public static class Auth {
-            public static ResponseMessage User_NotFound { get; } = new() { Code = 1, Message = "Người dùng không tồn tại." };
-            public static ResponseMessage User_Inactive { get; } = new() { Code = 2, Message = "Người dùng không hoạt động." };
-            public static ResponseMessage User_IncorrectPassword { get; } = new() { Code = 3, Message = "Sai mật khẩu." };
-            public static ResponseMessage User_NoPermission { get; } = new() { Code = 4, Message = "Bạn không có quyền đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hổ trợ." };
+            public static ResponseMessage Auth_NotFound { get; } = new() { Code = 1, Message = "Người dùng không tồn tại." };
+            public static ResponseMessage Auth_Inactive { get; } = new() { Code = 2, Message = "Người dùng không hoạt động." };
+            public static ResponseMessage Auth_IncorrectPassword { get; } = new() { Code = 3, Message = "Sai mật khẩu." };
+            public static ResponseMessage Auth_NoPermission { get; } = new() { Code = 4, Message = "Bạn không có quyền đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hổ trợ." };
+            public static ResponseMessage Auth_IncorresctOTP { get; } = new() { Code = 4, Message = "Mã xác nhận không chính xác." };
         }
 
         public static class User {

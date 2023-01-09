@@ -100,7 +100,6 @@ namespace Minder.Api {
                     return new CurrentUser {
                         UserId = httpContext.User?.FindFirst(o => o.Type == Constant.TokenUserId)?.Value ?? string.Empty,
                         Url = url,
-                        OTP = httpContext?.Request.Headers[Constant.OTP]
                     };
                 }
                 return new CurrentUser();

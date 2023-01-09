@@ -1,22 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
-using Minder.Extensions;
 using Minder.Service.Interfaces;
+using Minder.Service.Models.Auth;
+using Minder.Service.Models.User;
 using Minder.Services.Common;
 using Minder.Services.Hashers;
 using Minder.Services.Interfaces;
 using Minder.Services.Models.Auth;
 using Minder.Services.Models.User;
 using Minder.Services.Resources;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +30,6 @@ namespace Minder.Services.Implements {
         private readonly IEmailService emailService;
         private readonly IUserService userService;
         private readonly ICacheManager cacheManager;
-        private const string googleUrl = $"https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=";
 
         public AuthService(IServiceProvider serviceProvider) : base(serviceProvider) {
             this.emailService = serviceProvider.GetRequiredService<IEmailService>();
@@ -36,38 +37,11 @@ namespace Minder.Services.Implements {
             this.cacheManager = serviceProvider.GetRequiredService<ICacheManager>();
         }
 
-        public async Task<string> Register(UserDto model) {
-            this.logger.Information($"{nameof(UserService)} - {nameof(Register)} - Start", model);
-            await this.Validation(model);
-            ManagedException.ThrowIf(!this.cacheManager.VerifyOtp(model.Username!, this.current.OTP), Messages.User.User_OTPIncorect);
-
-            return await this.userService.Create(model);
-        }
-
-        public async Task<bool> VerifyUser(UserDto model) {
-            await this.Validation(model);
-            return await this.emailService.SendOTP(model);
-        }
-
-        private async Task Validation(UserDto model) {
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
-            ManagedException.ThrowIf(!(new EmailAddressAttribute().IsValid(model.Username)), Messages.User.User_UsernameRequest);
-
-            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
-            ManagedException.ThrowIf(user, Messages.User.User_Existed);
-
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);
-            var userPasswordLenght = model.Password.Length;
-            ManagedException.ThrowIf(userPasswordLenght < 8 || model.Password.Contains(' '), Messages.User.User_PasswordRequest);
-
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.User.User_NameRequired);
-        }
-
         public async Task<LoginResponse> WebLogin(LoginRequest request) {
             var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim() && !o.IsDelete);
 
-            ManagedException.ThrowIf(user == null, Messages.Auth.User_NotFound);
-            ManagedException.ThrowIf(!PasswordHashser.Verify(request.Password, user.Password), Messages.Auth.User_IncorrectPassword);
+            ManagedException.ThrowIf(user == null, Messages.Auth.Auth_NotFound);
+            ManagedException.ThrowIf(!PasswordHashser.Verify(request.Password, user.Password), Messages.Auth.Auth_IncorrectPassword);
 
             var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
             Role? role = null;
@@ -77,75 +51,20 @@ namespace Minder.Services.Implements {
             }
 
             var userPermissions = UserPermissionDto.MapFromEntities(permissions, role?.RolePermissions?.ToList(), user.IsAdmin);
-            ManagedException.ThrowIf(!userPermissions.Any(o => o.IsEnable), Messages.Auth.User_NoPermission);
+            ManagedException.ThrowIf(!userPermissions.Any(o => o.IsEnable), Messages.Auth.Auth_NoPermission);
             var claims = this.GetClaimPermissions(userPermissions);
 
             return new() {
                 Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(1)),
                 RefreshToken = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(30)),
-                ExpiredTime = new DateTimeOffset(GetTokenExpiredAt(1)).ToUnixTimeMilliseconds(),
-                Username = user.Username,
-            };
-        }
-
-        public async Task<LoginResponse> WebLoginGoogle(LoginGoogleRequest request) {
-            var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
-            string url = googleUrl + request.ExternalToken;
-            using (HttpClient client = new()) {
-                client.BaseAddress = new Uri(url);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                try {
-                    HttpResponseMessage response = await client.GetAsync(url);
-                    if (response.IsSuccessStatusCode) {
-                        var data = await response.Content.ReadAsStringAsync();
-                        GoolgeUserInforModel googleObj = Newtonsoft.Json.JsonConvert.DeserializeObject<GoolgeUserInforModel>(data) ?? new GoolgeUserInforModel() { Id = "" };
-                        ManagedException.ThrowIf(request.ExternalId != googleObj.Id, Messages.Auth.User_NotFound);
-                    }
-                } catch (Exception ex) {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
-            User userExists = db.Users.FirstOrDefault(o => o.Username == request.Email) ?? new User() { Id = "" };
-            if (userExists.Id.IsNullOrEmpty()) {
-                userExists = new User() {
-                    Id = Guid.NewGuid().ToStringN(),
-                    Username = request.Email,
-                    IsAdmin = false,
-                    Avatar = "",
-                    Name = "",
-                    Password = "",
-                    RoleId = "469b14225a79448c93e4e780aa08f0cc"
-                };
-                db.Users.Add(userExists);
-                db.SaveChanges();
-            }
-
-            User user = this.db.Users.FirstOrDefault(o => o.Username == request.Email) ?? new User() { Id = "" };
-            ManagedException.ThrowIf(user == null, Messages.Auth.User_NotFound);
-
-            Role? role = null;
-            if (!string.IsNullOrWhiteSpace(user.RoleId) && !string.IsNullOrEmpty(user.RoleId)) {
-                role = await this.db.Roles.Include(o => o.RolePermissions).AsNoTracking()
-                    .FirstOrDefaultAsync(o => o.Id == user.RoleId) ?? new Role() { Id = "" };
-            }
-
-            var userPermissions = UserPermissionDto.MapFromEntities(permissions, role?.RolePermissions?.ToList(), user.IsAdmin);
-            var expiredAt = GetTokenExpiredAt(1);
-            var claims = this.GetClaimPermissions(userPermissions);
-
-            return new() {
-                Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, expiredAt),
-                RefreshToken = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(30)),
-                ExpiredTime = new DateTimeOffset(expiredAt).ToUnixTimeMilliseconds(),
-                Username = user.Username,
                 Name = user.Name,
+                Username = user.Username,
             };
         }
 
         public async Task<LoginResponse> Refresh() {
             var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
-            ManagedException.ThrowIf(user == null, Messages.Auth.User_NotFound);
+            ManagedException.ThrowIf(user == null, Messages.Auth.Auth_NotFound);
 
             var permissions = await this.db.Permissions.Where(o => o.Type == EPermission.Web).AsNoTracking().ToListAsync();
             Role? role = null;
@@ -158,9 +77,44 @@ namespace Minder.Services.Implements {
 
             return new() {
                 Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(1)),
-                ExpiredTime = new DateTimeOffset(GetTokenExpiredAt(1)).ToUnixTimeMilliseconds(),
                 Username = user.Username,
                 Name = user.Name,
+            };
+        }
+
+        public async Task Register(UserDto model) {
+            await this.Validation(model);
+            await this.emailService.SendOTP(model, model.Username!);
+        }
+
+        public async Task ForgotPassword(ForgotPasswordRequest request) => await this.emailService.SendOTP(request, request.Username!);
+
+        public async Task<bool> Verify(Verify verify) {
+            var response = cacheManager.VerifyOTP(verify);
+
+            switch (verify.Type) {
+                case EVerifyType.Register:
+                    await userService.Create(JsonConvert.DeserializeObject<UserDto>(response)!);
+                    return true;
+
+                case EVerifyType.ForgetPassword:
+                    await userService.ResetPassword(JsonConvert.DeserializeObject<ForgotPasswordRequest>(response)!);
+                    return true;
+            }
+            return false;
+        }
+
+        public async Task<UserNameValidate> CheckUser(string userName) {
+            var isExit = await this.db.Users.AnyAsync(o => o.Username == userName);
+
+            if (isExit) return new UserNameValidate() {
+                Status = false,
+                Message = "Tên đăng nhập đã tồn tại."
+            };
+
+            return new UserNameValidate() {
+                Status = true,
+                Message = "Tên đăng nhập hợp lệ.",
             };
         }
 
@@ -202,6 +156,20 @@ namespace Minder.Services.Implements {
                 }
             }
             return claims;
+        }
+
+        private async Task Validation(UserDto model) {
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
+            ManagedException.ThrowIf(!(new EmailAddressAttribute().IsValid(model.Username)), Messages.User.User_UsernameRequest);
+
+            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
+            ManagedException.ThrowIf(user, Messages.User.User_Existed);
+
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);
+            var userPasswordLenght = model.Password.Length;
+            ManagedException.ThrowIf(userPasswordLenght < 8 || model.Password.Contains(' '), Messages.User.User_PasswordRequest);
+
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.User.User_NameRequired);
         }
     }
 }
