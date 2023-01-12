@@ -60,7 +60,7 @@ namespace Minder.Api {
                         ValidateAudience = false,
                         RequireExpirationTime = true,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"] ?? ""))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"]!))
                     };
                 });
 
