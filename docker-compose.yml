@@ -5,11 +5,12 @@ services:
   web:
     image: minder-api:latest
     ports:
-      - "8100:80"
+      - "8080:80"
     restart: always
     depends_on:
       - postgres
       - pgadmin
+      - filezilla
     networks:
       network:
         ipv4_address: 172.40.0.2
@@ -40,6 +41,13 @@ services:
     networks:
       network:
         ipv4_address: 172.40.0.4
+  filezilla:
+    image: jlesage/filezilla
+    ports:
+      - "8081:5800"
+    networks:
+      network:
+        ipv4_address: 172.40.0.5
 volumes:
   db:
     driver: local
