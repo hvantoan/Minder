@@ -5,12 +5,12 @@ using Minder.Extensions;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.User;
 using Minder.Services.Common;
+using Minder.Services.Extensions;
 using Minder.Services.Hashers;
 using Minder.Services.Interfaces;
 using Minder.Services.Models.User;
 using Minder.Services.Resources;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,28 +25,33 @@ namespace Minder.Services.Implements {
             this.emailService = emailService;
         }
 
-        public async Task<UserDto?> Get() {
-            var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Id == this.current.UserId);
+        public async Task<UserDto?> Get(string? key) {
+            var user = await this.db.Users.AsNoTracking()
+                .WhereIf(string.IsNullOrEmpty(key), o => o.Id == this.current.UserId)
+                .WhereIf(!string.IsNullOrEmpty(key), o => o.Username == key)
+                .FirstAsync();
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
-            Role? role = null;
-            if (!string.IsNullOrEmpty(user.RoleId)) {
-                role = await this.db.Roles.AsNoTracking()
-                    .Where(o => o.Id == user.RoleId && !o.IsDelete)
-                    .FirstOrDefaultAsync();
-            }
-            return UserDto.FromEntity(user, role);
+            return UserDto.FromEntity(user);
         }
 
         public async Task<string> Create(UserDto model) {
             User user = new() {
                 Id = Guid.NewGuid().ToStringN(),
                 Username = model.Username!.ToLower(),
-                Name = model.Name,
-                Avatar = "",
-                IsAdmin = false,
-                IsActive = false,
                 Password = PasswordHashser.Hash(model.Password!),
+                Name = model.Name,
+                Phone = model.Phone,
+                Age = model.Age,
+                Sex = model.Sex,
+                GameType = model.GameType,
+                GameTime = model.GameTime,
+                Longitude = model.Longitude,
+                Latitude = model.Latitude,
+                Radius = model.Radius,
+                Rank = model.Rank,
+                Point = model.Point,
+                IsAdmin = false,
                 RoleId = "6ffa9fa20755486d9e317d447b652bd8"
             };
             await this.Validate(user.RoleId);
@@ -74,38 +79,34 @@ namespace Minder.Services.Implements {
         }
 
         public async Task UpdateMe(UserDto model) {
-            this.logger.Information($"{nameof(UserService)} - {nameof(Update)} - Start", model);
+            this.logger.Information($"{nameof(UserService)} - {nameof(UpdateMe)} - Start", model);
 
             await ValidateInfo(model);
             var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
             user.Name = model.Name;
+            user.Phone = model.Phone;
+            user.Age = model.Age;
+            user.Phone = model.Phone;
+            user.Sex = model.Sex;
+            user.Description = model.Description;
+
+            user.GameType = model.GameType;
+            user.GameTime = model.GameTime;
+            user.Longitude = model.Longitude;
+            user.Latitude = model.Latitude;
+            user.Radius = model.Radius;
+
+
             await this.db.SaveChangesAsync();
         }
 
         private async Task ValidateInfo(UserDto model) {
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
-            var userNameLenght = model.Username.Length;
-            ManagedException.ThrowIf(2 <= userNameLenght && userNameLenght <= 20 && new EmailAddressAttribute().IsValid(model.Username), Messages.User.User_UsernameRequest);
             var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
             ManagedException.ThrowIf(user, Messages.User.User_Existed);
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);
-            var userPasswordLenght = model.Password.Length;
-            ManagedException.ThrowIf(userPasswordLenght > 8 && model.Password.Contains(' '), Messages.User.User_PasswordRequest);
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.User.User_NameRequired);
-            var isUnique = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
-            ManagedException.ThrowIf(!isUnique, Messages.User.User_Existed);
-        }
-
-        public async Task Update(UserDto model) {
-            this.logger.Information($"{nameof(UserService)} - {nameof(Update)} - Start", model);
-
-            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
-            ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
-
-            user.Name = model.Name;
-            await this.db.SaveChangesAsync();
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Phone), Messages.User.User_PhoneRequired);
         }
 
         public async Task Validate(string roleId) {

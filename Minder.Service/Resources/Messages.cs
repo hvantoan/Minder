@@ -22,10 +22,11 @@
             public static ResponseMessage User_PasswordRequired { get; } = new() { Code = 17, Message = "Mật khẩu không được để trống." };
             public static ResponseMessage User_PasswordRequest { get; } = new() { Code = 18, Message = "Mật khẩu phải có ít nhất 8 ký tự, không chứa khoản trắng." };
             public static ResponseMessage User_NameRequired { get; } = new() { Code = 19, Message = "Tên người dùng không được để trống." };
+            public static ResponseMessage User_PhoneRequired { get; } = new() { Code = 20, Message = "Số điện thoại người dùng không được để trống." };
         }
 
         public static class Email {
-            public static ResponseMessage User_NameRequired { get; } = new() { Code = 20, Message = "Gửi email thất bại." };
+            public static ResponseMessage User_NameRequired { get; } = new() { Code = 30, Message = "Gửi email thất bại." };
         }
     }
 
