@@ -170,6 +170,7 @@ namespace Minder.Services.Implements {
             ManagedException.ThrowIf(userPasswordLenght < 8 || model.Password.Contains(' '), Messages.User.User_PasswordRequest);
 
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.User.User_NameRequired);
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Phone), Messages.User.User_PhoneRequired);
         }
     }
 }

@@ -9,6 +9,9 @@ namespace Minder.Database {
         public virtual DbSet<Role> Roles => Set<Role>();
         public virtual DbSet<RolePermission> RolePermissions => Set<RolePermission>();
         public virtual DbSet<User> Users => Set<User>();
+        public virtual DbSet<Team> Teams => Set<Team>();
+        public virtual DbSet<Member> Members => Set<Member>();
+        public virtual DbSet<Invited> Inviteds => Set<Invited>();
 
         public MinderContext() {
         }

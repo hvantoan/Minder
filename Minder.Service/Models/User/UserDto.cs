@@ -1,4 +1,5 @@
-﻿using Minder.Services.Models.Role;
+﻿using Minder.Database.Enums;
+using Minder.Services.Models.Role;
 using Newtonsoft.Json;
 
 namespace Minder.Services.Models.User {
@@ -9,12 +10,31 @@ namespace Minder.Services.Models.User {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string? Password { get; set; }
-        public string Name { get; set; } = null!;
+
+        public string Name { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public ESex Sex { get; set; } = ESex.Unknown;
+        public int Age { get; set; }
+        public string? Description { get; set; }
+
+        public string GameType { get; set; } = string.Empty;
+
+        public string GameTime { get; set; } = string.Empty;
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Radius { get; set; }
+
+        public ERank Rank { get; set; }
+        public int Point { get; set; }
+
         public bool IsAdmin { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public RoleDto? Role { get; set; }
     }
 
     public partial class UserDto {
+
         public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null) {
             if (entity == null) return default;
             entity.Role ??= roleEntity;
@@ -22,7 +42,17 @@ namespace Minder.Services.Models.User {
             return new UserDto {
                 Id = entity.Id,
                 Username = entity.Username,
-                Name = entity.Name, 
+                Name = entity.Name,
+                Phone = entity.Phone,
+                Age = entity.Age,
+                Description = entity.Description,
+                GameType = entity.GameType,
+                GameTime = entity.GameTime,
+                Longitude = entity.Longitude,
+                Latitude = entity.Latitude,
+                Radius = entity.Radius,
+                Rank = entity.Rank,
+                Point = entity.Point,
                 IsAdmin = entity.IsAdmin,
                 Role = RoleDto.FromEntity(entity.Role),
             };
