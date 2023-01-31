@@ -8,7 +8,6 @@ namespace Minder.Database.Models {
         public string Id { get; set; } = null!;
         public string UserId { get; set; } = null!;
         public string TeamId { get; set; } = null!;
-        public List<EPosition>? Positions { get; set; }
         public ERegency Regency { get; set; }
 
         public virtual User? User { get; set; }

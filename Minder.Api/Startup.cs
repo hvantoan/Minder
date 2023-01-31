@@ -49,7 +49,7 @@ namespace Minder.Api {
             services.AddMemoryCache();
 
             services.AddDbContext<MinderContext>(options =>
-               options.UseNpgsql(Configuration.GetConnectionString(nameof(MinderContext))));
+               options.UseSqlServer(Configuration.GetConnectionString(nameof(MinderContext))));
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
