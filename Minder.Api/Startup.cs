@@ -115,6 +115,7 @@ namespace Minder.Api {
                     .AddScoped<IAuthService, AuthService>()
                     .AddScoped<IEmailService, EmailService>()
                     .AddScoped<ICacheManager, CacheManager>()
+                    .AddScoped<ITeamService, TeamService>()
                     .AddSingleton<IDictionary<string, UserRoom>>(new Dictionary<string, UserRoom>());
         }
 

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Minder.Services.Models {
 
@@ -52,6 +53,26 @@ namespace Minder.Services.Models {
 
         public static BaseResponse<T> Ok(T data) {
             return new() { Data = data };
+        }
+    }
+
+    public class BaseSaveData<T> : BaseResponse {
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Item Data { get; set; } = new();
+
+        public class Item {
+
+            [JsonPropertyName(nameof(T) + "Id")]
+            public string Id { get; set; } = string.Empty;
+        }
+
+        public static BaseSaveData<T> Ok(string id) {
+            return new() {
+                Data = new Item() {
+                    Id = id
+                }
+            };
         }
     }
 
