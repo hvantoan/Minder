@@ -6,11 +6,11 @@ namespace Minder.Services.Interfaces {
 
     public interface IUserService {
 
-        Task<UserDto?> Get();
+        Task<UserDto?> Get(string? key);
 
         Task<string> Create(UserDto model);
 
-        Task Update(UserDto model);
+        Task UpdateMe(UserDto model);
 
         Task Delete();
 
