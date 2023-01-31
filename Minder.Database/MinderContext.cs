@@ -21,7 +21,7 @@ namespace Minder.Database {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             if (!optionsBuilder.IsConfigured) {
-                optionsBuilder.UseNpgsql("");
+                optionsBuilder.UseSqlServer("");
             }
         }
 
