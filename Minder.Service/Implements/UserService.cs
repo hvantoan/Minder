@@ -36,6 +36,11 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<string> Create(UserDto model) {
+            this.logger.Information($"{nameof(User)} - {nameof(Create)} - Start", model);
+
+            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username);
+            ManagedException.ThrowIf(isExited, Messages.User.User_Existed);
+
             User user = new() {
                 Id = Guid.NewGuid().ToStringN(),
                 Username = model.Username!.ToLower(),
@@ -58,6 +63,8 @@ namespace Minder.Services.Implements {
 
             await this.db.Users.AddAsync(user);
             await this.db.SaveChangesAsync();
+
+            this.logger.Information($"{nameof(Team)} - {nameof(Create)} - End", model);
             return user.Id;
         }
 
@@ -97,7 +104,6 @@ namespace Minder.Services.Implements {
             user.Longitude = model.Longitude;
             user.Latitude = model.Latitude;
             user.Radius = model.Radius;
-
 
             await this.db.SaveChangesAsync();
         }
