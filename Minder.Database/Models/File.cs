@@ -1,14 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Minder.Database.Enums;
-using System;
 
 namespace Minder.Database.Models {
 
     public partial class File {
         public string Id { get; set; } = null!;
         public EFile Type { get; set; }
-        public string? ItemId { get; set; }
+        public EItemType ItemType { get; set; }
+        public string ItemId { get; set; } = null!;
         public string Name { get; set; } = null!;
         public string Path { get; set; } = null!;
         public string UploadBy { get; set; } = null!;
@@ -25,9 +25,10 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Id).HasMaxLength(32);
 
             builder.Property(o => o.Type).HasMaxLength(20);
-            builder.Property(o => o.ItemId).HasMaxLength(32);
+            builder.Property(o => o.ItemType).HasMaxLength(20);
+            builder.Property(o => o.ItemId).HasMaxLength(32).IsRequired();
             builder.Property(o => o.Name).HasMaxLength(255).IsRequired();
-            builder.Property(o => o.Path).HasMaxLength(8000);
+            builder.Property(o => o.Path).HasMaxLength(Int32.MaxValue);
             builder.Property(o => o.UploadBy).HasMaxLength(32).IsRequired();
             builder.Property(o => o.UploadDate).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 

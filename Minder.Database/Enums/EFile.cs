@@ -2,6 +2,6 @@
 
     public enum EFile {
         Image = 0,
-        Foder = 1,
+        Folder = 1,
     }
 }
