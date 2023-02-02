@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
@@ -19,10 +21,12 @@ namespace Minder.Services.Implements {
     public class UserService : BaseService, IUserService {
         public readonly ICacheManager cacheManager;
         public readonly IEmailService emailService;
+        public readonly IFileService fileService;
 
-        public UserService(IServiceProvider serviceProvider, ICacheManager cacheManager, IEmailService emailService) : base(serviceProvider) {
-            this.cacheManager = cacheManager;
-            this.emailService = emailService;
+        public UserService(IServiceProvider serviceProvider) : base(serviceProvider) {
+            this.cacheManager = serviceProvider.GetRequiredService<ICacheManager>();
+            this.emailService = serviceProvider.GetRequiredService<IEmailService>();
+            this.fileService = serviceProvider.GetRequiredService<IFileService>();
         }
 
         public async Task<UserDto?> Get(string? key) {
@@ -32,7 +36,9 @@ namespace Minder.Services.Implements {
                 .FirstAsync();
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
-            return UserDto.FromEntity(user);
+            var avatar = await this.fileService.Get(user.Id, EItemType.UserAvatar);
+            var coverAvatar = await this.fileService.Get(user.Id, EItemType.UserCover);
+            return UserDto.FromEntity(user, null, avatar, coverAvatar);
         }
 
         public async Task<string> Create(UserDto model) {
@@ -60,6 +66,20 @@ namespace Minder.Services.Implements {
                 RoleId = "6ffa9fa20755486d9e317d447b652bd8"
             };
             await this.Validate(user.RoleId);
+
+            if (model.CoverAvatar?.Data != null && model.CoverAvatar.Data.Any()) {
+                model.CoverAvatar.ItemId = user.Id;
+                model.CoverAvatar.Type = EFile.Image;
+                model.CoverAvatar.ItemType = EItemType.UserCover;
+                await this.fileService.CreateOrUpdate(model.CoverAvatar!);
+            }
+
+            if (model.Avatar?.Data != null && model.Avatar.Data.Any()) {
+                model.Avatar.ItemId = user.Id;
+                model.Avatar.Type = EFile.Image;
+                model.Avatar.ItemType = EItemType.UserAvatar;
+                await this.fileService.CreateOrUpdate(model.Avatar!);
+            }
 
             await this.db.Users.AddAsync(user);
             await this.db.SaveChangesAsync();
@@ -104,6 +124,28 @@ namespace Minder.Services.Implements {
             user.Longitude = model.Longitude;
             user.Latitude = model.Latitude;
             user.Radius = model.Radius;
+
+            if (model.CoverAvatar?.Data != null && model.CoverAvatar.Data.Any()) {
+                model.CoverAvatar.ItemId = user.Id;
+                model.CoverAvatar.Type = EFile.Image;
+                model.CoverAvatar.ItemType = EItemType.UserCover;
+
+                var coverAvatar = await this.db.Files.FirstOrDefaultAsync(o => o.Type == EFile.Image && o.ItemType == EItemType.UserCover && o.ItemId == this.current.UserId);
+                model.CoverAvatar.Id = coverAvatar?.Id;
+
+                await this.fileService.CreateOrUpdate(model.CoverAvatar!);
+            }
+
+            if (model.Avatar?.Data != null && model.Avatar.Data.Any()) {
+                model.Avatar.ItemId = user.Id;
+                model.Avatar.Type = EFile.Image;
+                model.Avatar.ItemType = EItemType.UserAvatar;
+
+                var avatar = await this.db.Files.FirstOrDefaultAsync(o => o.Type == EFile.Image && o.ItemType == EItemType.UserAvatar && o.ItemId == this.current.UserId);
+                model.Avatar.Id = avatar?.Id;
+
+                await this.fileService.CreateOrUpdate(model.Avatar!);
+            }
 
             await this.db.SaveChangesAsync();
         }

@@ -1,4 +1,5 @@
 ﻿using Minder.Database.Enums;
+using Minder.Service.Models.File;
 using Minder.Services.Models.Role;
 using Newtonsoft.Json;
 
@@ -17,8 +18,13 @@ namespace Minder.Services.Models.User {
         public int Age { get; set; }
         public string? Description { get; set; }
 
-        public string GameType { get; set; } = string.Empty;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public FileDto? Avatar { get; set; }
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public FileDto? CoverAvatar { get; set; }
+
+        public string GameType { get; set; } = string.Empty;
         public string GameTime { get; set; } = string.Empty;
         public double Longitude { get; set; }
         public double Latitude { get; set; }
@@ -35,7 +41,7 @@ namespace Minder.Services.Models.User {
 
     public partial class UserDto {
 
-        public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null) {
+        public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null, FileDto? avatar = null, FileDto? coverAvatar = null) {
             if (entity == null) return default;
             entity.Role ??= roleEntity;
 
@@ -46,6 +52,8 @@ namespace Minder.Services.Models.User {
                 Phone = entity.Phone,
                 Age = entity.Age,
                 Description = entity.Description,
+                Avatar = avatar,
+                CoverAvatar = coverAvatar,
                 GameType = entity.GameType,
                 GameTime = entity.GameTime,
                 Longitude = entity.Longitude,

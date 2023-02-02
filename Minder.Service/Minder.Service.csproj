@@ -20,5 +20,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Models\Email\" />
+	  <Folder Include="Models\Image\" />
 	</ItemGroup>
 </Project>

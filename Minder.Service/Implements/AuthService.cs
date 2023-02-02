@@ -109,12 +109,12 @@ namespace Minder.Services.Implements {
 
             if (isExit) return new UserNameValidate() {
                 Status = false,
-                Message = "Tên đăng nhập đã tồn tại."
+                Message = ValidateMessage.IsNotValid
             };
 
             return new UserNameValidate() {
                 Status = true,
-                Message = "Tên đăng nhập hợp lệ.",
+                Message = ValidateMessage.IsValid,
             };
         }
 

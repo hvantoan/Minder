@@ -1,13 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using Minder.Exceptions;
 using Minder.Service.Configurations;
 using Minder.Service.Helpers;
 using Minder.Service.Interfaces;
 using Minder.Services.Common;
-using Minder.Services.Models.User;
-using Minder.Services.Resources;
 using System;
 using System.Net.Mail;
 using System.Threading.Tasks;

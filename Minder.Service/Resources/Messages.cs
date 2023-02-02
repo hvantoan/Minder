@@ -35,6 +35,11 @@
             public static ResponseMessage Team_IsOwner { get; } = new() { Code = 36, Message = "Bạn đã có đội bóng của mình rồi." };
         }
 
+        public static class File {
+            public static ResponseMessage File_NotFound { get; } = new() { Code = 50, Message = "Tệp không không tồn tại." };
+            public static ResponseMessage File_Error { get; } = new() { Code = 51, Message = "Lỗi trong quá trình sử lý." };
+        }
+
         public static class Email {
             public static ResponseMessage User_NameRequired { get; } = new() { Code = 80, Message = "Gửi email thất bại." };
         }
@@ -43,5 +48,10 @@
     public class ResponseMessage {
         public int Code { get; set; }
         public string Message { get; set; } = string.Empty;
+    }
+
+    public static class ValidateMessage {
+        public const string IsValid = "Hợp lệ.";
+        public const string IsNotValid = "Tên đăng nhập đã tồn tại.";
     }
 }
