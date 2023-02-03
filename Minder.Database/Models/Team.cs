@@ -10,18 +10,17 @@ namespace Minder.Database.Models {
         public string Name { get; set; } = null!;
 
         //Game setting
-        public string GameType { get; set; } = string.Empty;
 
-        public string GameTime { get; set; } = string.Empty;
+        public string? GameTypes { get; set; }
+        public string? GameTimes { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
         public double Radius { get; set; }
 
         // Rank
+
         public ERank Rank { get; set; }
-
         public int Point { get; set; }
-
         public DateTimeOffset CreateAt { get; set; }
 
         public virtual ICollection<Member>? Members { get; set; }
@@ -37,6 +36,8 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Id).HasMaxLength(32).IsRequired();
             builder.Property(o => o.Code).IsRequired();
             builder.Property(o => o.Name).IsRequired();
+            builder.Property(o => o.GameTypes).HasMaxLength(255);
+            builder.Property(o => o.GameTimes).HasMaxLength(255);
             builder.Property(o => o.CreateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
             // fk

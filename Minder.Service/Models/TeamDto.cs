@@ -12,18 +12,18 @@ namespace Minder.Service.Models {
         public string Name { get; set; } = string.Empty;
 
         //Game setting
-        public List<EGameType> GameType { get; set; } = new();
 
-        public string GameTime { get; set; } = string.Empty;
+        public List<EGameType>? GameTypes { get; set; }
+
+        public List<EGameTime>? GameTimes { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
         public double Radius { get; set; }
 
         // Rank
+
         public ERank Rank { get; set; }
-
         public int Point { get; set; }
-
         public DateTimeOffset CreateAt { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
@@ -41,8 +41,8 @@ namespace Minder.Service.Models {
                 Id = entity.Id,
                 Code = entity.Code,
                 Name = entity.Name,
-                GameType = JsonConvert.DeserializeObject<List<EGameType>>(entity.GameType) ?? new(),
-                GameTime = entity.GameTime,
+                GameTypes = !string.IsNullOrEmpty(entity.GameTypes) ? JsonConvert.DeserializeObject<List<EGameType>>(entity.GameTypes) : new(),
+                GameTimes = !string.IsNullOrEmpty(entity.GameTimes) ? JsonConvert.DeserializeObject<List<EGameTime>>(entity.GameTimes) : new(),
                 Longitude = entity.Longitude,
                 Latitude = entity.Latitude,
                 Radius = entity.Radius,
