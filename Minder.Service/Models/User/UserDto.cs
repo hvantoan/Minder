@@ -2,6 +2,7 @@
 using Minder.Service.Models.File;
 using Minder.Services.Models.Role;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Minder.Services.Models.User {
 
@@ -24,8 +25,8 @@ namespace Minder.Services.Models.User {
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public FileDto? CoverAvatar { get; set; }
 
-        public string GameType { get; set; } = string.Empty;
-        public string GameTime { get; set; } = string.Empty;
+        public List<EGameType>? GameTypes { get; set; }
+        public List<EGameTime>? GameTimes { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
         public double Radius { get; set; }
@@ -54,8 +55,8 @@ namespace Minder.Services.Models.User {
                 Description = entity.Description,
                 Avatar = avatar,
                 CoverAvatar = coverAvatar,
-                GameType = entity.GameType,
-                GameTime = entity.GameTime,
+                GameTypes = !string.IsNullOrEmpty(entity.GameTypes) ? JsonConvert.DeserializeObject<List<EGameType>>(entity.GameTypes) : new(),
+                GameTimes = !string.IsNullOrEmpty(entity.GameTimes) ? JsonConvert.DeserializeObject<List<EGameTime>>(entity.GameTimes) : new(),
                 Longitude = entity.Longitude,
                 Latitude = entity.Latitude,
                 Radius = entity.Radius,
