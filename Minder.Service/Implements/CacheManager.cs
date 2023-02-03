@@ -19,10 +19,8 @@ namespace Minder.Service.Implements {
         }
 
         public string VerifyOTP(Verify verify) {
-            if (cache.TryGetValue<CacheData>(verify.Username, out var data) && !string.IsNullOrWhiteSpace(verify.Code)) {
-                if (data!.Code == verify.Code) {
-                    cache.Remove(verify.Username);
-                }
+            if (cache.TryGetValue<CacheData>(verify.Username, out var data) && !string.IsNullOrWhiteSpace(verify.Code) && data!.Code == verify.Code) {
+                cache.Remove(verify.Username);
                 return data.Value;
             }
             throw new ManagedException(JsonConvert.SerializeObject(Messages.Auth.Auth_IncorresctOTP));

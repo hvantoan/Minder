@@ -16,7 +16,7 @@ namespace Minder.Services.Interfaces {
 
         Task<LoginResponse> Refresh();
 
-        Task<bool> Verify(Verify verify);
+        Task<VerifyResponse> Verify(Verify verify);
 
         Task<UserNameValidate> CheckUser(string userName);
     }

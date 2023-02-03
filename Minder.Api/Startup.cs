@@ -75,7 +75,8 @@ namespace Minder.Api {
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Scheme = "Bearer",
+                    
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
                     {

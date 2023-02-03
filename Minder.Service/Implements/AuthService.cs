@@ -87,21 +87,30 @@ namespace Minder.Services.Implements {
             await this.emailService.SendOTP(model, model.Username!);
         }
 
-        public async Task ForgotPassword(ForgotPasswordRequest request) => await this.emailService.SendOTP(request, request.Username!);
+        public async Task ForgotPassword(ForgotPasswordRequest request) {
+            var isExited = await this.db.Users.AnyAsync(o => o.Username == request.Username);
+            ManagedException.ThrowIf(!isExited, Messages.User.User_NotFound);
 
-        public async Task<bool> Verify(Verify verify) {
+            await this.emailService.SendOTP(request, request.Username!);
+        }
+
+        public async Task<VerifyResponse> Verify(Verify verify) {
             var response = cacheManager.VerifyOTP(verify);
 
             switch (verify.Type) {
                 case EVerifyType.Register:
                     await userService.Create(JsonConvert.DeserializeObject<UserDto>(response)!);
-                    return true;
+                    return new VerifyResponse();
 
                 case EVerifyType.ForgetPassword:
-                    await userService.ResetPassword(JsonConvert.DeserializeObject<ForgotPasswordRequest>(response)!);
-                    return true;
+                    var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == verify.Username);
+                    var roleClaims = new List<Claim>();
+                    // Todo: Add claim for access to API
+
+                    string token = this.GenerateToken(user!.Id, user.Username, user.Name, roleClaims, DateTime.Now.AddMinutes(5));
+                    return new VerifyResponse() { Token = token };
             }
-            return false;
+            return new VerifyResponse() { Status = false };
         }
 
         public async Task<UserNameValidate> CheckUser(string userName) {
