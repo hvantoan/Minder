@@ -18,6 +18,21 @@ namespace Minder.Service.Implements {
         public TeamService(IServiceProvider serviceProvider) : base(serviceProvider) {
         }
 
+        public async Task<TeamDto?> Get(string teamId) {
+            var team = await this.db.Teams.FirstOrDefaultAsync(o => o.Id == teamId);
+            ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
+
+            return TeamDto.FromEntity(team);
+        }
+
+        public async Task<string> CreateOrUpdate(TeamDto model) {
+            if (string.IsNullOrEmpty(model.Id)) {
+                return await this.Create(model);
+            } else {
+                return await this.Update(model);
+            }
+        }
+
         private async Task<string> Create(TeamDto model) {
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - Start", model);
 
@@ -40,8 +55,8 @@ namespace Minder.Service.Implements {
                 Id = Guid.NewGuid().ToStringN(),
                 Code = model.Code,
                 Name = model.Name,
-                GameType = JsonConvert.SerializeObject(model.GameType),
-                GameTime = model.GameTime,
+                GameTypes = JsonConvert.SerializeObject(model.GameTypes),
+                GameTimes = JsonConvert.SerializeObject(model.GameTimes),
                 Longitude = model.Longitude,
                 Latitude = model.Latitude,
                 Radius = model.Radius,
@@ -64,14 +79,6 @@ namespace Minder.Service.Implements {
             return team.Id;
         }
 
-        public async Task<string> CreateOrUpdate(TeamDto model) {
-            if (model.Id == null) {
-                return await this.Create(model);
-            } else {
-                return await this.Update(model);
-            }
-        }
-
         public async Task<string> Update(TeamDto model) {
             this.logger.Information($"{nameof(Team)} - {nameof(Update)} - Start", model);
 
@@ -92,8 +99,8 @@ namespace Minder.Service.Implements {
 
             team.Code = model.Code;
             team.Name = model.Name;
-            team.GameType = JsonConvert.SerializeObject(model.GameType);
-            team.GameTime = model.GameTime;
+            team.GameTypes = JsonConvert.SerializeObject(model.GameTypes);
+            team.GameTimes = JsonConvert.SerializeObject(model.GameTimes);
             team.Latitude = model.Latitude;
             team.Longitude = model.Longitude;
             team.Radius = model.Radius;
@@ -114,11 +121,14 @@ namespace Minder.Service.Implements {
             return team.Id;
         }
 
-        public async Task Delete(string id) {
-            this.logger.Information($"{nameof(Team)} - {nameof(Delete)} - Start", id);
+        public async Task Delete(string teamId) {
+            this.logger.Information($"{nameof(Team)} - {nameof(Delete)} - Start", teamId);
 
-            var team = await this.db.Teams.Include(o => o.Members).FirstOrDefaultAsync(o => o.Id == id);
-            ManagedException.ThrowIf(team != null, Messages.Team.Team_NotFound);
+            var isOwner = await this.db.Members.AnyAsync(o => o.UserId == this.current.UserId && o.Regency == ERegency.Owner && o.TeamId == teamId);
+            ManagedException.ThrowIf(!isOwner, Messages.Team.Team_NotFound);
+
+            var team = await this.db.Teams.Include(o => o.Members).FirstOrDefaultAsync(o => o.Id == teamId);
+            ManagedException.ThrowIf(team == null, Messages.Team.Team_NoPermistion);
 
             this.db.Teams.Remove(team!);
             await this.db.SaveChangesAsync();

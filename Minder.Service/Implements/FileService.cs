@@ -47,7 +47,6 @@ namespace Minder.Service.Implements {
                 ItemId = itemId,
                 ItemType = itemType,
                 Name = model.Name,
-                UploadBy = this.current.UserId,
                 UploadDate = DateTimeOffset.Now,
             };
             entity.Path = await this.UploadFile(entity, model.Data);
@@ -63,7 +62,6 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(entity == null, Messages.File.File_Error);
 
             entity.Name = model.Name;
-            entity.UploadBy = this.current.UserId;
             entity.UploadDate = DateTimeOffset.Now;
 
             await FtpHelper.DeleteFile(entity.Path, this.configuration);
