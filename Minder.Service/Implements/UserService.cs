@@ -97,11 +97,11 @@ namespace Minder.Services.Implements {
             await this.db.SaveChangesAsync();
         }
 
-        public async Task ResetPassword(ForgotPasswordRequest request) {
-            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == request.Username);
+        public async Task ResetPassword(string password) {
+            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
-            user.Password = PasswordHashser.Hash(request.Password);
+            user.Password = PasswordHashser.Hash(password);
             await this.db.SaveChangesAsync();
         }
 

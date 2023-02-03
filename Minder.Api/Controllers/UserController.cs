@@ -46,5 +46,15 @@ namespace Minder.Api.Controllers {
                 return BaseResponse.Fail(ex.Message);
             }
         }
+
+        [HttpPost, Route("reset-password")]
+        public async Task<BaseResponse> ResetPassword([FromQuery] string password) {
+            try {
+                await userService.ResetPassword(password);
+                return BaseResponse.Ok();
+            } catch (Exception ex) {
+                return BaseResponse.Fail(ex.Message);
+            }
+        }
     }
 }

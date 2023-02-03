@@ -25,15 +25,5 @@ namespace Minder.Api.Controllers {
                 return BaseResponse.Fail(ex.Message);
             }
         }
-
-        [HttpPost, Route("download/{Id}")]
-        public async Task<IActionResult> DownloadTemplate([FromQuery] string Id) {
-            try {
-                var result = await this.fileService.DownLoad(Id);
-                return File(result.ByteArray, "application/octet-stream", result.FileName);
-            } catch (Exception ex) {
-                return BadRequest(ex.Message);
-            }
-        }
     }
 }
