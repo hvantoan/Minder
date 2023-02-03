@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Minder.Database;
 
@@ -10,9 +11,11 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    partial class MinderContextModelSnapshot : ModelSnapshot
+    [Migration("20230203080410_Update-Game-Seting-User")]
+    partial class UpdateGameSetingUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -368,11 +371,11 @@ namespace Minder.Database.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GameTimes")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("GameTimes")
+                        .HasColumnType("int");
 
-                    b.Property<string>("GameTypes")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("GameTypes")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
@@ -435,6 +438,8 @@ namespace Minder.Database.Migrations
                         {
                             Id = "92dcba9b0bdd4f32a6170a1322472ead",
                             Age = 0,
+                            GameTimes = 0,
+                            GameTypes = 0,
                             IsAdmin = true,
                             IsDelete = false,
                             Latitude = 0.0,

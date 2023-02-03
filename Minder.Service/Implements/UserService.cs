@@ -12,6 +12,7 @@ using Minder.Services.Hashers;
 using Minder.Services.Interfaces;
 using Minder.Services.Models.User;
 using Minder.Services.Resources;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,8 +56,8 @@ namespace Minder.Services.Implements {
                 Phone = model.Phone,
                 Age = model.Age,
                 Sex = model.Sex,
-                GameType = model.GameType,
-                GameTime = model.GameTime,
+                GameTypes = JsonConvert.SerializeObject(model.GameTypes),
+                GameTimes = JsonConvert.SerializeObject(model.GameTimes),
                 Longitude = model.Longitude,
                 Latitude = model.Latitude,
                 Radius = model.Radius,
@@ -119,8 +120,8 @@ namespace Minder.Services.Implements {
             user.Sex = model.Sex;
             user.Description = model.Description;
 
-            user.GameType = model.GameType;
-            user.GameTime = model.GameTime;
+            user.GameTypes = JsonConvert.SerializeObject(model.GameTypes);
+            user.GameTimes = JsonConvert.SerializeObject(model.GameTimes);
             user.Longitude = model.Longitude;
             user.Latitude = model.Latitude;
             user.Radius = model.Radius;

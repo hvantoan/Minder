@@ -16,18 +16,17 @@ namespace Minder.Database.Models {
         public string? Description { get; set; }
 
         // Game setting
-        public string GameType { get; set; } = string.Empty;
 
-        public string GameTime { get; set; } = string.Empty;
+        public string? GameTypes { get; set; }
+        public string? GameTimes { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
         public double Radius { get; set; }
 
         //Xếp hạng
+
         public ERank Rank { get; set; }
-
         public int Point { get; set; }
-
         public bool IsAdmin { get; set; }
         public bool IsDelete { get; set; }
         public virtual Role? Role { get; set; }

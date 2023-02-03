@@ -105,7 +105,6 @@ namespace Minder.Services.Implements {
                 case EVerifyType.ForgetPassword:
                     var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == verify.Username);
                     var roleClaims = new List<Claim>();
-                    // Todo: Add claim for access to API
 
                     string token = this.GenerateToken(user!.Id, user.Username, user.Name, roleClaims, DateTime.Now.AddMinutes(5));
                     return new VerifyResponse() { Token = token };
