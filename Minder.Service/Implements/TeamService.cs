@@ -23,7 +23,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListTeamRes> List(BaseListReq req) {
-            var teamIds = await this.db.Members.AsNoTracking().Where(o => o.UserId == this.current.UserId).Select(o => o.TeamId).Distinct().ToListAsync();
+            var teamIds = await this.db.Members.AsNoTracking().Where(o => o.UserId == this.current.UserId).Select(o => o.TeamId).ToListAsync();
             var query = this.db.Teams.AsNoTracking().Where(o => teamIds.Contains(o.Id));
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
@@ -33,7 +33,7 @@ namespace Minder.Service.Implements {
 
             return new ListTeamRes() {
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = await query.Skip(req.PageIndex * req.PageSize).Skip(req.PageIndex).Select(o => TeamDto.FromEntity(o)).ToListAsync()
+                Items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => TeamDto.FromEntity(o)).ToListAsync()
             };
         }
 

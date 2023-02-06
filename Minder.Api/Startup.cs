@@ -76,7 +76,6 @@ namespace Minder.Api {
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer",
-                    
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
                     {
@@ -118,6 +117,7 @@ namespace Minder.Api {
                     .AddScoped<ICacheManager, CacheManager>()
                     .AddScoped<ITeamService, TeamService>()
                     .AddScoped<IFileService, FileService>()
+                    .AddScoped<IAppInfoService, AppInfoService>()
                     .AddSingleton<IDictionary<string, UserRoom>>(new Dictionary<string, UserRoom>());
         }
 
