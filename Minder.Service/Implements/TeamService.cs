@@ -3,12 +3,16 @@ using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
+using Minder.Service.Extensions;
 using Minder.Service.Interfaces;
-using Minder.Service.Models;
+using Minder.Service.Models.Team;
 using Minder.Services.Common;
+using Minder.Services.Extensions;
+using Minder.Services.Models;
 using Minder.Services.Resources;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Implements {
@@ -16,6 +20,21 @@ namespace Minder.Service.Implements {
     public class TeamService : BaseService, ITeamService {
 
         public TeamService(IServiceProvider serviceProvider) : base(serviceProvider) {
+        }
+
+        public async Task<ListTeamRes> List(BaseListReq req) {
+            var teamIds = await this.db.Members.AsNoTracking().Where(o => o.UserId == this.current.UserId).Select(o => o.TeamId).Distinct().ToListAsync();
+            var query = this.db.Teams.AsNoTracking().Where(o => teamIds.Contains(o.Id));
+
+            if (!string.IsNullOrEmpty(req.SearchText)) {
+                req.SearchText = req.SearchText.ReplaceSpace(isUnsignedUnicode: true);
+                query = query.Where(o => o.Name.Contains(req.SearchText) || o.Name.GetSumary().Contains(req.SearchText) || o.Code.ToLower().Contains(req.SearchText));
+            }
+
+            return new ListTeamRes() {
+                Count = await query.CountIf(req.IsCount, o => o.Id),
+                Items = await query.Skip(req.PageIndex * req.PageSize).Skip(req.PageIndex).Select(o => TeamDto.FromEntity(o)).ToListAsync()
+            };
         }
 
         public async Task<TeamDto?> Get(string teamId) {

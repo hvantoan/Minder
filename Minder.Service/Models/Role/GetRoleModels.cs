@@ -1,5 +1,5 @@
 ﻿namespace Minder.Services.Models.Role {
 
-    public class GetRoleRequest : BaseGetRequest {
+    public class GetRoleRequest : BaseGetReq {
     }
 }

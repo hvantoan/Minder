@@ -2,6 +2,6 @@
 
 namespace Minder.Services.Models.Role {
 
-    public class ListPermissionData : BaseListData<PermissionDto> {
+    public class ListPermissionData : BaseListRes<PermissionDto> {
     }
 }

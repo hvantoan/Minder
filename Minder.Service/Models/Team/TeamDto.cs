@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Minder.Service.Models {
+namespace Minder.Service.Models.Team {
 
     public partial class TeamDto {
         public string Id { get; set; } = string.Empty;

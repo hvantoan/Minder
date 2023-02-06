@@ -17,12 +17,12 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpPost, Route("save")]
-        public async Task<BaseResponse> Save(FileDto model) {
+        public async Task<BaseRes> Save(FileDto model) {
             try {
                 await this.fileService.CreateOrUpdate(model);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
     }

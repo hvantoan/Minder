@@ -1,8 +1,8 @@
 ﻿namespace Minder.Services.Models.Role {
 
-    public class ListRoleRequest : BaseListRequest {
+    public class ListRoleRequest : BaseListReq {
     }
 
-    public class ListRoleData : BaseListData<RoleDto> {
+    public class ListRoleData : BaseListRes<RoleDto> {
     }
 }

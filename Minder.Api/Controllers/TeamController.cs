@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Minder.Database.Models;
 using Minder.Service.Interfaces;
-using Minder.Service.Models;
+using Minder.Service.Models.Team;
 using Minder.Services.Models;
 using System;
 using System.Threading.Tasks;
@@ -18,32 +18,42 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpGet, Route("get/{teamId}")]
-        public async Task<BaseResponse> Get(string teamId) {
+        public async Task<BaseRes> Get(string teamId) {
             try {
                 var data = await teamService.Get(teamId);
-                return BaseResponse<TeamDto?>.Ok(data);
+                return BaseRes<TeamDto?>.Ok(data);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("list")]
+        public async Task<BaseRes> List(ListTeamReq req) {
+            try {
+                var data = await teamService.List(req);
+                return BaseRes<ListTeamRes>.Ok(data);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("save")]
-        public async Task<BaseResponse> Save(TeamDto model) {
+        public async Task<BaseRes> Save(TeamDto model) {
             try {
                 var data = await teamService.CreateOrUpdate(model);
-                return BaseSaveData<Team>.Ok(data);
+                return BaseSaveRes<Team>.Ok(data);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpGet, Route("delete/{teamId}")]
-        public async Task<BaseResponse> Delete(string teamId) {
+        public async Task<BaseRes> Delete(string teamId) {
             try {
                 await teamService.Delete(teamId);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
     }

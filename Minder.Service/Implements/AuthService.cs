@@ -87,7 +87,7 @@ namespace Minder.Services.Implements {
             await this.emailService.SendOTP(model, model.Username!);
         }
 
-        public async Task ForgotPassword(ForgotPasswordRequest request) {
+        public async Task ForgotPassword(ForgotPasswordReq request) {
             var isExited = await this.db.Users.AnyAsync(o => o.Username == request.Username);
             ManagedException.ThrowIf(!isExited, Messages.User.User_NotFound);
 

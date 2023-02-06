@@ -12,7 +12,7 @@ namespace Minder.Services.Interfaces {
 
         Task Register(UserDto model);
 
-        Task ForgotPassword(ForgotPasswordRequest request);
+        Task ForgotPassword(ForgotPasswordReq request);
 
         Task<LoginResponse> Refresh();
 

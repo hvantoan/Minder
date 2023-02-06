@@ -18,42 +18,42 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpGet, Route("get")]
-        public async Task<BaseResponse> Get([FromQuery] string? key) {
+        public async Task<BaseRes> Get([FromQuery] string? key) {
             try {
                 var data = await userService.Get(key);
-                return BaseResponse<UserDto>.Ok(data!);
+                return BaseRes<UserDto>.Ok(data!);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("save")]
-        public async Task<BaseResponse> Save(UserDto model) {
+        public async Task<BaseRes> Save(UserDto model) {
             try {
                 await userService.UpdateMe(model);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("change-password")]
-        public async Task<BaseResponse> ChangePassword(ChangePasswordRequest request) {
+        public async Task<BaseRes> ChangePassword(ChangePasswordReq request) {
             try {
                 await userService.ChangePassword(request);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("reset-password")]
-        public async Task<BaseResponse> ResetPassword([FromQuery] string password) {
+        public async Task<BaseRes> ResetPassword([FromQuery] string password) {
             try {
                 await userService.ResetPassword(password);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
     }

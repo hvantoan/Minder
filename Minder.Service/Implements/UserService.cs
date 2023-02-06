@@ -89,7 +89,7 @@ namespace Minder.Services.Implements {
             return user.Id;
         }
 
-        public async Task ChangePassword(ChangePasswordRequest request) {
+        public async Task ChangePassword(ChangePasswordReq request) {
             var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
             ManagedException.ThrowIf(!PasswordHashser.Verify(request.OldPassword, user.Password), Messages.User.User_IncorrentOldPassword);
