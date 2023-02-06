@@ -44,6 +44,10 @@
         public static class Email {
             public static ResponseMessage User_NameRequired { get; } = new() { Code = 80, Message = "Gửi email thất bại." };
         }
+
+        public static class System {
+            public static ResponseMessage System_Error { get; } = new() { Code = 90, Message = "Lỗi hệ thống." };
+        }
     }
 
     public class ResponseMessage {

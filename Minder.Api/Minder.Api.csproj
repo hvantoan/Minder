@@ -8,6 +8,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="Resources\AppInfo.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Resources\AppInfo.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Coravel" Version="4.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.11" />
