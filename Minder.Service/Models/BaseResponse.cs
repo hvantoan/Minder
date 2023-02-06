@@ -6,15 +6,15 @@ using System.Text.Json.Serialization;
 
 namespace Minder.Services.Models {
 
-    public class BaseResponse {
+    public class BaseRes {
         public Response Response { get; set; } = new();
 
-        public static BaseResponse Ok() {
+        public static BaseRes Ok() {
             return new();
         }
 
-        public static BaseResponse Fail(string model) {
-            return new BaseResponse() {
+        public static BaseRes Fail(string model) {
+            return new BaseRes() {
                 Response = Response.Fail(model)
             };
         }
@@ -46,17 +46,17 @@ namespace Minder.Services.Models {
         }
     }
 
-    public class BaseResponse<T> : BaseResponse {
+    public class BaseRes<T> : BaseRes {
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public T? Data { get; set; }
 
-        public static BaseResponse<T> Ok(T data) {
+        public static BaseRes<T> Ok(T data) {
             return new() { Data = data };
         }
     }
 
-    public class BaseSaveData<T> : BaseResponse {
+    public class BaseSaveRes<T> : BaseRes {
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Item Data { get; set; } = new();
@@ -67,7 +67,7 @@ namespace Minder.Services.Models {
             public string Id { get; set; } = string.Empty;
         }
 
-        public static BaseSaveData<T> Ok(string id) {
+        public static BaseSaveRes<T> Ok(string id) {
             return new() {
                 Data = new Item() {
                     Id = id
@@ -76,12 +76,10 @@ namespace Minder.Services.Models {
         }
     }
 
-    public class BaseListData<T> {
+    public class BaseListRes<T> {
         public List<T?> Items { get; set; } = new();
         public int Count { get; set; }
     }
-
-    public class BaseSaveResponse : BaseResponse<string> { }
 
     public class FileResult {
         public string FileName { get; set; } = string.Empty;

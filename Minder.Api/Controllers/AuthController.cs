@@ -20,62 +20,62 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpPost, Route("login")]
-        public async Task<BaseResponse> Login(LoginRequest request) {
+        public async Task<BaseRes> Login(LoginRequest request) {
             try {
                 var response = await this.authService.WebLogin(request);
-                return BaseResponse<LoginResponse>.Ok(response);
+                return BaseRes<LoginResponse>.Ok(response);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("register")]
-        public async Task<BaseResponse> Register(UserDto model) {
+        public async Task<BaseRes> Register(UserDto model) {
             try {
                 await authService.Register(model);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("forgot-password")]
-        public async Task<BaseResponse> ForgotPassword(ForgotPasswordRequest model) {
+        public async Task<BaseRes> ForgotPassword(ForgotPasswordReq model) {
             try {
                 await authService.ForgotPassword(model);
-                return BaseResponse.Ok();
+                return BaseRes.Ok();
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpGet, Route("login/refresh")]
-        public async Task<BaseResponse> Refresh() {
+        public async Task<BaseRes> Refresh() {
             try {
                 var response = await this.authService.Refresh();
-                return BaseResponse<LoginResponse>.Ok(response);
+                return BaseRes<LoginResponse>.Ok(response);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpPost, Route("verify")]
-        public async Task<BaseResponse> Verify(Verify verify) {
+        public async Task<BaseRes> Verify(Verify verify) {
             try {
                 var response = await authService.Verify(verify);
-                return BaseResponse<VerifyResponse>.Ok(response);
+                return BaseRes<VerifyResponse>.Ok(response);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
 
         [HttpGet, Route("user/check")]
-        public async Task<BaseResponse> Check([FromQuery] string userName) {
+        public async Task<BaseRes> Check([FromQuery] string userName) {
             try {
                 var response = await authService.CheckUser(userName);
-                return BaseResponse<UserNameValidate>.Ok(response);
+                return BaseRes<UserNameValidate>.Ok(response);
             } catch (Exception ex) {
-                return BaseResponse.Fail(ex.Message);
+                return BaseRes.Fail(ex.Message);
             }
         }
     }

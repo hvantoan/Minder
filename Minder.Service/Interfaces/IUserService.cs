@@ -14,7 +14,7 @@ namespace Minder.Services.Interfaces {
 
         Task Delete();
 
-        Task ChangePassword(ChangePasswordRequest request);
+        Task ChangePassword(ChangePasswordReq request);
 
         Task ResetPassword(string password);
     }
