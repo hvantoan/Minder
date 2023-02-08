@@ -32,7 +32,7 @@ namespace Minder.Database.Models {
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
         public virtual ICollection<Member>? Members { get; set; }
-        public virtual ICollection<Invited>? Inviteds { get; set; }
+        public virtual ICollection<Invitation>? Inviteds { get; set; }
     }
 
     public class UserConfig : IEntityTypeConfiguration<User> {

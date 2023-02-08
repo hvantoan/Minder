@@ -11,7 +11,7 @@ namespace Minder.Database {
         public virtual DbSet<User> Users => Set<User>();
         public virtual DbSet<Team> Teams => Set<Team>();
         public virtual DbSet<Member> Members => Set<Member>();
-        public virtual DbSet<Invited> Inviteds => Set<Invited>();
+        public virtual DbSet<Invitation> Invites => Set<Invitation>();
         public virtual DbSet<Models.File> Files => Set<Models.File>();
 
         public MinderContext() {

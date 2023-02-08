@@ -4,22 +4,22 @@ using Minder.Database.Enums;
 
 namespace Minder.Database.Models {
 
-    public class Invited {
+    public class Invitation {
         public string Id { get; set; } = null!;
         public string UserId { get; set; } = null!;
         public string TeamId { get; set; } = null!;
         public string? Description { get; set; }
-        public EInviteType Type { get; set; }
+        public EInvitationType Type { get; set; }
         public DateTimeOffset CreateAt { get; set; }
 
         public virtual User? User { get; set; }
         public virtual Team? Team { get; set; }
     }
 
-    public class InvitedConfig : IEntityTypeConfiguration<Invited> {
+    public class InvitedConfig : IEntityTypeConfiguration<Invitation> {
 
-        public void Configure(EntityTypeBuilder<Invited> builder) {
-            builder.ToTable(nameof(Invited));
+        public void Configure(EntityTypeBuilder<Invitation> builder) {
+            builder.ToTable(nameof(Invitation));
 
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).HasMaxLength(32).IsRequired();

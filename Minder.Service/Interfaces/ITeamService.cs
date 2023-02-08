@@ -10,9 +10,14 @@ namespace Minder.Service.Interfaces {
 
         Task<ListTeamRes> List(BaseListReq req);
 
-
         Task<string> CreateOrUpdate(TeamDto model);
 
         Task Delete(string teamId);
+
+        Task Invite(InviteDto model);
+
+        Task<ListInviteRes> ListInvite(ListInviteReq req);
+
+        Task ConfirmInvite(ConfirmInviteReq req);
     }
 }
