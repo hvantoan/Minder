@@ -1,3 +1,4 @@
+using Coravel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +15,7 @@ using Minder.Database;
 using Minder.Service.Hubs;
 using Minder.Service.Implements;
 using Minder.Service.Interfaces;
+using Minder.Service.Jobs;
 using Minder.Service.Models;
 using Minder.Service.Models.Chat;
 using Minder.Services.Common;
@@ -24,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
 using System.Text;
+using TuanVu.Services.Common;
 
 namespace Minder.Api {
 
@@ -119,6 +122,9 @@ namespace Minder.Api {
                     .AddScoped<IFileService, FileService>()
                     .AddScoped<IAppInfoService, AppInfoService>()
                     .AddSingleton<IDictionary<string, UserRoom>>(new Dictionary<string, UserRoom>());
+
+            services.AddScheduler();
+            services.AddScoped<ExpireInvitation>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
@@ -139,6 +145,10 @@ namespace Minder.Api {
                 endpoints.MapHub<ChatService>("/chat");
             });
             AutoMigrate(app);
+
+            app.ApplicationServices.UseScheduler(scheduler => {
+                scheduler.Schedule<ExpireInvitation>().DailyAt(0, 0).RunOnceAtStart();
+            }).OnError(ex => Logger.System().Error("Scheduler ERROR", ex));
         }
 
         private static void AutoMigrate(IApplicationBuilder app) {
