@@ -3,6 +3,7 @@ using Minder.Database.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Minder.Service.Models.Team {
 
@@ -27,10 +28,10 @@ namespace Minder.Service.Models.Team {
         public DateTimeOffset CreateAt { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public virtual ICollection<Member>? Members { get; set; }
+        public List<MemberDto>? Members { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public virtual ICollection<Invited>? Inviteds { get; set; }
+        public virtual ICollection<Invitation>? Inviteds { get; set; }
     }
 
     public partial class TeamDto {
@@ -48,6 +49,7 @@ namespace Minder.Service.Models.Team {
                 Radius = entity.Radius,
                 Rank = entity.Rank,
                 Point = entity.Point,
+                Members = entity.Members?.Select(o => MemberDto.FromEntity(o)!).ToList() ?? new(),
                 CreateAt = entity.CreateAt,
             };
         }

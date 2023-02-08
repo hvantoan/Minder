@@ -41,6 +41,11 @@
             public static ResponseMessage File_Error { get; } = new() { Code = 51, Message = "Lỗi trong quá trình sử lý." };
         }
 
+        public static class Invite {
+            public static ResponseMessage Invite_IsExited { get; } = new() { Code = 60, Message = "Đã gửi lời mời cho người dùng này." };
+            public static ResponseMessage Invite_NotFound { get; } = new() { Code = 61, Message = "Lời mời không tồn tại." };
+        }
+
         public static class Email {
             public static ResponseMessage User_NameRequired { get; } = new() { Code = 80, Message = "Gửi email thất bại." };
         }

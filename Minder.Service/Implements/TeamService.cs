@@ -38,7 +38,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<TeamDto?> Get(string teamId) {
-            var team = await this.db.Teams.FirstOrDefaultAsync(o => o.Id == teamId);
+            var team = await this.db.Teams.Include(o => o.Members).FirstOrDefaultAsync(o => o.Id == teamId);
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
 
             return TeamDto.FromEntity(team);
@@ -150,6 +150,58 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NoPermistion);
 
             this.db.Teams.Remove(team!);
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task Invite(InviteDto model) {
+            var invitation = await this.db.Invites.AnyAsync(o => o.TeamId == model.TeamId && o.UserId == model.UserId);
+            ManagedException.ThrowIf(invitation, Messages.Invite.Invite_IsExited);
+
+            var invite = new Invitation() {
+                Id = Guid.NewGuid().ToStringN(),
+                Description = model.Description,
+                TeamId = model.TeamId,
+                UserId = model.UserId,
+                Type = model.Type,
+                CreateAt = DateTimeOffset.Now,
+            };
+
+            await this.db.Invites.AddAsync(invite);
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task<ListInviteRes> ListInvite(ListInviteReq req) {
+            var query = this.db.Invites
+                    .WhereIf(string.IsNullOrEmpty(req.TeamId), o => o.Type == EInvitationType.Invite && o.UserId == this.current.UserId)
+                    .WhereIf(!string.IsNullOrEmpty(req.TeamId), o => o.Type == EInvitationType.Invited && o.TeamId == req.TeamId);
+
+            if (!string.IsNullOrWhiteSpace(req.SearchText)) {
+                req.SearchText = req.SearchText.ReplaceSpace(true);
+                query = query.Where(o => o.User!.Name.ReplaceSpace(true).Contains(req.SearchText));
+            }
+
+            return new() {
+                Count = await query.CountIf(req.IsCount, o => o.Id),
+                Items = await query.OrderBy(o => o.CreateAt).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => InviteDto.FromEntity(o)).ToListAsync(),
+            };
+        }
+
+        public async Task ConfirmInvite(ConfirmInviteReq req) {
+            var invite = await this.db.Invites.FirstOrDefaultAsync(o => o.UserId == this.current.UserId && o.Id == req.Id);
+            ManagedException.ThrowIf(invite == null, Messages.Invite.Invite_NotFound);
+
+            if (req.IsJoin) {
+                var member = new Member() {
+                    Id = Guid.NewGuid().ToStringN(),
+                    Regency = ERegency.Member,
+                    TeamId = invite.TeamId,
+                    UserId = this.current.UserId,
+                };
+
+                await this.db.Members.AddAsync(member);
+            }
+
+            this.db.Invites.Remove(invite);
             await this.db.SaveChangesAsync();
         }
     }

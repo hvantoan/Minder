@@ -24,7 +24,7 @@ namespace Minder.Database.Models {
         public DateTimeOffset CreateAt { get; set; }
 
         public virtual ICollection<Member>? Members { get; set; }
-        public virtual ICollection<Invited>? Inviteds { get; set; }
+        public virtual ICollection<Invitation>? Inviteds { get; set; }
     }
 
     public class TeamConfig : IEntityTypeConfiguration<Team> {
