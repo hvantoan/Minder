@@ -6,15 +6,6 @@
 		<UserSecretsId>894a7db0-fe75-4c89-9f8e-27d23b2e68b6</UserSecretsId>
 		<DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <Content Remove="Resources\AppInfo.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="Resources\AppInfo.json" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Coravel" Version="4.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.11" />
@@ -33,7 +24,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Minder.Service\Minder.Service.csproj" />
+		<ProjectReference Include="..\Minder.Service\Minder.Service.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="Resources\AppInfo.json">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Resources\OTPTemplate.html">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 

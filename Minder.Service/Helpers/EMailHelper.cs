@@ -7,8 +7,8 @@ namespace Minder.Service.Helpers {
     public static class EMailHelper {
 
         public static string GetOTPBody(string OTP) {
-            if (!Directory.Exists("Template")) Directory.CreateDirectory("Template");
-            string filename = $"Template/OTPTemplate.html";
+            if (!Directory.Exists("Resources")) Directory.CreateDirectory("Resources");
+            string filename = $"Resources/OTPTemplate.html";
             string body = File.ReadAllText(filename);
             body = body.Replace("#OTP#", OTP);
             return body;
