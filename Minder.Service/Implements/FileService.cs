@@ -33,9 +33,7 @@ namespace Minder.Service.Implements {
             if (string.IsNullOrWhiteSpace(model.Id)) {
                 model.Id = Guid.NewGuid().ToStringN();
                 await Create(model.Type, model.ItemType, model.ItemId, model);
-                return;
-            }
-            await this.Update(model, null);
+            } else await this.Update(model, null);
 
             if (isSave) await this.db.SaveChangesAsync();
         }
