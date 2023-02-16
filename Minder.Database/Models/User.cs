@@ -19,8 +19,8 @@ namespace Minder.Database.Models {
 
         public string? GameTypes { get; set; }
         public string? GameTimes { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
+        public decimal Longitude { get; set; }
+        public decimal Latitude { get; set; }
         public double Radius { get; set; }
 
         //Xếp hạng
@@ -31,6 +31,7 @@ namespace Minder.Database.Models {
         public bool IsDelete { get; set; }
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
+        public virtual ICollection<Stadium>? Stadiums { get; set; }
         public virtual ICollection<Member>? Members { get; set; }
         public virtual ICollection<Invitation>? Inviteds { get; set; }
     }
@@ -49,10 +50,14 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Password).IsRequired();
             builder.Property(o => o.Phone).IsRequired();
 
+            builder.Property(o => o.Longitude).HasColumnType("decimal(18,15)");
+            builder.Property(o => o.Latitude).HasColumnType("decimal(18,15)");
+
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);
             builder.HasMany(o => o.Members).WithOne(o => o.User).HasForeignKey(o => o.UserId);
             builder.HasMany(o => o.Inviteds).WithOne(o => o.User).HasForeignKey(o => o.UserId);
+            builder.HasMany(o => o.Stadiums).WithOne(o => o.User).HasForeignKey(o => o.UserId);
 
             builder.HasData(new User() {
                 Id = "92dcba9b0bdd4f32a6170a1322472ead",

@@ -8,7 +8,7 @@
             public static ResponseMessage Auth_Inactive { get; } = new() { Code = 2, Message = "Người dùng không hoạt động." };
             public static ResponseMessage Auth_IncorrectPassword { get; } = new() { Code = 3, Message = "Sai mật khẩu." };
             public static ResponseMessage Auth_NoPermission { get; } = new() { Code = 4, Message = "Bạn không có quyền đăng nhập vào hệ thống. Vui lòng liên hệ quản trị viên để được hổ trợ." };
-            public static ResponseMessage Auth_IncorresctOTP { get; } = new() { Code = 4, Message = "Mã xác nhận không chính xác." };
+            public static ResponseMessage Auth_IncorresctOTP { get; } = new() { Code = 5, Message = "Mã xác nhận không chính xác." };
         }
 
         public static class User {
@@ -44,6 +44,13 @@
         public static class Invite {
             public static ResponseMessage Invite_IsExited { get; } = new() { Code = 60, Message = "Đã gửi lời mời cho người dùng này." };
             public static ResponseMessage Invite_NotFound { get; } = new() { Code = 61, Message = "Lời mời không tồn tại." };
+        }
+
+        public static class Stadium {
+            public static ResponseMessage Stadium_NotFound { get; } = new() { Code = 70, Message = "Sân bóng này không tồn tại." };
+            public static ResponseMessage Stadium_CodeRequired { get; } = new() { Code = 71, Message = "Mã sân bóng có từ  2 - 4 ký tự và không được để trống." };
+            public static ResponseMessage Stadium_NameRequired { get; } = new() { Code = 72, Message = "Tên sân bóng không được để trống." };
+            public static ResponseMessage Stadium_CodeExited { get; } = new() { Code = 72, Message = "Mã sân đã tồn tại." };
         }
 
         public static class Email {

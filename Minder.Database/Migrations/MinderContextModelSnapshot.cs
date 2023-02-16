@@ -309,6 +309,70 @@ namespace Minder.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.Stadium", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Commune")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<long>("CreateAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("District")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("Province")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Id", "Code");
+
+                    b.ToTable("Stadium", (string)null);
+                });
+
             modelBuilder.Entity("Minder.Database.Models.Team", b =>
                 {
                     b.Property<string>("Id")
@@ -330,11 +394,11 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
 
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -378,11 +442,11 @@ namespace Minder.Database.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
 
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -435,8 +499,8 @@ namespace Minder.Database.Migrations
                             Age = 0,
                             IsAdmin = true,
                             IsDelete = false,
-                            Latitude = 0.0,
-                            Longitude = 0.0,
+                            Latitude = 0m,
+                            Longitude = 0m,
                             Name = "Hồ Văn Toàn",
                             Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
                             Phone = "0336516906",
@@ -515,6 +579,17 @@ namespace Minder.Database.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.Stadium", b =>
+                {
+                    b.HasOne("Minder.Database.Models.User", "User")
+                        .WithMany("Stadiums")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Minder.Database.Models.User", b =>
                 {
                     b.HasOne("Minder.Database.Models.Role", "Role")
@@ -554,6 +629,8 @@ namespace Minder.Database.Migrations
                     b.Navigation("Inviteds");
 
                     b.Navigation("Members");
+
+                    b.Navigation("Stadiums");
                 });
 #pragma warning restore 612, 618
         }

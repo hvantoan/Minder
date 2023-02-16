@@ -27,8 +27,8 @@ namespace Minder.Services.Models.User {
 
         public List<EGameType>? GameTypes { get; set; }
         public List<EGameTime>? GameTimes { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
+        public decimal Longitude { get; set; }
+        public decimal Latitude { get; set; }
         public double Radius { get; set; }
 
         public ERank Rank { get; set; }

@@ -40,6 +40,9 @@ namespace Minder.Database.Models {
             builder.Property(o => o.GameTimes).HasMaxLength(255);
             builder.Property(o => o.CreateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
+            builder.Property(o => o.Longitude).HasColumnType("decimal(18,15)");
+            builder.Property(o => o.Latitude).HasColumnType("decimal(18,15)");
+
             // fk
             builder.HasMany(o => o.Members).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
             builder.HasMany(o => o.Inviteds).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);

@@ -22,6 +22,7 @@ using Minder.Services.Common;
 using Minder.Services.Helpers;
 using Minder.Services.Implements;
 using Minder.Services.Interfaces;
+using Minder.Services.Resources;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
@@ -114,6 +115,7 @@ namespace Minder.Api {
             services.AddHttpContextAccessor();
             services.AddSignalR(options => options.EnableDetailedErrors = true);
 
+            services.AddSingleton<AdministrativeUnitResource>();
             services.AddScoped<IUserService, UserService>()
                     .AddScoped<IAuthService, AuthService>()
                     .AddScoped<IEmailService, EmailService>()
@@ -121,6 +123,7 @@ namespace Minder.Api {
                     .AddScoped<ITeamService, TeamService>()
                     .AddScoped<IFileService, FileService>()
                     .AddScoped<IAppInfoService, AppInfoService>()
+                    .AddScoped<IStadiumService, StadiumService>()
                     .AddSingleton<IDictionary<string, UserRoom>>(new Dictionary<string, UserRoom>());
 
             services.AddScheduler();

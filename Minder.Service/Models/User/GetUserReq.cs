@@ -2,5 +2,5 @@
 
 namespace Minder.Service.Models.User {
 
-    public class GetUserReq : BaseGetReq { }
+    public class GetUserReq : BaseReq { }
 }
