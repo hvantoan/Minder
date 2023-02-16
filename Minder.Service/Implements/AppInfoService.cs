@@ -15,18 +15,33 @@ namespace Minder.Service.Implements {
         public AppInfoService(IServiceProvider serviceProvider) : base(serviceProvider) {
         }
 
-        public async Task<AppInfo> Get() {
+        public async Task<AppVer> GetVer() {
             ManagedException.ThrowIf(!Directory.Exists("Resources"), Messages.System.System_Error);
             string filename = $"Resources/AppInfo.json";
             string body = System.IO.File.ReadAllText(filename);
 
-            return await Task.FromResult(JsonConvert.DeserializeObject<AppInfo>(body) ?? new());
+            return await Task.FromResult(JsonConvert.DeserializeObject<AppVer>(body) ?? new());
         }
 
-        public async Task Set(string ver) {
+        public async Task<AppAbout> GetAbout() {
             ManagedException.ThrowIf(!Directory.Exists("Resources"), Messages.System.System_Error);
             string filename = $"Resources/AppInfo.json";
-            await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(new AppInfo() { Ver = ver }));
+            string body = System.IO.File.ReadAllText(filename);
+
+            return await Task.FromResult(JsonConvert.DeserializeObject<AppAbout>(body) ?? new());
+        }
+
+        public async Task Set(string? ver, string? aboutUs, string? hotline) {
+            ManagedException.ThrowIf(!Directory.Exists("Resources"), Messages.System.System_Error);
+            string filename = $"Resources/AppInfo.json";
+            string body = System.IO.File.ReadAllText(filename);
+            var info = JsonConvert.DeserializeObject<AppInfo>(body) ?? new();
+
+            if (!string.IsNullOrEmpty(ver)) info.Ver = ver;
+            if (!string.IsNullOrEmpty(aboutUs)) info.AboutUs = aboutUs;
+            if (!string.IsNullOrEmpty(hotline)) info.Hotline = hotline;
+
+            await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(info));
         }
     }
 }

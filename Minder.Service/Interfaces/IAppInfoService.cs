@@ -5,8 +5,10 @@ namespace Minder.Service.Interfaces {
 
     public interface IAppInfoService {
 
-        Task<AppInfo> Get();
+        Task<AppVer> GetVer();
 
-        Task Set(string ver);
+        Task<AppAbout> GetAbout();
+
+        Task Set(string? ver, string? aboutUs, string? hotline);
     }
 }
