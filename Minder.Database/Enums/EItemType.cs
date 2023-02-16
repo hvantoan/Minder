@@ -5,5 +5,6 @@
         UserCover = 1,
         TeamAvata = 2,
         TeamCover = 3,
+        StadiumAvatar = 4,
     }
 }

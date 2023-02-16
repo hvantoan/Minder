@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Minder.Api.Controllers {
 
-    [ApiController, AllowAnonymous, Route("api/app-info")]
+    [ApiController, Route("api/app-info")]
     public class AppInfoController : ControllerBase {
         private readonly IAppInfoService appInfoService;
 
@@ -26,7 +26,7 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpGet, Route("set")]
+        [HttpGet, Authorize, Route("set")]
         public async Task<BaseRes> Set(string ver) {
             try {
                 await this.appInfoService.Set(ver);

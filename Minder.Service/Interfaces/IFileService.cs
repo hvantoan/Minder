@@ -10,7 +10,7 @@ namespace Minder.Service.Interfaces {
 
         Task<FileDto?> Get(string id, EItemType itemType, EFile type = EFile.Image);
 
-        Task CreateOrUpdate(FileDto model);
+        Task CreateOrUpdate(FileDto model, bool isSave = true);
 
         Task Delete(string id, File? entity);
 

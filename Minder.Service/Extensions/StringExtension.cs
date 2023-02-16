@@ -46,7 +46,24 @@ namespace Minder.Service.Extensions {
                 } else isGet = false;
             }
 
-            return res.ToString().ToLower();
+            return res.ToString().ToUpper();
+        }
+
+        public static string ToUpperFirstChar(this string text) {
+            var textArr = text.ToArray();
+            var res = new StringBuilder();
+
+            var isUpper = false;
+            foreach (var character in textArr) {
+                var key = character;
+                if (isUpper) key = char.ToUpper(character);
+
+                if (character == ' ') {
+                    isUpper = true;
+                } else isUpper = false;
+                res.Append(key);
+            }
+            return res.ToString();
         }
     }
 }

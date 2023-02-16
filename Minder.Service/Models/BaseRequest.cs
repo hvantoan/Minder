@@ -1,6 +1,6 @@
 ﻿namespace Minder.Services.Models {
 
-    public class BaseGetReq {
+    public class BaseReq {
         public string Id { get; set; } = string.Empty;
     }
 
@@ -9,5 +9,10 @@
         public int PageSize { get; set; } = 10;
         public bool IsCount { get; set; } = false;
         public string? SearchText { get; set; }
+    }
+
+    public class BaseFileReq {
+        public string FileName { get; set; } = string.Empty;
+        public byte[]? Data { get; set; }
     }
 }
