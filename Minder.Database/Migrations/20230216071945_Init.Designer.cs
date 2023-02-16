@@ -11,8 +11,8 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    [Migration("20230203080410_Update-Game-Seting-User")]
-    partial class UpdateGameSetingUser
+    [Migration("20230216071945_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,24 +53,22 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("int");
 
-                    b.Property<string>("UploadBy")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
                     b.Property<long>("UploadDate")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(32)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Type");
 
-                    b.HasIndex("UploadBy");
+                    b.HasIndex("UserId");
 
                     b.ToTable("File", (string)null);
                 });
 
-            modelBuilder.Entity("Minder.Database.Models.Invited", b =>
+            modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(32)
@@ -101,7 +99,7 @@ namespace Minder.Database.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Invited", (string)null);
+                    b.ToTable("Invitation", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Member", b =>
@@ -314,6 +312,70 @@ namespace Minder.Database.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.Stadium", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Commune")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<long>("CreateAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("District")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<bool>("IsDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Province")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Id", "Code");
+
+                    b.ToTable("Stadium", (string)null);
+                });
+
             modelBuilder.Entity("Minder.Database.Models.Team", b =>
                 {
                     b.Property<string>("Id")
@@ -327,19 +389,19 @@ namespace Minder.Database.Migrations
                     b.Property<long>("CreateAt")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("GameTime")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("GameTimes")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("GameType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("GameTypes")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
 
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -371,11 +433,11 @@ namespace Minder.Database.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GameTimes")
-                        .HasColumnType("int");
+                    b.Property<string>("GameTimes")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GameTypes")
-                        .HasColumnType("int");
+                    b.Property<string>("GameTypes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
@@ -383,11 +445,11 @@ namespace Minder.Database.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
 
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -438,12 +500,10 @@ namespace Minder.Database.Migrations
                         {
                             Id = "92dcba9b0bdd4f32a6170a1322472ead",
                             Age = 0,
-                            GameTimes = 0,
-                            GameTypes = 0,
                             IsAdmin = true,
                             IsDelete = false,
-                            Latitude = 0.0,
-                            Longitude = 0.0,
+                            Latitude = 0m,
+                            Longitude = 0m,
                             Name = "Hồ Văn Toàn",
                             Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
                             Phone = "0336516906",
@@ -459,15 +519,13 @@ namespace Minder.Database.Migrations
             modelBuilder.Entity("Minder.Database.Models.File", b =>
                 {
                     b.HasOne("Minder.Database.Models.User", "User")
-                        .WithMany("Files")
-                        .HasForeignKey("UploadBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Minder.Database.Models.Invited", b =>
+            modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
                 {
                     b.HasOne("Minder.Database.Models.Team", "Team")
                         .WithMany("Inviteds")
@@ -524,6 +582,17 @@ namespace Minder.Database.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.Stadium", b =>
+                {
+                    b.HasOne("Minder.Database.Models.User", "User")
+                        .WithMany("Stadiums")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Minder.Database.Models.User", b =>
                 {
                     b.HasOne("Minder.Database.Models.Role", "Role")
@@ -560,11 +629,11 @@ namespace Minder.Database.Migrations
 
             modelBuilder.Entity("Minder.Database.Models.User", b =>
                 {
-                    b.Navigation("Files");
-
                     b.Navigation("Inviteds");
 
                     b.Navigation("Members");
+
+                    b.Navigation("Stadiums");
                 });
 #pragma warning restore 612, 618
         }

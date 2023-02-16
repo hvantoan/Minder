@@ -26,7 +26,7 @@ namespace Minder.Service.Implements {
             return FileDto.FromEntity(file, this.current.Url);
         }
 
-        public async Task CreateOrUpdate(FileDto model) {
+        public async Task CreateOrUpdate(FileDto model, bool isSave = true) {
             if (model.Data == null || model.Data.Length == 0)
                 return;
 
@@ -36,6 +36,8 @@ namespace Minder.Service.Implements {
                 return;
             }
             await this.Update(model, null);
+
+            if (isSave) await this.db.SaveChangesAsync();
         }
 
         private async Task Create(EFile type, EItemType itemType, string itemId, FileDto model) {
@@ -53,7 +55,6 @@ namespace Minder.Service.Implements {
             await this.db.AddAsync(entity);
 
             this.logger.Information($"{nameof(FileService)} - {nameof(Create)} - End", model);
-            await this.db.SaveChangesAsync();
         }
 
         private async Task Update(FileDto model, File? entity) {
@@ -69,7 +70,6 @@ namespace Minder.Service.Implements {
 
             this.db.Files.Update(entity);
             this.logger.Information($"{nameof(FileService)} - {nameof(Update)} - End", model);
-            await this.db.SaveChangesAsync();
         }
 
         public async Task Delete(string id, File? entity) {
@@ -94,6 +94,7 @@ namespace Minder.Service.Implements {
                 EItemType.UserCover => "user-cover",
                 EItemType.TeamAvata => "team-avatar",
                 EItemType.TeamCover => "team-cover",
+                EItemType.StadiumAvatar => "stadium-avatar",
                 _ => "other",
             };
             string extentions = System.IO.Path.GetExtension(file.Name);

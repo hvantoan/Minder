@@ -50,10 +50,10 @@ namespace Minder.Database.Migrations
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GameType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GameTime = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    GameTypes = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    GameTimes = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
                     Radius = table.Column<double>(type: "float", nullable: false),
                     Rank = table.Column<int>(type: "int", nullable: false),
                     Point = table.Column<int>(type: "int", nullable: false),
@@ -102,10 +102,10 @@ namespace Minder.Database.Migrations
                     Sex = table.Column<int>(type: "int", nullable: false),
                     Age = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GameType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    GameTime = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    GameTypes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GameTimes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
                     Radius = table.Column<double>(type: "float", nullable: false),
                     Rank = table.Column<int>(type: "int", nullable: false),
                     Point = table.Column<int>(type: "int", nullable: false),
@@ -134,25 +134,25 @@ namespace Minder.Database.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     Type = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    ItemId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    ItemType = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    ItemId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Path = table.Column<string>(type: "nvarchar(max)", maxLength: 8000, nullable: false),
-                    UploadBy = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    UploadDate = table.Column<long>(type: "bigint", nullable: false)
+                    Path = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: false),
+                    UploadDate = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(32)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_File", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_File_User_UploadBy",
-                        column: x => x.UploadBy,
+                        name: "FK_File_User_UserId",
+                        column: x => x.UserId,
                         principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Invited",
+                name: "Invitation",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
@@ -164,15 +164,15 @@ namespace Minder.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Invited", x => x.Id);
+                    table.PrimaryKey("PK_Invitation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Invited_Team_TeamId",
+                        name: "FK_Invitation_Team_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Team",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Invited_User_UserId",
+                        name: "FK_Invitation_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -199,6 +199,35 @@ namespace Minder.Database.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Member_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Stadium",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(32)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
+                    Province = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: true),
+                    District = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: true),
+                    Commune = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    CreateAt = table.Column<long>(type: "bigint", nullable: false),
+                    IsDelete = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Stadium", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Stadium_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -239,8 +268,8 @@ namespace Minder.Database.Migrations
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "Age", "Description", "GameTime", "GameType", "IsAdmin", "IsDelete", "Latitude", "Longitude", "Name", "Password", "Phone", "Point", "Radius", "Rank", "RoleId", "Sex", "TeamId", "Username" },
-                values: new object[] { "92dcba9b0bdd4f32a6170a1322472ead", 0, null, "", "", true, false, 0.0, 0.0, "Hồ Văn Toàn", "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==", "0336516906", 0, 0.0, 0, "469b14225a79448c93e4e780aa08f0cc", 0, null, "admin" });
+                columns: new[] { "Id", "Age", "Description", "GameTimes", "GameTypes", "IsAdmin", "IsDelete", "Latitude", "Longitude", "Name", "Password", "Phone", "Point", "Radius", "Rank", "RoleId", "Sex", "TeamId", "Username" },
+                values: new object[] { "92dcba9b0bdd4f32a6170a1322472ead", 0, null, null, null, true, false, 0m, 0m, "Hồ Văn Toàn", "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==", "0336516906", 0, 0.0, 0, "469b14225a79448c93e4e780aa08f0cc", 0, null, "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_File_Type",
@@ -248,18 +277,18 @@ namespace Minder.Database.Migrations
                 column: "Type");
 
             migrationBuilder.CreateIndex(
-                name: "IX_File_UploadBy",
+                name: "IX_File_UserId",
                 table: "File",
-                column: "UploadBy");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invited_TeamId",
-                table: "Invited",
+                name: "IX_Invitation_TeamId",
+                table: "Invitation",
                 column: "TeamId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invited_UserId",
-                table: "Invited",
+                name: "IX_Invitation_UserId",
+                table: "Invitation",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -276,6 +305,21 @@ namespace Minder.Database.Migrations
                 name: "IX_RolePermission_PermissionId",
                 table: "RolePermission",
                 column: "PermissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Stadium_Id",
+                table: "Stadium",
+                column: "Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Stadium_Id_Code",
+                table: "Stadium",
+                columns: new[] { "Id", "Code" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Stadium_UserId",
+                table: "Stadium",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_RoleId",
@@ -295,7 +339,7 @@ namespace Minder.Database.Migrations
                 name: "File");
 
             migrationBuilder.DropTable(
-                name: "Invited");
+                name: "Invitation");
 
             migrationBuilder.DropTable(
                 name: "Member");
@@ -304,10 +348,13 @@ namespace Minder.Database.Migrations
                 name: "RolePermission");
 
             migrationBuilder.DropTable(
-                name: "User");
+                name: "Stadium");
 
             migrationBuilder.DropTable(
                 name: "Permission");
+
+            migrationBuilder.DropTable(
+                name: "User");
 
             migrationBuilder.DropTable(
                 name: "Role");
