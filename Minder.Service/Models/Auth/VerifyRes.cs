@@ -2,7 +2,7 @@
 
 namespace Minder.Service.Models.Auth {
 
-    public class VerifyResponse {
+    public class VerifyRes {
         public bool Status { get; set; } = true;
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]

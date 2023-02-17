@@ -8,15 +8,15 @@ namespace Minder.Services.Interfaces {
 
     public interface IAuthService {
 
-        Task<LoginResponse> WebLogin(LoginRequest request);
+        Task<LoginRes> WebLogin(LoginReq request);
 
         Task Register(UserDto model);
 
         Task ForgotPassword(ForgotPasswordReq request);
 
-        Task<LoginResponse> Refresh();
+        Task<LoginRes> Refresh();
 
-        Task<VerifyResponse> Verify(Verify verify);
+        Task<VerifyRes> Verify(VerifyUserReq request);
 
         Task<UserNameValidate> CheckUser(string userName);
     }

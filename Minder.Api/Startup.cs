@@ -112,6 +112,13 @@ namespace Minder.Api {
             services.AddResponseCompression(options => options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                   new[] { MediaTypeNames.Application.Octet }));
 
+            services.AddStackExchangeRedisCache(options => {
+                options.Configuration = Configuration.GetSection("RedisCacheSettings:ConnectionString").Value;
+                options.InstanceName = Configuration.GetSection("RedisCacheSettings:InstanceName").Value;
+            });
+
+
+
             services.AddHttpContextAccessor();
             services.AddSignalR(options => options.EnableDetailedErrors = true);
 

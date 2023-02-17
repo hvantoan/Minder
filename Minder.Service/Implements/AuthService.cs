@@ -37,7 +37,7 @@ namespace Minder.Services.Implements {
             this.cacheManager = serviceProvider.GetRequiredService<ICacheManager>();
         }
 
-        public async Task<LoginResponse> WebLogin(LoginRequest request) {
+        public async Task<LoginRes> WebLogin(LoginReq request) {
             var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim() && !o.IsDelete);
 
             ManagedException.ThrowIf(user == null, Messages.Auth.Auth_NotFound);
@@ -62,7 +62,7 @@ namespace Minder.Services.Implements {
             };
         }
 
-        public async Task<LoginResponse> Refresh() {
+        public async Task<LoginRes> Refresh() {
             var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
             ManagedException.ThrowIf(user == null, Messages.Auth.Auth_NotFound);
 
@@ -91,25 +91,27 @@ namespace Minder.Services.Implements {
             var isExited = await this.db.Users.AnyAsync(o => o.Username == request.Username);
             ManagedException.ThrowIf(!isExited, Messages.User.User_NotFound);
 
-            await this.emailService.SendOTP(request, request.Username!);
+            await this.emailService.SendOTP(request, request.Username, type: EVerifyType.ForgetPassword);
         }
 
-        public async Task<VerifyResponse> Verify(Verify verify) {
-            var response = cacheManager.VerifyOTP(verify);
+        public async Task<VerifyRes> Verify(VerifyUserReq request) {
+            var (dataRes, type) = cacheManager.VerifyOTP(request.Code);
 
-            switch (verify.Type) {
+            switch (type) {
                 case EVerifyType.Register:
-                    await userService.Create(JsonConvert.DeserializeObject<UserDto>(response)!);
-                    return new VerifyResponse();
+                    await userService.Create(JsonConvert.DeserializeObject<UserDto>(dataRes)!);
+                    return new VerifyRes();
 
                 case EVerifyType.ForgetPassword:
-                    var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == verify.Username);
+                    var userName = JsonConvert.DeserializeObject<ForgotPasswordReq>(dataRes)?.Username;
+                    ManagedException.ThrowIf(string.IsNullOrWhiteSpace(userName), Messages.System.System_Error);
+                    var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userName);
                     var roleClaims = new List<Claim>();
 
                     string token = this.GenerateToken(user!.Id, user.Username, user.Name, roleClaims, DateTime.Now.AddMinutes(5));
-                    return new VerifyResponse() { Token = token };
+                    return new VerifyRes() { Token = token };
             }
-            return new VerifyResponse() { Status = false };
+            return new VerifyRes() { Status = false };
         }
 
         public async Task<UserNameValidate> CheckUser(string userName) {
