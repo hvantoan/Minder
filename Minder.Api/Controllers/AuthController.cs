@@ -4,7 +4,6 @@ using Minder.Service.Models.Auth;
 using Minder.Service.Models.User;
 using Minder.Services.Interfaces;
 using Minder.Services.Models;
-using Minder.Services.Models.Auth;
 using Minder.Services.Models.User;
 using System;
 using System.Threading.Tasks;
@@ -20,10 +19,10 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpPost, Route("login")]
-        public async Task<BaseRes> Login(LoginRequest request) {
+        public async Task<BaseRes> Login(LoginReq request) {
             try {
                 var response = await this.authService.WebLogin(request);
-                return BaseRes<LoginResponse>.Ok(response);
+                return BaseRes<LoginRes>.Ok(response);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }
@@ -53,17 +52,17 @@ namespace Minder.Api.Controllers {
         public async Task<BaseRes> Refresh() {
             try {
                 var response = await this.authService.Refresh();
-                return BaseRes<LoginResponse>.Ok(response);
+                return BaseRes<LoginRes>.Ok(response);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }
         }
 
-        [HttpPost, Route("verify")]
-        public async Task<BaseRes> Verify(Verify verify) {
+        [HttpGet, Route("verify")]
+        public async Task<BaseRes> Verify(string otp) {
             try {
-                var response = await authService.Verify(verify);
-                return BaseRes<VerifyResponse>.Ok(response);
+                var response = await authService.Verify(new VerifyUserReq() { Code = otp });
+                return BaseRes<VerifyRes>.Ok(response);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }
