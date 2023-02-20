@@ -56,13 +56,16 @@ namespace Minder.Services.Implements {
                 Phone = model.Phone,
                 Age = model.Age,
                 Sex = model.Sex,
-                GameTypes = JsonConvert.SerializeObject(model.GameTypes),
-                GameTimes = JsonConvert.SerializeObject(model.GameTimes),
-                Longitude = model.Longitude,
-                Latitude = model.Latitude,
-                Radius = model.Radius,
-                Rank = model.Rank,
-                Point = model.Point,
+                GameSetting = new GameSetting() {
+                    Id = Guid.NewGuid().ToStringN(),
+                    GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
+                    GameTimes = JsonConvert.SerializeObject(model.GameSetting.GameTimes),
+                    Longitude = model.GameSetting.Longitude,
+                    Latitude = model.GameSetting.Latitude,
+                    Radius = model.GameSetting.Radius,
+                    Rank = model.GameSetting.Rank,
+                    Point = model.GameSetting.Point,
+                },
                 IsAdmin = false,
                 RoleId = "6ffa9fa20755486d9e317d447b652bd8"
             };
@@ -110,7 +113,7 @@ namespace Minder.Services.Implements {
             this.logger.Information($"{nameof(UserService)} - {nameof(UpdateMe)} - Start", model);
 
             await ValidateInfo(model);
-            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
+            var user = await this.db.Users.Include(o => o.GameSetting).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
             user.Name = model.Name;
@@ -120,11 +123,22 @@ namespace Minder.Services.Implements {
             user.Sex = model.Sex;
             user.Description = model.Description;
 
-            user.GameTypes = JsonConvert.SerializeObject(model.GameTypes);
-            user.GameTimes = JsonConvert.SerializeObject(model.GameTimes);
-            user.Longitude = model.Longitude;
-            user.Latitude = model.Latitude;
-            user.Radius = model.Radius;
+            if (user.GameSetting != null) {
+                user.GameSetting.GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes);
+                user.GameSetting.GameTimes = JsonConvert.SerializeObject(model.GameSetting.GameTimes);
+                user.GameSetting.Longitude = model.GameSetting.Longitude;
+                user.GameSetting.Latitude = model.GameSetting.Latitude;
+                user.GameSetting.Radius = model.GameSetting.Radius;
+            } else {
+                user.GameSetting = new GameSetting() {
+                    Id = Guid.NewGuid().ToStringN(),
+                    GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
+                    GameTimes = JsonConvert.SerializeObject(model.GameSetting.GameTimes),
+                    Longitude = model.GameSetting.Longitude,
+                    Latitude = model.GameSetting.Latitude,
+                    Radius = model.GameSetting.Radius,
+                };
+            }
 
             if (model.CoverAvatar?.Data != null && model.CoverAvatar.Data.Any()) {
                 model.CoverAvatar.ItemId = user.Id;

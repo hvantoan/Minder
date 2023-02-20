@@ -13,6 +13,37 @@ namespace Minder.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Conversation",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ChannelId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    CreateAt = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Conversation", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "File",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Type = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    ItemType = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    ItemId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Path = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: false),
+                    UploadDate = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_File", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Permission",
                 columns: table => new
                 {
@@ -102,13 +133,6 @@ namespace Minder.Database.Migrations
                     Sex = table.Column<int>(type: "int", nullable: false),
                     Age = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GameTypes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GameTimes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
-                    Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
-                    Radius = table.Column<double>(type: "float", nullable: false),
-                    Rank = table.Column<int>(type: "int", nullable: false),
-                    Point = table.Column<int>(type: "int", nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false),
                     TeamId = table.Column<string>(type: "nvarchar(32)", nullable: true)
@@ -129,26 +153,28 @@ namespace Minder.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "File",
+                name: "GameSetting",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    Type = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    ItemType = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    ItemId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Path = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: false),
-                    UploadDate = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(32)", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    GameTypes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GameTimes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
+                    Radius = table.Column<double>(type: "float", nullable: false),
+                    Rank = table.Column<int>(type: "int", nullable: false),
+                    Point = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_File", x => x.Id);
+                    table.PrimaryKey("PK_GameSetting", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_File_User_UserId",
+                        name: "FK_GameSetting_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -206,6 +232,60 @@ namespace Minder.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Message",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    ConversationId = table.Column<string>(type: "nvarchar(32)", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(32)", nullable: false),
+                    MessageType = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreateAt = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Message", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Message_Conversation_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversation",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Message_User_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Participant",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    ConversationId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    JoinAt = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Participant", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Participant_Conversation_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversation",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Participant_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Stadium",
                 columns: table => new
                 {
@@ -213,7 +293,7 @@ namespace Minder.Database.Migrations
                     UserId = table.Column<string>(type: "nvarchar(32)", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
                     Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
                     Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
                     Province = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: true),
@@ -268,8 +348,8 @@ namespace Minder.Database.Migrations
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "Age", "Description", "GameTimes", "GameTypes", "IsAdmin", "IsDelete", "Latitude", "Longitude", "Name", "Password", "Phone", "Point", "Radius", "Rank", "RoleId", "Sex", "TeamId", "Username" },
-                values: new object[] { "92dcba9b0bdd4f32a6170a1322472ead", 0, null, null, null, true, false, 0m, 0m, "Hồ Văn Toàn", "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==", "0336516906", 0, 0.0, 0, "469b14225a79448c93e4e780aa08f0cc", 0, null, "admin" });
+                columns: new[] { "Id", "Age", "Description", "IsAdmin", "IsDelete", "Name", "Password", "Phone", "RoleId", "Sex", "TeamId", "Username" },
+                values: new object[] { "92dcba9b0bdd4f32a6170a1322472ead", 0, null, true, false, "Hồ Văn Toàn", "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==", "0336516906", "469b14225a79448c93e4e780aa08f0cc", 0, null, "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_File_Type",
@@ -277,9 +357,10 @@ namespace Minder.Database.Migrations
                 column: "Type");
 
             migrationBuilder.CreateIndex(
-                name: "IX_File_UserId",
-                table: "File",
-                column: "UserId");
+                name: "IX_GameSetting_UserId",
+                table: "GameSetting",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invitation_TeamId",
@@ -299,6 +380,26 @@ namespace Minder.Database.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Member_UserId",
                 table: "Member",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Message_ConversationId",
+                table: "Message",
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Message_SenderId",
+                table: "Message",
+                column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Participant_ConversationId",
+                table: "Participant",
+                column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Participant_UserId",
+                table: "Participant",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -339,16 +440,28 @@ namespace Minder.Database.Migrations
                 name: "File");
 
             migrationBuilder.DropTable(
+                name: "GameSetting");
+
+            migrationBuilder.DropTable(
                 name: "Invitation");
 
             migrationBuilder.DropTable(
                 name: "Member");
 
             migrationBuilder.DropTable(
+                name: "Message");
+
+            migrationBuilder.DropTable(
+                name: "Participant");
+
+            migrationBuilder.DropTable(
                 name: "RolePermission");
 
             migrationBuilder.DropTable(
                 name: "Stadium");
+
+            migrationBuilder.DropTable(
+                name: "Conversation");
 
             migrationBuilder.DropTable(
                 name: "Permission");
