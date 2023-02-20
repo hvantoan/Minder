@@ -21,6 +21,30 @@ namespace Minder.Database.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Minder.Database.Models.Conversation", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ChannelId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<long>("CreateAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Conversation", (string)null);
+                });
+
             modelBuilder.Entity("Minder.Database.Models.File", b =>
                 {
                     b.Property<string>("Id")
@@ -53,16 +77,51 @@ namespace Minder.Database.Migrations
                     b.Property<long>("UploadDate")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(32)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Type");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("File", (string)null);
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.GameSetting", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("GameTimes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GameTypes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(18,15)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(18,15)");
+
+                    b.Property<int>("Point")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Radius")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("GameSetting", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
@@ -125,6 +184,67 @@ namespace Minder.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Member", (string)null);
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.Message", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConversationId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<long>("CreateAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("MessageType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Message", (string)null);
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.Participant", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ConversationId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<long>("JoinAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Participant", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Permission", b =>
@@ -430,23 +550,11 @@ namespace Minder.Database.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GameTimes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GameTypes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
-
-                    b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(18,15)");
-
-                    b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(18,15)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -460,15 +568,6 @@ namespace Minder.Database.Migrations
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Point")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Radius")
-                        .HasColumnType("float");
-
-                    b.Property<int>("Rank")
-                        .HasColumnType("int");
 
                     b.Property<string>("RoleId")
                         .HasMaxLength(32)
@@ -499,25 +598,22 @@ namespace Minder.Database.Migrations
                             Age = 0,
                             IsAdmin = true,
                             IsDelete = false,
-                            Latitude = 0m,
-                            Longitude = 0m,
                             Name = "Hồ Văn Toàn",
                             Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
                             Phone = "0336516906",
-                            Point = 0,
-                            Radius = 0.0,
-                            Rank = 0,
                             RoleId = "469b14225a79448c93e4e780aa08f0cc",
                             Sex = 0,
                             Username = "admin"
                         });
                 });
 
-            modelBuilder.Entity("Minder.Database.Models.File", b =>
+            modelBuilder.Entity("Minder.Database.Models.GameSetting", b =>
                 {
                     b.HasOne("Minder.Database.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithOne("GameSetting")
+                        .HasForeignKey("Minder.Database.Models.GameSetting", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -556,6 +652,44 @@ namespace Minder.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Team");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.Message", b =>
+                {
+                    b.HasOne("Minder.Database.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Minder.Database.Models.User", "User")
+                        .WithMany("Messages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.Participant", b =>
+                {
+                    b.HasOne("Minder.Database.Models.Conversation", "Conversation")
+                        .WithMany("Participants")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Minder.Database.Models.User", "User")
+                        .WithMany("Participants")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
 
                     b.Navigation("User");
                 });
@@ -605,6 +739,13 @@ namespace Minder.Database.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("Participants");
+                });
+
             modelBuilder.Entity("Minder.Database.Models.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
@@ -626,9 +767,15 @@ namespace Minder.Database.Migrations
 
             modelBuilder.Entity("Minder.Database.Models.User", b =>
                 {
+                    b.Navigation("GameSetting");
+
                     b.Navigation("Inviteds");
 
                     b.Navigation("Members");
+
+                    b.Navigation("Messages");
+
+                    b.Navigation("Participants");
 
                     b.Navigation("Stadiums");
                 });

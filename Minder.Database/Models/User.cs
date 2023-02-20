@@ -15,25 +15,18 @@ namespace Minder.Database.Models {
         public int Age { get; set; }
         public string? Description { get; set; }
 
-        // Game setting
+        //Rank
 
-        public string? GameTypes { get; set; }
-        public string? GameTimes { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Latitude { get; set; }
-        public double Radius { get; set; }
-
-        //Xếp hạng
-
-        public ERank Rank { get; set; }
-        public int Point { get; set; }
         public bool IsAdmin { get; set; }
         public bool IsDelete { get; set; }
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
+        public virtual GameSetting? GameSetting { get; set; }
         public virtual ICollection<Stadium>? Stadiums { get; set; }
         public virtual ICollection<Member>? Members { get; set; }
         public virtual ICollection<Invitation>? Inviteds { get; set; }
+        public virtual ICollection<Message>? Messages { get; set; }
+        public virtual ICollection<Participant>? Participants { get; set; }
     }
 
     public class UserConfig : IEntityTypeConfiguration<User> {
@@ -50,14 +43,13 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Password).IsRequired();
             builder.Property(o => o.Phone).IsRequired();
 
-            builder.Property(o => o.Longitude).HasColumnType("decimal(18,15)");
-            builder.Property(o => o.Latitude).HasColumnType("decimal(18,15)");
-
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);
             builder.HasMany(o => o.Members).WithOne(o => o.User).HasForeignKey(o => o.UserId);
             builder.HasMany(o => o.Inviteds).WithOne(o => o.User).HasForeignKey(o => o.UserId);
             builder.HasMany(o => o.Stadiums).WithOne(o => o.User).HasForeignKey(o => o.UserId);
+            builder.HasMany(o => o.Messages).WithOne(o => o.User).HasForeignKey(o => o.SenderId);
+            builder.HasMany(o => o.Participants).WithOne(o => o.User).HasForeignKey(o => o.UserId);
 
             builder.HasData(new User() {
                 Id = "92dcba9b0bdd4f32a6170a1322472ead",

@@ -12,7 +12,6 @@ namespace Minder.Database.Models {
         public string Name { get; set; } = null!;
         public string Path { get; set; } = null!;
         public DateTimeOffset UploadDate { get; set; } = DateTimeOffset.Now;
-        public virtual User? User { get; set; }
     }
 
     public class FileConfig : IEntityTypeConfiguration<File> {
