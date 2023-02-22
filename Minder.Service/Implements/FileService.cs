@@ -26,38 +26,29 @@ namespace Minder.Service.Implements {
             return FileDto.FromEntity(file, this.current.Url);
         }
 
-        public async Task CreateOrUpdate(FileDto model, bool isSave = true) {
+        public async Task Create(FileDto model) {
             if (model.Data == null || model.Data.Length == 0)
                 return;
-
-            if (string.IsNullOrWhiteSpace(model.Id)) {
-                model.Id = Guid.NewGuid().ToStringN();
-                await Create(model.Type, model.ItemType, model.ItemId, model);
-            } else await this.Update(model, null);
-
-            if (isSave) await this.db.SaveChangesAsync();
-        }
-
-        private async Task Create(EFile type, EItemType itemType, string itemId, FileDto model) {
             this.logger.Information($"{nameof(FileService)} - {nameof(Create)} - Start", model);
 
             File entity = new() {
-                Id = model.Id ?? Guid.NewGuid().ToStringN(),
-                Type = type,
-                ItemId = itemId,
-                ItemType = itemType,
+                Id = Guid.NewGuid().ToStringN(),
+                Type = model.Type,
+                ItemId = model.ItemId,
+                ItemType = model.ItemType,
                 Name = model.Name,
                 UploadDate = DateTimeOffset.Now,
             };
+
             entity.Path = await this.UploadFile(entity, model.Data);
             await this.db.AddAsync(entity);
-
+            await this.db.SaveChangesAsync();
             this.logger.Information($"{nameof(FileService)} - {nameof(Create)} - End", model);
         }
 
-        private async Task Update(FileDto model, File? entity) {
+        public async Task Update(FileDto model) {
             this.logger.Information($"{nameof(FileService)} - {nameof(Update)} - Start", model);
-            entity ??= await this.db.Files.FirstOrDefaultAsync(o => o.Id == model.Id);
+            var entity = await this.db.Files.FirstOrDefaultAsync(o => o.Id == model.Id);
             ManagedException.ThrowIf(entity == null, Messages.File.File_Error);
 
             entity.Name = model.Name;

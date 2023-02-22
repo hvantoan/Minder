@@ -18,15 +18,13 @@ namespace Minder.Services.Models.User {
         public ESex Sex { get; set; } = ESex.Unknown;
         public int Age { get; set; }
         public string? Description { get; set; }
-        public GameSettingDto GameSetting { get; set; } = new();
-
-        public bool IsAdmin { get; set; }
+        public GameSettingDto? GameSetting { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public FileDto? Avatar { get; set; }
+        public string? Avatar { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public FileDto? CoverAvatar { get; set; }
+        public string? Cover { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public RoleDto? Role { get; set; }
@@ -34,7 +32,7 @@ namespace Minder.Services.Models.User {
 
     public partial class UserDto {
 
-        public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null, FileDto? avatar = null, FileDto? coverAvatar = null) {
+        public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null, FileDto? avatar = null, FileDto? cover = null) {
             if (entity == null) return default;
             entity.Role ??= roleEntity;
 
@@ -44,11 +42,12 @@ namespace Minder.Services.Models.User {
                 Name = entity.Name,
                 Phone = entity.Phone,
                 Age = entity.Age,
+                Sex = entity.Sex,
                 Description = entity.Description,
-                Avatar = avatar,
-                CoverAvatar = coverAvatar,
-                IsAdmin = entity.IsAdmin,
+                Avatar = avatar?.Path,
+                Cover = cover?.Path,
                 Role = RoleDto.FromEntity(entity.Role),
+                GameSetting = GameSettingDto.FromEntity(entity.GameSetting ?? new()) ?? new(),
             };
         }
     }

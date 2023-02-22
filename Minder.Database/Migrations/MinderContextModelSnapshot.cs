@@ -90,10 +90,11 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<string>("GameTimes")
+                    b.Property<string>("GameTime")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GameTypes")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Latitude")

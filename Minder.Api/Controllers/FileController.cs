@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Minder.Database.Enums;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.File;
 using Minder.Services.Models;
@@ -16,10 +17,28 @@ namespace Minder.Api.Controllers {
             this.fileService = fileService;
         }
 
-        [HttpPost, Route("save")]
-        public async Task<BaseRes> Save(FileDto model) {
+        [HttpPost, Route("update")]
+        public async Task<BaseRes> Update(FileDto model) {
             try {
-                await this.fileService.CreateOrUpdate(model);
+                await this.fileService.Update(model);
+                return BaseRes.Ok();
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("create")]
+        public async Task<BaseRes> Create(CreateImageReq req) {
+            try {
+                var model = new FileDto {
+                    ItemId = req.ItemId,
+                    Data = req.Data,
+                    ItemType = req.ItemType,
+                    Type = EFile.Image,
+                    Name = req.FileName,
+                };
+
+                await this.fileService.Create(model);
                 return BaseRes.Ok();
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);

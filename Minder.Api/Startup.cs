@@ -27,12 +27,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
 using System.Text;
+using System.Threading.Tasks;
 using TuanVu.Services.Common;
 
 namespace Minder.Api {
 
     public class Startup {
-        private const string CorsPolicy = nameof(CorsPolicy);
 
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
@@ -42,13 +42,12 @@ namespace Minder.Api {
 
         public void ConfigureServices(IServiceCollection services) {
             services.AddCors(options => {
-                options.AddPolicy(
-                    name: CorsPolicy,
-                    builder => {
-                        builder.AllowAnyOrigin()
-                            .AllowAnyMethod()
-                            .AllowAnyHeader();
-                    });
+                options.AddDefaultPolicy(builder => {
+                    builder.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
             });
             services.AddMemoryCache();
 
@@ -65,6 +64,17 @@ namespace Minder.Api {
                         RequireExpirationTime = true,
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"]!))
+                    };
+                    options.Events = new JwtBearerEvents {
+                        OnMessageReceived = context => {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (path.StartsWithSegments("/hubs/chat"))) {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -117,10 +127,12 @@ namespace Minder.Api {
                 options.InstanceName = Configuration.GetSection("RedisCacheSettings:InstanceName").Value;
             });
 
-
-
             services.AddHttpContextAccessor();
-            services.AddSignalR(options => options.EnableDetailedErrors = true);
+            services.AddSignalR(options => {
+                options.EnableDetailedErrors = true;
+            }).AddJsonProtocol(options => {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+            });
 
             services.AddSingleton<AdministrativeUnitResource>();
             services.AddScoped<IUserService, UserService>()
@@ -131,7 +143,7 @@ namespace Minder.Api {
                     .AddScoped<IFileService, FileService>()
                     .AddScoped<IAppInfoService, AppInfoService>()
                     .AddScoped<IStadiumService, StadiumService>()
-                    .AddSingleton<IDictionary<string, UserRoom>>(new Dictionary<string, UserRoom>());
+                    .AddSingleton<IDictionary<string, Connection>>(new Dictionary<string, Connection>());
 
             services.AddScheduler();
             services.AddScoped<ExpireInvitation>();
@@ -145,14 +157,14 @@ namespace Minder.Api {
             app.UseSwagger().UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v0.1/swagger.json", "Minder.Api v0.1"));
 
             app.UseRouting();
-            app.UseCors(CorsPolicy);
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatService>("/chat");
+                endpoints.MapHub<ChatService>("/hubs/chat");
             });
             AutoMigrate(app);
 
