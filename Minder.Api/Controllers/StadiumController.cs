@@ -46,15 +46,5 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
-
-        //[HttpPost, Route("import")]
-        //public async Task<BaseRes> Import(ImportStadiumReq req) {
-        //    try {
-        //        await stadiumService.ImportStadium(req);
-        //        return BaseRes.Ok();
-        //    } catch (Exception ex) {
-        //        return BaseRes.Fail(ex.Message);
-        //    }
-        //}
     }
 }

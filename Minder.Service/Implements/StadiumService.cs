@@ -1,7 +1,6 @@
 ﻿using CsvHelper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
@@ -12,21 +11,15 @@ using Minder.Services.Common;
 using Minder.Services.Extensions;
 using Minder.Services.Resources;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Implements {
 
     public class StadiumService : BaseService, IStadiumService {
-        private readonly IFileService fileService;
         private readonly AdministrativeUnitResource administrativeUnitResource;
 
         public StadiumService(IServiceProvider serviceProvider) : base(serviceProvider) {
-            this.fileService = serviceProvider.GetRequiredService<IFileService>();
             this.administrativeUnitResource = serviceProvider.GetRequiredService<AdministrativeUnitResource>();
         }
 
@@ -126,57 +119,6 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(stadium == null, Messages.Stadium.Stadium_NotFound);
 
             stadium.IsDelete = true;
-            await this.db.SaveChangesAsync();
-        }
-
-        public async Task ImportStadium(ImportStadiumReq req) {
-            List<ImportStadiumDto> stadiums;
-            UTF8Encoding enc = new();
-            using (var reader = new StringReader(enc.GetString(req.Data!)))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture)) {
-                csv.Context.RegisterClassMap<ImportStadiumMap>();
-                stadiums = csv.GetRecords<ImportStadiumDto>().Where(o => !o.IsEmpty()).ToList();
-            }
-
-            foreach (var stadium in stadiums) {
-                try {
-                    var item = new Stadium() {
-                        Id = Guid.NewGuid().ToStringN(),
-                        UserId = this.current.UserId,
-                        Code = stadium.Code,
-                        Phone = "0" + stadium.Phone,
-                        Name = stadium.Name.ToUpperFirstChar(),
-                        Longitude = stadium.Longitude,
-                        Latitude = stadium.Latitude,
-                        Province = stadium.Province,
-                        District = stadium.District,
-                        Commune = stadium.Commune,
-                        Address = stadium.Address,
-                        CreateAt = DateTimeOffset.Now,
-                    };
-
-                    if (string.IsNullOrWhiteSpace(stadium.Image)) continue;
-#pragma warning disable SYSLIB0014 // Type or member is obsolete
-                    byte[] file = new System.Net.WebClient().DownloadData(new Uri(stadium.Image));
-#pragma warning restore SYSLIB0014 // Type or member is obsolete
-                    if (file == null || !file.Any()) {
-                        Console.WriteLine($"Fail:{item.Code}");
-                    }
-
-                    await this.fileService.CreateOrUpdate(new Models.File.FileDto() {
-                        ItemId = item.Id,
-                        ItemType = EItemType.StadiumAvatar,
-                        Type = EFile.Image,
-                        Data = file,
-                        Name = $"{stadium.Name.GetSumary()}_{stadium.Code}.jpg"
-                    }, false);
-
-                    await this.db.AddAsync(item);
-                    Console.WriteLine($"Done: {stadium.Code}\n");
-                } catch (Exception) {
-                    continue;
-                }
-            }
             await this.db.SaveChangesAsync();
         }
     }
