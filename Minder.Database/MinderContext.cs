@@ -8,6 +8,7 @@ namespace Minder.Database {
         public virtual DbSet<Permission> Permissions => Set<Permission>();
         public virtual DbSet<Role> Roles => Set<Role>();
         public virtual DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+        public virtual DbSet<GameSetting> GameSettings => Set<GameSetting>();
         public virtual DbSet<User> Users => Set<User>();
         public virtual DbSet<Team> Teams => Set<Team>();
         public virtual DbSet<Member> Members => Set<Member>();
@@ -17,7 +18,6 @@ namespace Minder.Database {
         public virtual DbSet<Conversation> Conversations => Set<Conversation>();
         public virtual DbSet<Participant> Participants => Set<Participant>();
         public virtual DbSet<Message> Messages => Set<Message>();
-        public virtual DbSet<GameSetting> GameSettings => Set<GameSetting>();
 
         public MinderContext() {
         }

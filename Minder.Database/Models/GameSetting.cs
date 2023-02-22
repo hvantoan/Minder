@@ -7,8 +7,8 @@ namespace Minder.Database.Models {
     public class GameSetting {
         public string Id { get; set; } = null!;
         public string UserId { get; set; } = null!;
-        public string? GameTypes { get; set; }
-        public string? GameTimes { get; set; }
+        public string GameTypes { get; set; } = string.Empty;
+        public string? GameTime { get; set; }
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public double Radius { get; set; }

@@ -11,7 +11,7 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    [Migration("20230220063544_Init")]
+    [Migration("20230222063851_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -93,10 +93,11 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<string>("GameTimes")
+                    b.Property<string>("GameTime")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GameTypes")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Latitude")

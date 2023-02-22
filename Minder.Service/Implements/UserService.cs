@@ -31,7 +31,7 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<UserDto?> Get(string? key) {
-            var user = await this.db.Users.AsNoTracking()
+            var user = await this.db.Users.AsNoTracking().Include(o => o.GameSetting)
                 .WhereIf(string.IsNullOrEmpty(key), o => o.Id == this.current.UserId)
                 .WhereIf(!string.IsNullOrEmpty(key), o => o.Username == key)
                 .FirstAsync();
@@ -47,6 +47,8 @@ namespace Minder.Services.Implements {
 
             var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username);
             ManagedException.ThrowIf(isExited, Messages.User.User_Existed);
+            model.GameSetting ??= new();
+            if (!model.GameSetting.GameTypes.Any()) model.GameSetting.GameTypes.Add(EGameType.Five);
 
             User user = new() {
                 Id = Guid.NewGuid().ToStringN(),
@@ -59,7 +61,7 @@ namespace Minder.Services.Implements {
                 GameSetting = new GameSetting() {
                     Id = Guid.NewGuid().ToStringN(),
                     GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
-                    GameTimes = JsonConvert.SerializeObject(model.GameSetting.GameTimes),
+                    GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime),
                     Longitude = model.GameSetting.Longitude,
                     Latitude = model.GameSetting.Latitude,
                     Radius = model.GameSetting.Radius,
@@ -70,20 +72,6 @@ namespace Minder.Services.Implements {
                 RoleId = "6ffa9fa20755486d9e317d447b652bd8"
             };
             await this.Validate(user.RoleId);
-
-            if (model.CoverAvatar?.Data != null && model.CoverAvatar.Data.Any()) {
-                model.CoverAvatar.ItemId = user.Id;
-                model.CoverAvatar.Type = EFile.Image;
-                model.CoverAvatar.ItemType = EItemType.UserCover;
-                await this.fileService.CreateOrUpdate(model.CoverAvatar!);
-            }
-
-            if (model.Avatar?.Data != null && model.Avatar.Data.Any()) {
-                model.Avatar.ItemId = user.Id;
-                model.Avatar.Type = EFile.Image;
-                model.Avatar.ItemType = EItemType.UserAvatar;
-                await this.fileService.CreateOrUpdate(model.Avatar!);
-            }
 
             await this.db.Users.AddAsync(user);
             await this.db.SaveChangesAsync();
@@ -97,13 +85,20 @@ namespace Minder.Services.Implements {
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
             ManagedException.ThrowIf(!PasswordHashser.Verify(request.OldPassword, user.Password), Messages.User.User_IncorrentOldPassword);
 
-            user.Password = PasswordHashser.Hash(request.NewPassword);
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(user.Password), Messages.User.User_PasswordRequired);
+            var userPasswordLenght = user.Password.Length;
+            ManagedException.ThrowIf(userPasswordLenght < 8 || user.Password.Contains(' '), Messages.User.User_PasswordRequest);
+
+            user.Password = PasswordHashser.Hash(user.Password);
             await this.db.SaveChangesAsync();
         }
 
         public async Task ResetPassword(string password) {
             var user = await this.db.Users.FirstOrDefaultAsync(o => o.Id == this.current.UserId);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
+            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(password), Messages.User.User_PasswordRequired);
+            var userPasswordLenght = password.Length;
+            ManagedException.ThrowIf(userPasswordLenght < 8 || password.Contains(' '), Messages.User.User_PasswordRequest);
 
             user.Password = PasswordHashser.Hash(password);
             await this.db.SaveChangesAsync();
@@ -112,64 +107,25 @@ namespace Minder.Services.Implements {
         public async Task UpdateMe(UserDto model) {
             this.logger.Information($"{nameof(UserService)} - {nameof(UpdateMe)} - Start", model);
 
-            await ValidateInfo(model);
             var user = await this.db.Users.Include(o => o.GameSetting).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
-            user.Name = model.Name;
-            user.Phone = model.Phone;
-            user.Age = model.Age;
-            user.Phone = model.Phone;
-            user.Sex = model.Sex;
-            user.Description = model.Description;
+            if (!string.IsNullOrWhiteSpace(model.Name)) user.Name = model.Name;
+            if (!string.IsNullOrWhiteSpace(model.Phone)) user.Phone = model.Phone;
+            if (!string.IsNullOrWhiteSpace(model.Description)) user.Description = model.Description;
+            if (model.Age > 0) user.Age = model.Age;
+            if (model.Sex != ESex.Unknown && user.Sex != model.Sex) user.Sex = model.Sex;
 
-            if (user.GameSetting != null) {
-                user.GameSetting.GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes);
-                user.GameSetting.GameTimes = JsonConvert.SerializeObject(model.GameSetting.GameTimes);
-                user.GameSetting.Longitude = model.GameSetting.Longitude;
-                user.GameSetting.Latitude = model.GameSetting.Latitude;
-                user.GameSetting.Radius = model.GameSetting.Radius;
-            } else {
-                user.GameSetting = new GameSetting() {
-                    Id = Guid.NewGuid().ToStringN(),
-                    GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
-                    GameTimes = JsonConvert.SerializeObject(model.GameSetting.GameTimes),
-                    Longitude = model.GameSetting.Longitude,
-                    Latitude = model.GameSetting.Latitude,
-                    Radius = model.GameSetting.Radius,
-                };
+            if (model.GameSetting != null) {
+                user.GameSetting ??= new();
+                user.GameSetting.Id ??= Guid.NewGuid().ToStringN();
+                if (model.GameSetting.GameTime != null) user.GameSetting.GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime);
+                if (model.GameSetting.GameTypes != null) user.GameSetting.GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes);
+                if (model.GameSetting.Longitude != decimal.Zero) user.GameSetting.Longitude = model.GameSetting.Longitude;
+                if (model.GameSetting.Latitude != decimal.Zero) user.GameSetting.Latitude = model.GameSetting.Latitude;
+                if (model.GameSetting.Radius != 0.0) user.GameSetting.Radius = model.GameSetting.Radius;
             }
-
-            if (model.CoverAvatar?.Data != null && model.CoverAvatar.Data.Any()) {
-                model.CoverAvatar.ItemId = user.Id;
-                model.CoverAvatar.Type = EFile.Image;
-                model.CoverAvatar.ItemType = EItemType.UserCover;
-
-                var coverAvatar = await this.db.Files.FirstOrDefaultAsync(o => o.Type == EFile.Image && o.ItemType == EItemType.UserCover && o.ItemId == this.current.UserId);
-                model.CoverAvatar.Id = coverAvatar?.Id;
-
-                await this.fileService.CreateOrUpdate(model.CoverAvatar!);
-            }
-
-            if (model.Avatar?.Data != null && model.Avatar.Data.Any()) {
-                model.Avatar.ItemId = user.Id;
-                model.Avatar.Type = EFile.Image;
-                model.Avatar.ItemType = EItemType.UserAvatar;
-
-                var avatar = await this.db.Files.FirstOrDefaultAsync(o => o.Type == EFile.Image && o.ItemType == EItemType.UserAvatar && o.ItemId == this.current.UserId);
-                model.Avatar.Id = avatar?.Id;
-
-                await this.fileService.CreateOrUpdate(model.Avatar!);
-            }
-
             await this.db.SaveChangesAsync();
-        }
-
-        private async Task ValidateInfo(UserDto model) {
-            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
-            ManagedException.ThrowIf(user, Messages.User.User_Existed);
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.User.User_NameRequired);
-            ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Phone), Messages.User.User_PhoneRequired);
         }
 
         public async Task Validate(string roleId) {

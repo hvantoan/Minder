@@ -158,8 +158,8 @@ namespace Minder.Database.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    GameTypes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GameTimes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GameTypes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    GameTime = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Longitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
                     Latitude = table.Column<decimal>(type: "decimal(18,15)", nullable: false),
                     Radius = table.Column<double>(type: "float", nullable: false),
