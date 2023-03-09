@@ -89,7 +89,7 @@ namespace Minder.Services.Implements {
             var userPasswordLenght = user.Password.Length;
             ManagedException.ThrowIf(userPasswordLenght < 8 || user.Password.Contains(' '), Messages.User.User_PasswordRequest);
 
-            user.Password = PasswordHashser.Hash(user.Password);
+            user.Password = PasswordHashser.Hash(request.NewPassword);
             await this.db.SaveChangesAsync();
         }
 
