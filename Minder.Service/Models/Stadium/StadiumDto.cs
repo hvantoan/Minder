@@ -1,4 +1,6 @@
-﻿using Minder.Services.Resources;
+﻿using Minder.Service.Models.File;
+using Minder.Services.Resources;
+using Newtonsoft.Json;
 using System;
 
 namespace Minder.Service.Models.Stadium {
@@ -19,11 +21,15 @@ namespace Minder.Service.Models.Stadium {
         public AdministrativeUnit? Commune { get; set; }
         public string? Address { get; set; }
         public DateTimeOffset CreateAt { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? Avatar { get; set; }
     }
 
     public partial class StadiumDto {
 
-        public static StadiumDto? FromEntity(Database.Models.Stadium? entity, AdministrativeUnitResource? administrativeUnitResource) {
+        public static StadiumDto? FromEntity(Database.Models.Stadium? entity, AdministrativeUnitResource? administrativeUnitResource,
+            FileDto? avatar = null) {
             if (entity == null) return default;
 
             var au = administrativeUnitResource?.GetByCode(entity.Province, entity.District, entity.Commune) ?? new();
@@ -40,6 +46,7 @@ namespace Minder.Service.Models.Stadium {
                 Commune = !string.IsNullOrWhiteSpace(entity.Commune) && au.TryGetValue(entity.Commune, out var commune) ? commune : default,
                 Address = entity.Address,
                 CreateAt = entity.CreateAt,
+                Avatar = avatar?.Path,
             };
         }
     }

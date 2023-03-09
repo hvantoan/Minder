@@ -15,7 +15,6 @@ namespace Minder.Api.Controllers {
         public AppInfoController(IAppInfoService appInfoService) {
             this.appInfoService = appInfoService;
         }
-
         [HttpGet, Route("ver")]
         public async Task<BaseRes> Get() {
             try {

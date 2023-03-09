@@ -12,5 +12,7 @@ namespace Minder.Service.Interfaces {
         Task<string> CreateOrUpdate(StadiumDto model);
 
         Task Delete(DeleteStadiumReq req);
+
+        Task InitialData();
     }
 }

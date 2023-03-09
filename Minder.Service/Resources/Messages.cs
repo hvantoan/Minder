@@ -51,6 +51,7 @@
             public static ResponseMessage Stadium_CodeRequired { get; } = new() { Code = 71, Message = "Mã sân bóng có từ  2 - 4 ký tự và không được để trống." };
             public static ResponseMessage Stadium_NameRequired { get; } = new() { Code = 72, Message = "Tên sân bóng không được để trống." };
             public static ResponseMessage Stadium_CodeExited { get; } = new() { Code = 72, Message = "Mã sân đã tồn tại." };
+            public static ResponseMessage Stadium_InitFounded { get; } = new() { Code = 73, Message = "Dữ liệu mặc định đã được thêm vào hệ thống." };
         }
 
         public static class Email {

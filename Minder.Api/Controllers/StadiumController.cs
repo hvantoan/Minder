@@ -46,5 +46,15 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
+
+        [HttpGet, Route("init")]
+        public async Task<BaseRes> InitStadiumData() {
+            try {
+                await stadiumService.InitialData();
+                return BaseRes.Ok();    
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
     }
 }
