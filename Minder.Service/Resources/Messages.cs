@@ -58,6 +58,12 @@
             public static ResponseMessage User_NameRequired { get; } = new() { Code = 80, Message = "Gửi email thất bại." };
         }
 
+        public static class Conversation {
+            public static ResponseMessage Conversation_NameRequire { get; } = new() { Code = 90, Message = "Tên là bắt buộc." };
+            public static ResponseMessage Conversation_MinParticipant { get; } = new() { Code = 90, Message = "Hội thoại tối thiểu phải có 2 người." };
+            public static ResponseMessage Conversation_NotFound { get; } = new() { Code = 90, Message = "Đoạn hội thoại không tồn tại." };
+        }
+
         public static class System {
             public static ResponseMessage System_Error { get; } = new() { Code = 90, Message = "Lỗi hệ thống." };
         }

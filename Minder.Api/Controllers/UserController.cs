@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Minder.Api.Controllers {
 
-    [ApiController, Authorize, Route("api/user")]
+    [ApiController, Authorize, Route("api/users")]
     public class UserController : ControllerBase {
         private readonly IUserService userService;
 
@@ -17,11 +17,11 @@ namespace Minder.Api.Controllers {
             this.userService = userService;
         }
 
-        [HttpGet, Route("get")]
-        public async Task<BaseRes> Get([FromQuery] string? key) {
+        [HttpGet, Route("{userId}")]
+        public async Task<BaseRes> Get(string? userId) {
             try {
-                var data = await userService.Get(key);
-                return BaseRes<UserDto>.Ok(data!);
+                var data = await userService.Get(userId);
+                return BaseRes<UserDto?>.Ok(data);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

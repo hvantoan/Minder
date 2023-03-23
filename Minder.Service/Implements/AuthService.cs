@@ -84,7 +84,7 @@ namespace Minder.Services.Implements {
 
         public async Task Register(UserDto model) {
             await this.Validation(model);
-            await this.emailService.SendOTP(model, model.Username!);
+         //   await this.emailService.SendOTP(model, model.Username!);
         }
 
         public async Task ForgotPassword(ForgotPasswordReq request) {

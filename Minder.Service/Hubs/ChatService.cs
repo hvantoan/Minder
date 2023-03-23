@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Hubs {
-
+    [Authorize]
     public class ChatService : Hub {
         private readonly IDictionary<string, Connection> connections;
         private readonly MinderContext db;

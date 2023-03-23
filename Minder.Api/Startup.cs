@@ -68,7 +68,7 @@ namespace Minder.Api {
                     };
                     options.Events = new JwtBearerEvents {
                         OnMessageReceived = context => {
-                            var accessToken = context.Request.Query["access_token"];
+                            var accessToken = context.Request.Query["accessToken"];
                             var path = context.HttpContext.Request.Path;
                             if (!string.IsNullOrEmpty(accessToken) &&
                                 (path.StartsWithSegments("/hubs/chat"))) {
@@ -144,6 +144,7 @@ namespace Minder.Api {
                     .AddScoped<IFileService, FileService>()
                     .AddScoped<IAppInfoService, AppInfoService>()
                     .AddScoped<IStadiumService, StadiumService>()
+                    .AddScoped<IConversationService, ConversationService>()
                     .AddSingleton<IDictionary<string, Connection>>(new Dictionary<string, Connection>());
 
             services.AddScheduler();
