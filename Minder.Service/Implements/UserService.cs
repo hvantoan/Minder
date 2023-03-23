@@ -33,8 +33,8 @@ namespace Minder.Services.Implements {
         public async Task<UserDto?> Get(string? key) {
             var user = await this.db.Users.AsNoTracking().Include(o => o.GameSetting)
                 .WhereIf(string.IsNullOrEmpty(key), o => o.Id == this.current.UserId)
-                .WhereIf(!string.IsNullOrEmpty(key), o => o.Username == key)
-                .FirstAsync();
+                .WhereIf(!string.IsNullOrEmpty(key), o => o.Username.Contains(key) || o.Id == key)
+                .FirstOrDefaultAsync();
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
             var avatar = await this.fileService.Get(user.Id, EItemType.UserAvatar);
