@@ -22,7 +22,8 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListTeamRes> List(ListTeamReq req) {
-            var teamIds = await this.db.Members.AsNoTracking().WhereIf(req.IsMyTeam, o => o.UserId == this.current.UserId).Select(o => o.TeamId).ToListAsync();
+            var members = await this.db.Members.AsNoTracking().WhereIf(req.IsMyTeam, o => o.UserId == this.current.UserId).ToListAsync();
+            var teamIds = members.Select(o => o.TeamId).ToList();
             var query = this.db.Teams.AsNoTracking().Where(o => teamIds.Contains(o.Id));
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
@@ -30,10 +31,15 @@ namespace Minder.Service.Implements {
                 query = query.Where(o => o.Name.Contains(req.SearchText) || o.Name.GetSumary().Contains(req.SearchText) || o.Code.ToLower().Contains(req.SearchText));
             }
 
+            var items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => TeamDto.FromEntity(o)).ToListAsync();
+            foreach (var item in items) {
+                if (item == null) continue;
+                item.Regency = members.FirstOrDefault(o => o.TeamId == item.Id)?.Regency;
+            }
+
             return new ListTeamRes() {
-                HasCreateTeam = await this.db.Members.AsNoTracking().Where(o => o.UserId == this.current.UserId && o.Regency == ERegency.Owner).AnyAsync(),
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => TeamDto.FromEntity(o)).ToListAsync()
+                Items = items
             };
         }
 
