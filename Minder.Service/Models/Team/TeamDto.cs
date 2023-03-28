@@ -1,5 +1,4 @@
-﻿using Minder.Database.Enums;
-using Minder.Database.Models;
+﻿using Minder.Database.Models;
 using Minder.Service.Models.GameSetting;
 using Newtonsoft.Json;
 using System;
@@ -12,9 +11,6 @@ namespace Minder.Service.Models.Team {
         public string Id { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public ERegency? Regency { get; set; }
         public DateTimeOffset CreateAt { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
