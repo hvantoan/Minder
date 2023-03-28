@@ -13,6 +13,8 @@ namespace Minder.Service.Models.GameSetting {
         public decimal Latitude { get; set; }
         public double Radius { get; set; }
         public ERank Rank { get; set; }
+
+        [JsonIgnore]
         public int Point { get; set; }
     }
 
@@ -29,7 +31,6 @@ namespace Minder.Service.Models.GameSetting {
                 Latitude = entity.Latitude,
                 Radius = entity.Radius,
                 Rank = entity.Rank,
-                Point = entity.Point,
             };
         }
     }

@@ -1,9 +1,11 @@
 ﻿namespace Minder.Database.Enums {
 
     public enum ERank {
-        New = 0,
-        Amateur = 1,
-        Professionall = 2,
-        Master = 3
+        None = 0,
+        New = 1,
+        Amateur = 2,
+        SemiProfessional = 3,
+        Professional = 4,
+        Master = 5,
     }
 }

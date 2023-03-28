@@ -6,7 +6,8 @@ namespace Minder.Database.Models {
 
     public class GameSetting {
         public string Id { get; set; } = null!;
-        public string UserId { get; set; } = null!;
+        public string? UserId { get; set; }
+        public string? TeamId { get; set; }
         public string GameTypes { get; set; } = string.Empty;
         public string? GameTime { get; set; }
         public decimal Longitude { get; set; }
@@ -17,6 +18,7 @@ namespace Minder.Database.Models {
         public int Point { get; set; }
 
         public virtual User? User { get; set; }
+        public virtual Team? Team { get; set; }
     }
 
     public class GameSettingConfig : IEntityTypeConfiguration<GameSetting> {
@@ -31,7 +33,8 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Longitude).HasColumnType("decimal(18,15)");
             builder.Property(o => o.Latitude).HasColumnType("decimal(18,15)");
 
-            builder.HasOne(o => o.User).WithOne(o => o.GameSetting).HasForeignKey<GameSetting>(o => o.UserId);  
+            builder.HasOne(o => o.User).WithOne(o => o.GameSetting).HasForeignKey<GameSetting>(o => o.UserId);
+            builder.HasOne(o => o.Team).WithOne(o => o.GameSetting).HasForeignKey<GameSetting>(o => o.TeamId);
         }
     }
 }

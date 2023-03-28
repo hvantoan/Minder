@@ -31,7 +31,7 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<UserDto?> Get(string? key) {
-            var user = await this.db.Users.AsNoTracking().Include(o => o.GameSetting)
+            var user = await this.db.Users.Include(o => o.GameSetting).AsNoTracking()
                 .WhereIf(string.IsNullOrEmpty(key), o => o.Id == this.current.UserId)
                 .WhereIf(!string.IsNullOrEmpty(key), o => o.Username.Contains(key) || o.Id == key)
                 .FirstOrDefaultAsync();
@@ -124,6 +124,7 @@ namespace Minder.Services.Implements {
                 if (model.GameSetting.Longitude != decimal.Zero) user.GameSetting.Longitude = model.GameSetting.Longitude;
                 if (model.GameSetting.Latitude != decimal.Zero) user.GameSetting.Latitude = model.GameSetting.Latitude;
                 if (model.GameSetting.Radius != 0.0) user.GameSetting.Radius = model.GameSetting.Radius;
+                if (model.GameSetting.Rank != ERank.None) user.GameSetting.Rank = model.GameSetting.Rank;
             }
             await this.db.SaveChangesAsync();
         }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Minder.Api.Controllers {
 
-    [ApiController, Authorize, Route("api/team")]
+    [ApiController, Authorize, Route("api/teams")]
     public class TeamController : ControllerBase {
         private readonly ITeamService teamService;
 
@@ -17,7 +17,7 @@ namespace Minder.Api.Controllers {
             this.teamService = teamService;
         }
 
-        [HttpGet, Route("get/{teamId}")]
+        [HttpGet, Route("{teamId}")]
         public async Task<BaseRes> Get(string teamId) {
             try {
                 var data = await teamService.Get(teamId);
@@ -27,9 +27,16 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpPost, Route("list")]
-        public async Task<BaseRes> List(ListTeamReq req) {
+        [HttpGet]
+        public async Task<BaseRes> List(string? searchText = null, int pageIndex = 0, int pageSize = 20, int count = 1, int isMyTeam = 0) {
             try {
+                var req = new ListTeamReq() {
+                    SearchText = searchText,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    IsCount = count == 1,
+                    IsMyTeam = isMyTeam == 1
+                };
                 var data = await teamService.List(req);
                 return BaseRes<ListTeamRes>.Ok(data);
             } catch (Exception ex) {
@@ -47,7 +54,7 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpGet, Route("delete/{teamId}")]
+        [HttpDelete, Route("{teamId}")]
         public async Task<BaseRes> Delete(string teamId) {
             try {
                 await teamService.Delete(teamId);
@@ -57,34 +64,5 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpPost, Route("invite")]
-        public async Task<BaseRes> Invite(InviteDto model) {
-            try {
-                await teamService.Invite(model);
-                return BaseRes.Ok();
-            } catch (Exception ex) {
-                return BaseRes.Fail(ex.Message);
-            }
-        }
-
-        [HttpPost, Route("invite/list")]
-        public async Task<BaseRes> ListInvite(ListInviteReq req) {
-            try {
-                var res = await teamService.ListInvite(req);
-                return BaseRes<ListInviteRes>.Ok(res);
-            } catch (Exception ex) {
-                return BaseRes.Fail(ex.Message);
-            }
-        }
-
-        [HttpPost, Route("invite/confirm")]
-        public async Task<BaseRes> ConfirmInvite(ConfirmInviteReq req) {
-            try {
-                await teamService.ConfirmInvite(req);
-                return BaseRes.Ok();
-            } catch (Exception ex) {
-                return BaseRes.Fail(ex.Message);
-            }
-        }
     }
 }
