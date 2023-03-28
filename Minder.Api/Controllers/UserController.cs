@@ -27,6 +27,16 @@ namespace Minder.Api.Controllers {
             }
         }
 
+        [HttpGet, Route("me")]
+        public async Task<BaseRes> GetMe() {
+            try {
+                var data = await userService.Get(null);
+                return BaseRes<UserDto?>.Ok(data);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
         [HttpPost, Route("save")]
         public async Task<BaseRes> Save(UserDto model) {
             try {

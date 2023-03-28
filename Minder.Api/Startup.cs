@@ -145,6 +145,7 @@ namespace Minder.Api {
                     .AddScoped<IAppInfoService, AppInfoService>()
                     .AddScoped<IStadiumService, StadiumService>()
                     .AddScoped<IConversationService, ConversationService>()
+                    .AddScoped<IInviteSevice, InviteService>()
                     .AddSingleton<IDictionary<string, Connection>>(new Dictionary<string, Connection>());
 
             services.AddScheduler();

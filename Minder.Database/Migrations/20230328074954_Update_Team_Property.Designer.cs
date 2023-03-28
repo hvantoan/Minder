@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Minder.Database;
 
@@ -10,9 +11,11 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    partial class MinderContextModelSnapshot : ModelSnapshot
+    [Migration("20230328074954_Update_Team_Property")]
+    partial class UpdateTeamProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,22 +115,15 @@ namespace Minder.Database.Migrations
                     b.Property<int>("Rank")
                         .HasColumnType("int");
 
-                    b.Property<string>("TeamId")
-                        .HasColumnType("nvarchar(32)");
-
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamId")
-                        .IsUnique()
-                        .HasFilter("[TeamId] IS NOT NULL");
-
                     b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("GameSetting", (string)null);
                 });
@@ -514,11 +510,16 @@ namespace Minder.Database.Migrations
                     b.Property<long>("CreateAt")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("GameSettingId")
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GameSettingId");
 
                     b.ToTable("Team", (string)null);
                 });
@@ -594,15 +595,11 @@ namespace Minder.Database.Migrations
 
             modelBuilder.Entity("Minder.Database.Models.GameSetting", b =>
                 {
-                    b.HasOne("Minder.Database.Models.Team", "Team")
-                        .WithOne("GameSetting")
-                        .HasForeignKey("Minder.Database.Models.GameSetting", "TeamId");
-
                     b.HasOne("Minder.Database.Models.User", "User")
                         .WithOne("GameSetting")
-                        .HasForeignKey("Minder.Database.Models.GameSetting", "UserId");
-
-                    b.Navigation("Team");
+                        .HasForeignKey("Minder.Database.Models.GameSetting", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -713,6 +710,15 @@ namespace Minder.Database.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.Team", b =>
+                {
+                    b.HasOne("Minder.Database.Models.GameSetting", "GameSetting")
+                        .WithMany()
+                        .HasForeignKey("GameSettingId");
+
+                    b.Navigation("GameSetting");
+                });
+
             modelBuilder.Entity("Minder.Database.Models.User", b =>
                 {
                     b.HasOne("Minder.Database.Models.Role", "Role")
@@ -749,8 +755,6 @@ namespace Minder.Database.Migrations
 
             modelBuilder.Entity("Minder.Database.Models.Team", b =>
                 {
-                    b.Navigation("GameSetting");
-
                     b.Navigation("Inviteds");
 
                     b.Navigation("Members");
