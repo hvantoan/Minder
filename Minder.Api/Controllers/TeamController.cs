@@ -54,7 +54,7 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpDelete, Route("{teamId}")]
+        [HttpPost, Route("{teamId}/delete")]
         public async Task<BaseRes> Delete(string teamId) {
             try {
                 await teamService.Delete(teamId);
@@ -63,6 +63,5 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
-
     }
 }

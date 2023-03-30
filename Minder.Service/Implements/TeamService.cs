@@ -32,9 +32,11 @@ namespace Minder.Service.Implements {
             }
 
             var items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => TeamDto.FromEntity(o)).ToListAsync();
+            members = members.Where(o => o.UserId == this.current.UserId).ToList();
             foreach (var item in items) {
-                if (item == null) continue;
-                item.Regency = members.FirstOrDefault(o => o.TeamId == item.Id)?.Regency;
+                if (item != null) {
+                    item.Regency = members.FirstOrDefault(o => o.TeamId == item.Id)?.Regency;
+                }
             }
 
             return new ListTeamRes() {
@@ -128,6 +130,8 @@ namespace Minder.Service.Implements {
 
             var team = await this.db.Teams.Include(o => o.GameSetting).Include(o => o.Members).FirstOrDefaultAsync(o => o.Id == model.Id);
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
+            var myRegency = team.Members?.FirstOrDefault(o => o.UserId == this.current.UserId);
+            ManagedException.ThrowIf(myRegency == null || myRegency.Regency == ERegency.Member, Messages.Team.Team_NoPermistion);
 
             if (!string.IsNullOrWhiteSpace(model.Code)) team.Code = model.Code;
             if (!string.IsNullOrWhiteSpace(model.Name)) team.Name = model.Name;
@@ -154,7 +158,7 @@ namespace Minder.Service.Implements {
             var isOwner = await this.db.Members.AnyAsync(o => o.UserId == this.current.UserId && o.Regency == ERegency.Owner && o.TeamId == teamId);
             ManagedException.ThrowIf(!isOwner, Messages.Team.Team_NotFound);
 
-            var team = await this.db.Teams.Include(o => o.Members).FirstOrDefaultAsync(o => o.Id == teamId);
+            var team = await this.db.Teams.Include(o => o.Members).Include(o => o.GameSetting).FirstOrDefaultAsync(o => o.Id == teamId);
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NoPermistion);
 
             this.db.Teams.Remove(team!);
