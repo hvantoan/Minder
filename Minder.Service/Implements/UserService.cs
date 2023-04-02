@@ -69,6 +69,7 @@ namespace Minder.Services.Implements {
                     Point = model.GameSetting.Point,
                 },
                 IsAdmin = false,
+                IsActive = false,
                 RoleId = "6ffa9fa20755486d9e317d447b652bd8"
             };
             await this.Validate(user.RoleId);

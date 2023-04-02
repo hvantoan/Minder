@@ -58,6 +58,16 @@ namespace Minder.Api.Controllers {
             }
         }
 
+        [HttpGet, Route("resend")]
+        public async Task<BaseRes> ResendOTP(string username) {
+            try {
+                await this.authService.ResendOTP(username);
+                return BaseRes.Ok();
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
         [HttpGet, Route("verify")]
         public async Task<BaseRes> Verify(string otp) {
             try {

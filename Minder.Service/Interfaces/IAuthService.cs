@@ -16,6 +16,8 @@ namespace Minder.Services.Interfaces {
 
         Task<LoginRes> Refresh();
 
+        Task ResendOTP(string username);
+
         Task<VerifyRes> Verify(VerifyUserReq request);
 
         Task<UserNameValidate> CheckUser(string userName);
