@@ -79,13 +79,11 @@ namespace Minder.Services.Implements {
                     IsActive = false,
                     RoleId = "6ffa9fa20755486d9e317d447b652bd8"
                 };
+                await this.Validate(user.RoleId!);
+                await this.db.Users.AddAsync(user);
             }
 
-            await this.Validate(user.RoleId!);
-
-            await this.db.Users.AddAsync(user);
             await this.db.SaveChangesAsync();
-
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - End", model);
             return user.Id;
         }
