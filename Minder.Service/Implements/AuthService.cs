@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
+using Minder.Extensions;
+using Minder.Service.Helpers;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.Auth;
 using Minder.Service.Models.User;
@@ -13,7 +15,6 @@ using Minder.Services.Interfaces;
 using Minder.Services.Models.Auth;
 using Minder.Services.Models.User;
 using Minder.Services.Resources;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,16 +30,14 @@ namespace Minder.Services.Implements {
     public class AuthService : BaseService, IAuthService {
         private readonly IEmailService emailService;
         private readonly IUserService userService;
-        private readonly ICacheManager cacheManager;
 
         public AuthService(IServiceProvider serviceProvider) : base(serviceProvider) {
             this.emailService = serviceProvider.GetRequiredService<IEmailService>();
             this.userService = serviceProvider.GetRequiredService<IUserService>();
-            this.cacheManager = serviceProvider.GetRequiredService<ICacheManager>();
         }
 
         public async Task<LoginRes> WebLogin(LoginReq request) {
-            var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim() && !o.IsDelete);
+            var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim() && !o.IsDelete && o.IsActive);
 
             ManagedException.ThrowIf(user == null, Messages.Auth.Auth_NotFound);
             ManagedException.ThrowIf(!PasswordHashser.Verify(request.Password, user.Password), Messages.Auth.Auth_IncorrectPassword);
@@ -84,30 +83,59 @@ namespace Minder.Services.Implements {
 
         public async Task Register(UserDto model) {
             await this.Validation(model);
-            await this.emailService.SendOTP(model, model.Username!);
+            await this.userService.Create(model);
+            var otp = await GenerateOTP(model.Username!);
+            await this.emailService.SendOTP(otp, model.Username!);
+        }
+
+        public async Task ResendOTP(string username) {
+            var otp = await GenerateOTP(username);
+            await this.emailService.SendOTP(otp, username);
+        }
+
+        private async Task<string> GenerateOTP(string email, EVerifyType type = EVerifyType.Register) {
+            var isExit = await this.db.Users.AnyAsync(o => o.Username == email);
+            ManagedException.ThrowIf(!isExit, Messages.User.User_NotFound);
+            var userVerify = await this.db.RegistrationInformations.FirstOrDefaultAsync(o => o.Username == email);
+            var otps = await this.db.RegistrationInformations.Select(o => o.OTPCode).ToListAsync();
+            if (userVerify == null) {
+                userVerify = new RegistrationInformation() {
+                    Id = Guid.NewGuid().ToStringN(),
+                    Username = email,
+                    Type = type,
+                    OTPCode = EMailHelper.GenarateOTP(otps),
+                    CreateAt = DateTimeOffset.Now,
+                };
+                await this.db.RegistrationInformations.AddAsync(userVerify);
+            } else {
+                userVerify.CreateAt = DateTimeOffset.Now;
+                userVerify.OTPCode = EMailHelper.GenarateOTP(otps);
+            }
+            await this.db.SaveChangesAsync();
+            return userVerify.OTPCode;
         }
 
         public async Task ForgotPassword(ForgotPasswordReq request) {
             var isExited = await this.db.Users.AnyAsync(o => o.Username == request.Username);
             ManagedException.ThrowIf(!isExited, Messages.User.User_NotFound);
 
-            await this.emailService.SendOTP(request, request.Username, type: EVerifyType.ForgetPassword);
+            var otp = await GenerateOTP(request.Username!, EVerifyType.ForgetPassword);
+            await this.emailService.SendOTP(otp, request.Username!);
         }
 
         public async Task<VerifyRes> Verify(VerifyUserReq request) {
-            var (dataRes, type) = cacheManager.VerifyOTP(request.Code);
-
-            switch (type) {
+            var userVerify = await this.db.RegistrationInformations.FirstOrDefaultAsync(o => o.OTPCode == request.Code);
+            if (userVerify == null) return new VerifyRes() { Status = false };
+            switch (userVerify!.Type) {
                 case EVerifyType.Register:
-                    await userService.Create(JsonConvert.DeserializeObject<UserDto>(dataRes)!);
+                    var registerUser = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
+                    registerUser!.IsActive = true;
                     return new VerifyRes();
 
                 case EVerifyType.ForgetPassword:
-                    var userName = JsonConvert.DeserializeObject<ForgotPasswordReq>(dataRes)?.Username;
-                    ManagedException.ThrowIf(string.IsNullOrWhiteSpace(userName), Messages.System.System_Error);
-                    var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userName);
+                    ManagedException.ThrowIf(string.IsNullOrWhiteSpace(userVerify.Username), Messages.System.System_Error);
+                    var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
                     var roleClaims = new List<Claim>();
-
                     string token = this.GenerateToken(user!.Id, user.Username, user.Name, roleClaims, DateTime.Now.AddMinutes(5));
                     return new VerifyRes() { Token = token };
             }
@@ -172,7 +200,7 @@ namespace Minder.Services.Implements {
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
             ManagedException.ThrowIf(!(new EmailAddressAttribute().IsValid(model.Username)), Messages.User.User_UsernameRequest);
 
-            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
+            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username && o.IsActive);
             ManagedException.ThrowIf(user, Messages.User.User_Existed);
 
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);

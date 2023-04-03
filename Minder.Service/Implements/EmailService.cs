@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using Minder.Database.Enums;
 using Minder.Service.Configurations;
 using Minder.Service.Helpers;
 using Minder.Service.Interfaces;
@@ -12,14 +11,11 @@ using System.Threading.Tasks;
 namespace Minder.Service.Implements {
 
     public class EmailService : BaseService, IEmailService {
-        private readonly ICacheManager cacheManager;
 
-        public EmailService(IServiceProvider serviceProvider, ICacheManager cacheManager) : base(serviceProvider) {
-            this.cacheManager = cacheManager;
+        public EmailService(IServiceProvider serviceProvider) : base(serviceProvider) {
         }
 
-        public async Task<bool> SendOTP<T>(T model, string toEmailAddress, EVerifyType type = EVerifyType.Register) {
-            var otp = await this.cacheManager.CreateOrUpdate(type, model);
+        public async Task<bool> SendOTP(string otp, string toEmailAddress) {
             var body = EMailHelper.GetOTPBody(otp);
             return await Send($"[Minder]XÁC NHẬN NGƯỜI DÙNG", toEmailAddress, body);
         }

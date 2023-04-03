@@ -34,7 +34,7 @@ namespace Minder.Service.Implements {
 
             string otp;
             do {
-                otp = EMailHelper.GenarateOTP();
+                otp = EMailHelper.GenarateOTP(null);
             } while (string.IsNullOrWhiteSpace(otp) || cache.TryGetValue<string>(otp, out _));
 
             var value = new CacheData() {

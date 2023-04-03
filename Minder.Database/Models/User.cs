@@ -18,6 +18,7 @@ namespace Minder.Database.Models {
         //Rank
 
         public bool IsAdmin { get; set; }
+        public bool IsActive { get; set; }
         public bool IsDelete { get; set; }
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
@@ -58,7 +59,8 @@ namespace Minder.Database.Models {
                 Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
                 RoleId = "469b14225a79448c93e4e780aa08f0cc",
                 Username = "admin",
-                Phone = "0336516906"
+                Phone = "0336516906",
+                IsActive = true
             });
         }
     }
