@@ -126,6 +126,7 @@ namespace Minder.Services.Implements {
         public async Task<VerifyRes> Verify(VerifyUserReq request) {
             var userVerify = await this.db.RegistrationInformations.FirstOrDefaultAsync(o => o.OTPCode == request.Code);
             if (userVerify == null) return new VerifyRes() { Status = false };
+            ManagedException.ThrowIf(userVerify.OTPCode != request.Code, Messages.Auth.Auth_IncorresctOTP);
             switch (userVerify!.Type) {
                 case EVerifyType.Register:
                     var registerUser = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
