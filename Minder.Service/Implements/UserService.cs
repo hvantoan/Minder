@@ -45,34 +45,43 @@ namespace Minder.Services.Implements {
         public async Task<string> Create(UserDto model) {
             this.logger.Information($"{nameof(User)} - {nameof(Create)} - Start", model);
 
-            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username);
+            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username && !o.IsActive);
             ManagedException.ThrowIf(isExited, Messages.User.User_Existed);
             model.GameSetting ??= new();
             if (!model.GameSetting.GameTypes.Any()) model.GameSetting.GameTypes.Add(EGameType.Five);
 
-            User user = new() {
-                Id = Guid.NewGuid().ToStringN(),
-                Username = model.Username!.ToLower(),
-                Password = PasswordHashser.Hash(model.Password!),
-                Name = model.Name,
-                Phone = model.Phone,
-                Age = model.Age,
-                Sex = model.Sex,
-                GameSetting = new GameSetting() {
+            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == model.Username && !o.IsActive);
+
+            if (user != null) {
+                user.Name = model.Name;
+                user.Phone = model.Phone;
+                user.Password = PasswordHashser.Hash(model.Password!);
+            } else {
+                user = new() {
                     Id = Guid.NewGuid().ToStringN(),
-                    GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
-                    GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime),
-                    Longitude = model.GameSetting.Longitude,
-                    Latitude = model.GameSetting.Latitude,
-                    Radius = model.GameSetting.Radius,
-                    Rank = model.GameSetting.Rank,
-                    Point = model.GameSetting.Point,
-                },
-                IsAdmin = false,
-                IsActive = false,
-                RoleId = "6ffa9fa20755486d9e317d447b652bd8"
-            };
-            await this.Validate(user.RoleId);
+                    Username = model.Username!.ToLower(),
+                    Password = PasswordHashser.Hash(model.Password!),
+                    Name = model.Name,
+                    Phone = model.Phone,
+                    Age = model.Age,
+                    Sex = model.Sex,
+                    GameSetting = new GameSetting() {
+                        Id = Guid.NewGuid().ToStringN(),
+                        GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
+                        GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime),
+                        Longitude = model.GameSetting.Longitude,
+                        Latitude = model.GameSetting.Latitude,
+                        Radius = model.GameSetting.Radius,
+                        Rank = model.GameSetting.Rank,
+                        Point = model.GameSetting.Point,
+                    },
+                    IsAdmin = false,
+                    IsActive = false,
+                    RoleId = "6ffa9fa20755486d9e317d447b652bd8"
+                };
+            }
+
+            await this.Validate(user.RoleId!);
 
             await this.db.Users.AddAsync(user);
             await this.db.SaveChangesAsync();

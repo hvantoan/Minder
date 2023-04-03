@@ -131,6 +131,7 @@ namespace Minder.Services.Implements {
                     var registerUser = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
                     registerUser!.IsActive = true;
                     return new VerifyRes();
+
                 case EVerifyType.ForgetPassword:
                     ManagedException.ThrowIf(string.IsNullOrWhiteSpace(userVerify.Username), Messages.System.System_Error);
                     var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
@@ -199,7 +200,7 @@ namespace Minder.Services.Implements {
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
             ManagedException.ThrowIf(!(new EmailAddressAttribute().IsValid(model.Username)), Messages.User.User_UsernameRequest);
 
-            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username);
+            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username && o.IsActive);
             ManagedException.ThrowIf(user, Messages.User.User_Existed);
 
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);
