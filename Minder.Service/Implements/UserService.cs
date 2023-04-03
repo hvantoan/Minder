@@ -45,7 +45,7 @@ namespace Minder.Services.Implements {
         public async Task<string> Create(UserDto model) {
             this.logger.Information($"{nameof(User)} - {nameof(Create)} - Start", model);
 
-            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username && !o.IsActive);
+            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username && o.IsActive);
             ManagedException.ThrowIf(isExited, Messages.User.User_Existed);
             model.GameSetting ??= new();
             if (!model.GameSetting.GameTypes.Any()) model.GameSetting.GameTypes.Add(EGameType.Five);
