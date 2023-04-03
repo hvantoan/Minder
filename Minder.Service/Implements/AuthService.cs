@@ -130,6 +130,7 @@ namespace Minder.Services.Implements {
                 case EVerifyType.Register:
                     var registerUser = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
                     registerUser!.IsActive = true;
+                    await this.db.SaveChangesAsync();
                     return new VerifyRes();
 
                 case EVerifyType.ForgetPassword:
