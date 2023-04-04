@@ -3,24 +3,36 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Minder.Database;
+using Minder.Service.Interfaces;
 using Minder.Service.Models;
 using Minder.Service.Models.Chat;
+using Minder.Service.Models.Conversation;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Hubs {
+
     [Authorize]
     public class ChatService : Hub {
         private readonly IDictionary<string, Connection> connections;
         private readonly MinderContext db;
         private readonly CurrentUser currentUser;
+        private readonly IConversationService conversationService;
 
         public ChatService(IDictionary<string, Connection> connections, IServiceProvider serviceProvider) {
             this.connections = connections;
             this.db = serviceProvider.GetRequiredService<MinderContext>();
             this.currentUser = serviceProvider.GetRequiredService<CurrentUser>();
+            this.conversationService = serviceProvider.GetRequiredService<IConversationService>();
+        }
+
+        public override async Task OnConnectedAsync() {
+            await base.OnConnectedAsync();
+            var conversations = await conversationService.List(new ListConversationReq { PageIndex = 0, PageSize = 20, SearchText = "" });
+            await Clients.Client(Context.ConnectionId).SendAsync("Conversations", new { Conversations = conversations.Items });
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
