@@ -3,8 +3,8 @@ using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Extensions;
 using Minder.Service.Interfaces;
-using Minder.Service.Models;
 using Minder.Service.Models.Conversation;
+using Minder.Service.Models.Participant;
 using Minder.Services.Common;
 using Minder.Services.Extensions;
 using Minder.Services.Resources;
@@ -57,18 +57,30 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListConversationRes> List(ListConversationReq req) {
-            var conversationIds = await this.db.Participants.AsNoTracking().Where(o => o.UserId == this.current.UserId).Select(o => o.ConversationId).ToListAsync();
+            var conversationIds = await this.db.Participants.Where(o => o.UserId == this.current.UserId).Select(o=>o.ConversationId).ToListAsync();
             var query = this.db.Conversations.AsNoTracking().Where(o => conversationIds.Contains(o.Id));
+            var participantIdsByConversation = await this.db.Participants.AsNoTracking().Where(o => conversationIds.Contains(o.ConversationId))
+                .GroupBy(o => o.ConversationId)
+                .Select(o => new {
+                    ConversationId = o.Key,
+                    ParticipantIds = o.Select(o => o.UserId).ToList()
+                }).ToListAsync();
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
-                req.SearchText = req.SearchText.ReplaceSpace(isUnsignedUnicode: true);
+                req.SearchText = req.SearchText.ToLower().ReplaceSpace(isUnsignedUnicode: true);
                 query = query.Where(o => o.Title.Contains(req.SearchText) || o.Title.GetSumary().Contains(req.SearchText) || o.Title.ToLower().Contains(req.SearchText));
+            }
+            var items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize)
+                            .Take(req.PageSize).Select(o => ConversationDto.FromEntity(o)).ToListAsync();
+
+            foreach (var item in items) {
+                if (item == null) continue;
+                item.ParticipantIds = participantIdsByConversation.FirstOrDefault(o => o.ConversationId == item.Id)?.ParticipantIds;
             }
 
             return new ListConversationRes() {
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize)
-                            .Take(req.PageSize).Select(o => ConversationDto.FromEntity(o)).ToListAsync()
+                Items = items
             };
         }
 

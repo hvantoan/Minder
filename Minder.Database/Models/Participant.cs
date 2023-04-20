@@ -8,7 +8,7 @@ namespace Minder.Database.Models {
         public string ConversationId { get; set; } = null!;
         public string UserId { get; set; } = null!;
         public DateTimeOffset JoinAt { get; set; }
-
+        public string? LastSendMessageId { get; set; }
         public virtual User? User { get; set; }
         public virtual Conversation? Conversation { get; set; }
     }
@@ -19,10 +19,10 @@ namespace Minder.Database.Models {
             builder.ToTable(nameof(Participant));
 
             builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).HasMaxLength(32);
-            builder.Property(o => o.ConversationId).HasMaxLength(32);
-            builder.Property(o => o.UserId).HasMaxLength(32);
-
+            builder.Property(o => o.Id).HasMaxLength(32).IsRequired();
+            builder.Property(o => o.ConversationId).HasMaxLength(32).IsRequired();
+            builder.Property(o => o.LastSendMessageId).HasMaxLength(32);
+            builder.Property(o => o.UserId).HasMaxLength(32).IsRequired();
             builder.Property(o => o.JoinAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
             //fk

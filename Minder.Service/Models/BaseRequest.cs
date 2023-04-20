@@ -1,4 +1,6 @@
-﻿namespace Minder.Services.Models {
+﻿using Newtonsoft.Json;
+
+namespace Minder.Services.Models {
 
     public class BaseReq {
         public string Id { get; set; } = string.Empty;
@@ -9,6 +11,12 @@
         public int PageSize { get; set; } = 10;
         public bool IsCount { get; set; } = false;
         public string? SearchText { get; set; }
+
+        [JsonIgnore]
+        public int Skip => PageIndex * PageSize;
+
+        [JsonIgnore]
+        public int Take => PageSize;
     }
 
     public class BaseFileReq {

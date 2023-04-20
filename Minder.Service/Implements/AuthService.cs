@@ -56,6 +56,7 @@ namespace Minder.Services.Implements {
             return new() {
                 Token = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(1)),
                 RefreshToken = this.GenerateToken(user.Id, user.Username, user.Name, claims, GetTokenExpiredAt(30)),
+                Id = user.Id,
                 Name = user.Name,
                 Username = user.Username,
             };

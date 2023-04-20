@@ -7,7 +7,7 @@ using Minder.Service.Interfaces;
 using Minder.Service.Models;
 using Minder.Service.Models.Chat;
 using Minder.Service.Models.Conversation;
-using Newtonsoft.Json;
+using Minder.Service.Models.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,54 +21,75 @@ namespace Minder.Service.Hubs {
         private readonly MinderContext db;
         private readonly CurrentUser currentUser;
         private readonly IConversationService conversationService;
+        private readonly IMessageService messageService;
 
         public ChatService(IDictionary<string, Connection> connections, IServiceProvider serviceProvider) {
             this.connections = connections;
             this.db = serviceProvider.GetRequiredService<MinderContext>();
             this.currentUser = serviceProvider.GetRequiredService<CurrentUser>();
             this.conversationService = serviceProvider.GetRequiredService<IConversationService>();
+            this.messageService = serviceProvider.GetRequiredService<IMessageService>();
         }
 
         public override async Task OnConnectedAsync() {
+            connections[Context.ConnectionId] = new Connection() { UserId = currentUser.UserId, ConversationId = null};
             await base.OnConnectedAsync();
-            var conversations = await conversationService.List(new ListConversationReq { PageIndex = 0, PageSize = 20, SearchText = "" });
-            await Clients.Client(Context.ConnectionId).SendAsync("Conversations", new { Conversations = conversations.Items });
+            await SendConversations();
+            await SendLastConversationId();
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
             if (connections.TryGetValue(Context.ConnectionId, out Connection? user)) {
                 connections.Remove(Context.ConnectionId);
-                Clients.Group(user.ConversationId).SendAsync("ReceiveMessage", $"{user.UserId} has left");
-                SendUsersConnected(user.ConversationId);
             }
             return base.OnDisconnectedAsync(exception);
         }
 
-        public async Task Init() {
-            var conversationIds = await this.db.Participants.Where(o => o.UserId == this.currentUser.UserId).Select(o => o.ConversationId).ToListAsync();
-            var conversations = await this.db.Conversations.Where(o => conversationIds.Contains(o.Id)).ToListAsync();
-            await Clients.Caller.SendAsync("Init", conversations);
-        }
+        public async Task JoinToRoom(string conversationId) {
+            var isInRoom = await this.db.Participants.AnyAsync(o => o.UserId == this.currentUser.UserId && o.ConversationId == conversationId);
 
-        public async Task JoinToRoom(string roomId) {
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-            connections[Context.ConnectionId] = new Connection() { UserId = this.currentUser.UserId, ConversationId = roomId };
-            await Clients.Group(roomId).SendAsync("ReceiveMessage", $"{this.currentUser.UserId} has joined {roomId}");
-            await SendUsersConnected(roomId);
-        }
-
-        public async Task SendMessageToRoom(Connection userRoom, string message) {
-            if (connections.TryGetValue(Context.ConnectionId, out Connection? User)) {
-                await Clients.Group(userRoom.ConversationId).SendAsync("ReceiveMessage", User.UserId, message);
+            if (isInRoom) {
+                await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
+                connections[Context.ConnectionId] = new Connection() { UserId = this.currentUser.UserId, ConversationId = conversationId };
+                await SendListMessage(conversationId);
             }
         }
 
-        public Task SendUsersConnected(string roomId) {
-            var users = connections.Values
-                .Where(c => c.ConversationId == roomId)
-                .Select(c => c.UserId);
+        private async Task SendLastConversationId() {
+            var lastConversationId = await this.db.Messages.Where(o => o.SenderId == this.currentUser.UserId).OrderBy(o => o.CreateAt).Select(o => o.ConversationId).FirstOrDefaultAsync();
+            if (string.IsNullOrEmpty(lastConversationId)) {
+                lastConversationId = await this.db.Participants.Where(o => o.UserId == this.currentUser.UserId).OrderBy(o => o.JoinAt).Select(o => o.ConversationId).FirstOrDefaultAsync();
+            }
 
-            return Clients.Group(roomId).SendAsync("UsersInRoom", users);
+            if (!string.IsNullOrEmpty(lastConversationId)) {
+                await Clients.Client(Context.ConnectionId).SendAsync("LastConversationId", lastConversationId);
+            }
+        }
+
+        private async Task SendListMessage(string coversationId, string? searchText = null, int pageSize = 5, int pageIndex = 0) {
+            var req = new ListMessageReq {
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                SearchText = searchText,
+                ConversationId = coversationId
+            };
+
+            var messages = await this.messageService.List(req);
+            await Clients.Client(Context.ConnectionId).SendAsync("ReciveListMessage", new { Messages = messages.Items });
+        }
+
+        private async Task SendConversations(string? searchText = null, int pageSize = 20, int pageIndex = 0) {
+            var req = new ListConversationReq {
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                SearchText = searchText
+            };
+            var conversations = await conversationService.List(req);
+            foreach (var item in conversations.Items) {
+                if (item == null) continue;
+                item.Online = connections.Values.Any(o => o.UserId != this.currentUser.UserId && item.ParticipantIds != null && item.ParticipantIds.Contains(o.UserId));
+            }
+            await Clients.Client(Context.ConnectionId).SendAsync("Conversations", new { Conversations = conversations.Items });
         }
     }
 }

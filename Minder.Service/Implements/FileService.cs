@@ -9,6 +9,7 @@ using Minder.Services.Common;
 using Minder.Services.Models;
 using Minder.Services.Resources;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TuanVu.Services.Helpers;
 
@@ -20,7 +21,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<FileDto?> Get(string id, EItemType itemType, EFile type = EFile.Image) {
-            var file = await this.db.Files.AsNoTracking()
+            var file = await this.db.Files.AsNoTracking().OrderByDescending(o=>o.UploadDate)
                 .FirstOrDefaultAsync(o => o.Type == type && o.ItemType == itemType && o.ItemId == id);
 
             return FileDto.FromEntity(file, this.current.Url);

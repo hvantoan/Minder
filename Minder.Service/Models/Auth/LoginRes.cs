@@ -7,7 +7,7 @@ namespace Minder.Service.Models.Auth {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string? RefreshToken { get; set; }
-
+        public string Id { get; set; } = null!;
         public string Username { get; set; } = null!;
         public string Name { get; set; } = null!;
     }

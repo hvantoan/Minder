@@ -4,7 +4,7 @@ using Minder.Services.Models.User;
 using Newtonsoft.Json;
 using System;
 
-namespace Minder.Service.Models {
+namespace Minder.Service.Models.Participant {
 
     public class ParticipantDto {
         public string Id { get; set; } = string.Empty;
@@ -20,10 +20,10 @@ namespace Minder.Service.Models {
 
         public Database.Models.Participant ToEntity() {
             return new() {
-                Id = !string.IsNullOrEmpty(this.Id) ? this.Id : Guid.NewGuid().ToStringN(),
-                ConversationId = this.ConversationId,
-                UserId = this.UserId,
-                JoinAt = this.JoinAt,
+                Id = !string.IsNullOrEmpty(Id) ? Id : Guid.NewGuid().ToStringN(),
+                ConversationId = ConversationId,
+                UserId = UserId,
+                JoinAt = JoinAt,
             };
         }
     }
