@@ -40,8 +40,8 @@ namespace Minder.Api.Controllers {
         [HttpPost, Route("save")]
         public async Task<BaseRes> Save(UserDto model) {
             try {
-                await userService.UpdateMe(model);
-                return BaseRes.Ok();
+                var res = await userService.UpdateMe(model);
+                return BaseRes<UserDto>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

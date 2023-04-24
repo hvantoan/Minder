@@ -112,7 +112,7 @@ namespace Minder.Services.Implements {
             await this.db.SaveChangesAsync();
         }
 
-        public async Task UpdateMe(UserDto model) {
+        public async Task<UserDto?> UpdateMe(UserDto model) {
             this.logger.Information($"{nameof(UserService)} - {nameof(UpdateMe)} - Start", model);
 
             var user = await this.db.Users.Include(o => o.GameSetting).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
@@ -135,6 +135,8 @@ namespace Minder.Services.Implements {
                 if (model.GameSetting.Rank != ERank.None) user.GameSetting.Rank = model.GameSetting.Rank;
             }
             await this.db.SaveChangesAsync();
+
+            return UserDto.FromEntity(user);
         }
 
         public async Task Validate(string roleId) {

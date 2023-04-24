@@ -10,7 +10,7 @@ namespace Minder.Services.Interfaces {
 
         Task<string> Create(UserDto model);
 
-        Task UpdateMe(UserDto model);
+        Task<UserDto> UpdateMe(UserDto model);
 
         Task Delete();
 
