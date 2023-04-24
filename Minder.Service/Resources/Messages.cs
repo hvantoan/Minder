@@ -33,9 +33,10 @@
             public static ResponseMessage Team_DescriptionRequired { get; } = new() { Code = 34, Message = "Mô tả có độ dài ít hơn 80 ký tự." };
             public static ResponseMessage Team_NotFound { get; } = new() { Code = 35, Message = "Đội bóng không tồn tại." };
             public static ResponseMessage Team_IsOwner { get; } = new() { Code = 36, Message = "Bạn đã có đội bóng của mình rồi." };
-            public static ResponseMessage Team_NoPermistion { get; } = new() { Code = 37, Message = "Bạn không có quyền để xóa đội bóng." };
+            public static ResponseMessage Team_NoPermistion { get; } = new() { Code = 37, Message = "Bạn không có đủ quyền." };
             public static ResponseMessage Team_NotOut { get; } = new() { Code = 38, Message = "Bạn không thể rời đội khi đang là chủ sở hửu." };
             public static ResponseMessage Team_NotInTeam { get; } = new() { Code = 38, Message = "Người dùng không ở trong đội." };
+            public static ResponseMessage Team_NotInviteYourself{ get; } = new() { Code = 39, Message = "Không thể mời chính mình." };
         }
 
         public static class File {

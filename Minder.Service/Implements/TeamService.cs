@@ -166,6 +166,9 @@ namespace Minder.Service.Implements {
         }
 
         public async Task Invite(InviteDto model) {
+            var hasPermisstion = await this.db.Members.AnyAsync(o => o.Regency == ERegency.Owner || o.Regency == ERegency.Captain && o.UserId == this.current.UserId);
+            ManagedException.ThrowIf(hasPermisstion, Messages.Team.Team_NoPermistion);
+            ManagedException.ThrowIf(model.UserId == this.current.UserId, Messages.Team.Team_NotInviteYourself);
             var invitation = await this.db.Invites.AnyAsync(o => o.TeamId == model.TeamId && o.UserId == model.UserId);
             ManagedException.ThrowIf(invitation, Messages.Invite.Invite_IsExited);
 
