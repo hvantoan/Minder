@@ -164,5 +164,83 @@ namespace Minder.Service.Implements {
             this.db.Teams.Remove(team!);
             await this.db.SaveChangesAsync();
         }
+
+        public async Task Invite(InviteDto model) {
+            var invitation = await this.db.Invites.AnyAsync(o => o.TeamId == model.TeamId && o.UserId == model.UserId);
+            ManagedException.ThrowIf(invitation, Messages.Invite.Invite_IsExited);
+
+            var invite = new Invitation() {
+                Id = Guid.NewGuid().ToStringN(),
+                Description = model.Description,
+                TeamId = model.TeamId,
+                UserId = model.UserId,
+                Type = model.Type,
+                CreateAt = DateTimeOffset.Now,
+            };
+
+            await this.db.Invites.AddAsync(invite);
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task<ListInviteRes> ListInvite(ListInviteReq req) {
+            var query = this.db.Invites
+                    .WhereIf(string.IsNullOrEmpty(req.TeamId), o => o.Type == EInvitationType.Invite && o.UserId == this.current.UserId)
+                    .WhereIf(!string.IsNullOrEmpty(req.TeamId), o => o.Type == EInvitationType.Invited && o.TeamId == req.TeamId);
+
+            if (!string.IsNullOrWhiteSpace(req.SearchText)) {
+                req.SearchText = req.SearchText.ReplaceSpace(true);
+                query = query.Where(o => o.User!.Name.ReplaceSpace(true).Contains(req.SearchText));
+            }
+
+            return new() {
+                Count = await query.CountIf(req.IsCount, o => o.Id),
+                Items = await query.OrderBy(o => o.CreateAt).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => InviteDto.FromEntity(o)).ToListAsync(),
+            };
+        }
+
+        public async Task ConfirmInvite(ConfirmInviteReq req) {
+            var invite = await this.db.Invites.FirstOrDefaultAsync(o => o.UserId == this.current.UserId && o.Id == req.Id);
+            ManagedException.ThrowIf(invite == null, Messages.Invite.Invite_NotFound);
+
+            if (req.IsJoin) {
+                var member = new Member() {
+                    Id = Guid.NewGuid().ToStringN(),
+                    Regency = ERegency.Member,
+                    TeamId = invite.TeamId,
+                    UserId = this.current.UserId,
+                };
+
+                await this.db.Members.AddAsync(member);
+            }
+
+            this.db.Invites.Remove(invite);
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task Leave(string teamId) {
+            var isInTeam = await this.db.Members.AnyAsync(o => o.TeamId == teamId && o.UserId == this.current.UserId);
+            ManagedException.ThrowIf(!isInTeam, Messages.System.System_Error);
+
+            var isOwner = await this.db.Members.AnyAsync(o => o.TeamId == teamId && o.UserId == this.current.UserId && o.Regency == ERegency.Owner);
+            ManagedException.ThrowIf(isOwner, Messages.Team.Team_IsOwner);
+
+            var member = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == teamId && o.UserId == this.current.UserId);
+            if (member != null) {
+                this.db.Members.Remove(member);
+                await this.db.SaveChangesAsync();
+            }
+        }
+
+        public async Task Kick(string userId) {
+            var member = await this.db.Members.AsNoTracking().FirstOrDefaultAsync(o => o.UserId == this.current.UserId && o.Regency == ERegency.Owner);
+            ManagedException.ThrowIf(string.IsNullOrEmpty(member?.Id), Messages.Team.Team_NotFound);
+            ManagedException.ThrowIf(userId == this.current.UserId, Messages.System.System_Error);
+
+            var memberKick = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == member.TeamId && o.UserId == userId);
+            ManagedException.ThrowIf(memberKick == null, Messages.Team.Team_NotInTeam);
+
+            this.db.Members.Remove(memberKick);
+            await this.db.SaveChangesAsync();
+        }
     }
 }
