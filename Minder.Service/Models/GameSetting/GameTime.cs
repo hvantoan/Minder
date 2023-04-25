@@ -1,7 +1,7 @@
 ﻿using Minder.Database.Enums;
 using System.Collections.Generic;
 
-namespace Minder.Service.Models.User {
+namespace Minder.Service.Models.GameSetting {
 
     public class GameTime {
         public List<EGameTime> Monday { get; set; } = new();

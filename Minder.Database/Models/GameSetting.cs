@@ -13,6 +13,7 @@ namespace Minder.Database.Models {
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public double Radius { get; set; }
+        public string Positions { get; set; } = string.Empty;
 
         public ERank Rank { get; set; }
         public int Point { get; set; }

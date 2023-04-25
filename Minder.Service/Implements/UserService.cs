@@ -68,6 +68,7 @@ namespace Minder.Services.Implements {
                     GameSetting = new GameSetting() {
                         Id = Guid.NewGuid().ToStringN(),
                         GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
+                        Positions = JsonConvert.SerializeObject(model.GameSetting.Positions),
                         GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime),
                         Longitude = model.GameSetting.Longitude,
                         Latitude = model.GameSetting.Latitude,
@@ -133,6 +134,7 @@ namespace Minder.Services.Implements {
                 if (model.GameSetting.Latitude != decimal.Zero) user.GameSetting.Latitude = model.GameSetting.Latitude;
                 if (model.GameSetting.Radius != 0.0) user.GameSetting.Radius = model.GameSetting.Radius;
                 if (model.GameSetting.Rank != ERank.None) user.GameSetting.Rank = model.GameSetting.Rank;
+                if (model.GameSetting.Positions != null) user.GameSetting.Positions = JsonConvert.SerializeObject(model.GameSetting.Positions);
             }
             await this.db.SaveChangesAsync();
 
