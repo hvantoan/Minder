@@ -137,8 +137,7 @@ namespace Minder.Services.Implements {
                 if (model.GameSetting.Positions != null) user.GameSetting.Positions = JsonConvert.SerializeObject(model.GameSetting.Positions);
             }
             await this.db.SaveChangesAsync();
-
-            return UserDto.FromEntity(user);
+            return await Get(user.Id);
         }
 
         public async Task Validate(string roleId) {
