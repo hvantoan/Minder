@@ -31,7 +31,7 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<UserDto?> Get(string? key) {
-            var user = await this.db.Users.Include(o => o.GameSetting).AsNoTracking()
+            var user = await this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).AsNoTracking()
                 .WhereIf(string.IsNullOrEmpty(key), o => o.Id == this.current.UserId)
                 .WhereIf(!string.IsNullOrEmpty(key), o => o.Username.Contains(key) || o.Id == key)
                 .FirstOrDefaultAsync();
@@ -63,13 +63,13 @@ namespace Minder.Services.Implements {
                     Password = PasswordHashser.Hash(model.Password!),
                     Name = model.Name,
                     Phone = model.Phone,
-                    Age = model.Age,
+                    DayOfBirth = model.DayOfBirth,
                     Sex = model.Sex,
                     GameSetting = new GameSetting() {
                         Id = Guid.NewGuid().ToStringN(),
                         GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes),
                         Positions = JsonConvert.SerializeObject(model.GameSetting.Positions),
-                        GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime),
+                        GameTime = model.GameSetting.GameTime?.ToEntity() ?? new() { Id = Guid.NewGuid().ToStringN() },
                         Longitude = model.GameSetting.Longitude,
                         Latitude = model.GameSetting.Latitude,
                         Radius = model.GameSetting.Radius,
@@ -116,25 +116,23 @@ namespace Minder.Services.Implements {
         public async Task<UserDto?> UpdateMe(UserDto model) {
             this.logger.Information($"{nameof(UserService)} - {nameof(UpdateMe)} - Start", model);
 
-            var user = await this.db.Users.Include(o => o.GameSetting).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
+            var user = await this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
             if (!string.IsNullOrWhiteSpace(model.Name)) user.Name = model.Name;
             if (!string.IsNullOrWhiteSpace(model.Phone)) user.Phone = model.Phone;
             if (!string.IsNullOrWhiteSpace(model.Description)) user.Description = model.Description;
-            if (model.Age > 0) user.Age = model.Age;
+            if (model.DayOfBirth != user.DayOfBirth && model.DayOfBirth != DateTimeOffset.Now) user.DayOfBirth = model.DayOfBirth;
             if (model.Sex != ESex.Unknown && user.Sex != model.Sex) user.Sex = model.Sex;
 
             if (model.GameSetting != null) {
-                user.GameSetting ??= new();
-                user.GameSetting.Id ??= Guid.NewGuid().ToStringN();
-                if (model.GameSetting.GameTime != null) user.GameSetting.GameTime = JsonConvert.SerializeObject(model.GameSetting.GameTime);
-                if (model.GameSetting.GameTypes != null) user.GameSetting.GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes);
-                if (model.GameSetting.Longitude != decimal.Zero) user.GameSetting.Longitude = model.GameSetting.Longitude;
-                if (model.GameSetting.Latitude != decimal.Zero) user.GameSetting.Latitude = model.GameSetting.Latitude;
-                if (model.GameSetting.Radius != 0.0) user.GameSetting.Radius = model.GameSetting.Radius;
-                if (model.GameSetting.Rank != ERank.None) user.GameSetting.Rank = model.GameSetting.Rank;
-                if (model.GameSetting.Positions != null) user.GameSetting.Positions = JsonConvert.SerializeObject(model.GameSetting.Positions);
+                if (model.GameSetting.GameTime != null) user.GameSetting!.GameTime = model.GameSetting.GameTime.ToEntity();
+                if (model.GameSetting.GameTypes != null) user.GameSetting!.GameTypes = JsonConvert.SerializeObject(model.GameSetting.GameTypes);
+                if (model.GameSetting.Longitude != decimal.Zero) user.GameSetting!.Longitude = model.GameSetting.Longitude;
+                if (model.GameSetting.Latitude != decimal.Zero) user.GameSetting!.Latitude = model.GameSetting.Latitude;
+                if (model.GameSetting.Radius != 0.0) user.GameSetting!.Radius = model.GameSetting.Radius;
+                if (model.GameSetting.Rank != ERank.None) user.GameSetting!.Rank = model.GameSetting.Rank;
+                if (model.GameSetting.Positions != null) user.GameSetting!.Positions = JsonConvert.SerializeObject(model.GameSetting.Positions);
             }
             await this.db.SaveChangesAsync();
             return await Get(user.Id);

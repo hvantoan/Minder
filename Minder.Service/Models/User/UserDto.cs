@@ -3,6 +3,7 @@ using Minder.Service.Models.File;
 using Minder.Service.Models.GameSetting;
 using Minder.Services.Models.Role;
 using Newtonsoft.Json;
+using System;
 
 namespace Minder.Services.Models.User {
 
@@ -16,7 +17,7 @@ namespace Minder.Services.Models.User {
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public ESex Sex { get; set; } = ESex.Unknown;
-        public int Age { get; set; }
+        public DateTimeOffset DayOfBirth { get; set; }
         public string? Description { get; set; }
         public GameSettingDto? GameSetting { get; set; }
 
@@ -41,7 +42,7 @@ namespace Minder.Services.Models.User {
                 Username = entity.Username,
                 Name = entity.Name,
                 Phone = entity.Phone,
-                Age = entity.Age,
+                DayOfBirth = entity.DayOfBirth,
                 Sex = entity.Sex,
                 Description = entity.Description,
                 Avatar = avatar?.Path,

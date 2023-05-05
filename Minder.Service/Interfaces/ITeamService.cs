@@ -22,5 +22,7 @@ namespace Minder.Service.Interfaces {
         Task Leave(string teamId);
 
         Task Kick(string userId);
+
+        Task<ListTeamRes> Find(FindTeamReq req);
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Minder.Database;
 
@@ -10,9 +11,11 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    partial class MinderContextModelSnapshot : ModelSnapshot
+    [Migration("20230428165647_Add_DayOfBirth_User")]
+    partial class AddDayOfBirthUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,6 +93,9 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<string>("GameTime")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("GameTypes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -131,52 +137,6 @@ namespace Minder.Database.Migrations
                         .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("GameSetting", (string)null);
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.GameTime", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Friday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GameSettingId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Monday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Saturday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Sunday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Thursday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Tuesday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Wednesday")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameSettingId")
-                        .IsUnique();
-
-                    b.ToTable("GameTime", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
@@ -614,7 +574,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("DayOfBirth")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1683036774060L);
+                        .HasDefaultValue(1682701007170L);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -693,17 +653,6 @@ namespace Minder.Database.Migrations
                     b.Navigation("Team");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.GameTime", b =>
-                {
-                    b.HasOne("Minder.Database.Models.GameSetting", "GameSetting")
-                        .WithOne("GameTime")
-                        .HasForeignKey("Minder.Database.Models.GameTime", "GameSettingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GameSetting");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
@@ -841,12 +790,6 @@ namespace Minder.Database.Migrations
                     b.Navigation("Messages");
 
                     b.Navigation("Participants");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.GameSetting", b =>
-                {
-                    b.Navigation("GameTime")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Permission", b =>

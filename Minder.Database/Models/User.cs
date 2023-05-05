@@ -12,7 +12,7 @@ namespace Minder.Database.Models {
         public string Name { get; set; } = null!;
         public string Phone { get; set; } = null!;
         public ESex Sex { get; set; }
-        public int Age { get; set; }
+        public DateTimeOffset DayOfBirth { get; set; }
         public string? Description { get; set; }
 
         //Rank
@@ -43,6 +43,7 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Username).IsRequired();
             builder.Property(o => o.Password).IsRequired();
             builder.Property(o => o.Phone).IsRequired();
+            builder.Property(o => o.DayOfBirth).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).HasDefaultValue(DateTimeOffset.Now);
 
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);
@@ -58,7 +59,7 @@ namespace Minder.Database.Models {
                 Name = "Hồ Văn Toàn",
                 Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
                 RoleId = "469b14225a79448c93e4e780aa08f0cc",
-                Username = "admin",
+                Username = "admin@gmail.com",
                 Phone = "0336516906",
                 IsActive = true
             });

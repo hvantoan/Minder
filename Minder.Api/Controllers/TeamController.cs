@@ -113,5 +113,15 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
+
+        [HttpPost, Route("find")]
+        public async Task<BaseRes> Find(FindTeamReq req) {
+            try {
+                var res = await teamService.Find(req);
+                return BaseRes<ListTeamRes?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
     }
 }

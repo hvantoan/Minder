@@ -9,17 +9,16 @@ namespace Minder.Database.Models {
         public string? UserId { get; set; }
         public string? TeamId { get; set; }
         public string GameTypes { get; set; } = string.Empty;
-        public string? GameTime { get; set; }
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public double Radius { get; set; }
         public string Positions { get; set; } = string.Empty;
-
         public ERank Rank { get; set; }
         public int Point { get; set; }
 
         public virtual User? User { get; set; }
         public virtual Team? Team { get; set; }
+        public virtual GameTime GameTime { get; set; } = new();
     }
 
     public class GameSettingConfig : IEntityTypeConfiguration<GameSetting> {

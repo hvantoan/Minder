@@ -41,7 +41,7 @@ namespace Minder.Api.Controllers {
         public async Task<BaseRes> Save(UserDto model) {
             try {
                 var res = await userService.UpdateMe(model);
-                return BaseRes<UserDto>.Ok(res);
+                return BaseRes<UserDto?>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

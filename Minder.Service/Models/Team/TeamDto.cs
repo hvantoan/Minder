@@ -12,6 +12,7 @@ namespace Minder.Service.Models.Team {
         public string Id { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public ERank Rank { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public ERegency? Regency { get; set; }
@@ -39,6 +40,7 @@ namespace Minder.Service.Models.Team {
                 CreateAt = entity.CreateAt,
                 GameSetting = entity.GameSetting != null ? GameSettingDto.FromEntity(entity.GameSetting) : default,
                 Members = entity.Members != null ? entity.Members.Select(o => MemberDto.FromEntity(o)!).ToList() : default,
+                Rank = entity.GameSetting?.Rank ?? default,
             };
         }
     }

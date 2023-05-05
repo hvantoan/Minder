@@ -7,7 +7,7 @@ namespace Minder.Service.Models.GameSetting {
     public partial class GameSettingDto {
         public string Id { get; set; } = string.Empty;
         public List<EGameType> GameTypes { get; set; } = new();
-        public GameTime? GameTime { get; set; }
+        public GameTimeDto? GameTime { get; set; }
         public List<EPosition> Positions { get; set; } = new();
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
@@ -26,7 +26,7 @@ namespace Minder.Service.Models.GameSetting {
             return new GameSettingDto {
                 Id = entity.Id,
                 GameTypes = JsonConvert.DeserializeObject<List<EGameType>>(entity.GameTypes) ?? new(),
-                GameTime = !string.IsNullOrEmpty(entity.GameTime) ? JsonConvert.DeserializeObject<GameTime>(entity.GameTime) ?? new() : new(),
+                GameTime = GameTimeDto.FromEntity(entity.GameTime ?? new()),
                 Positions = JsonConvert.DeserializeObject<List<EPosition>>(entity.Positions) ?? new(),
                 Longitude = entity.Longitude,
                 Latitude = entity.Latitude,

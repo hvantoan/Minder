@@ -5,12 +5,16 @@ using System.Reflection;
 namespace Minder.Database {
 
     public partial class MinderContext : DbContext {
-
         // Permission
 
         public virtual DbSet<Role> Roles => Set<Role>();
         public virtual DbSet<Permission> Permissions => Set<Permission>();
         public virtual DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+
+        // Game setting
+
+        public virtual DbSet<GameTime> GameTime => Set<GameTime>();
+
 
         //User
 
@@ -34,7 +38,6 @@ namespace Minder.Database {
         public virtual DbSet<Participant> Participants => Set<Participant>();
         public virtual DbSet<Message> Messages => Set<Message>();
         public virtual DbSet<Models.File> Files => Set<Models.File>();
-
 
         public MinderContext() {
         }
