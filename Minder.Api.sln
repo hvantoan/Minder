@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minder.Api", "Minder.Api\Minder.Api.csproj", "{FE243E58-C83B-4B57-991B-C5D3C1C0A73B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minder.Api", "Minder.Api\Minder.Api.csproj", "{FE243E58-C83B-4B57-991B-C5D3C1C0A73B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minder.Database", "Minder.Database\Minder.Database.csproj", "{9C7A9C3E-688D-4B51-8314-0E956AF7464D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minder.Database", "Minder.Database\Minder.Database.csproj", "{9C7A9C3E-688D-4B51-8314-0E956AF7464D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minder.Service", "Minder.Service\Minder.Service.csproj", "{4AD92891-5E50-448E-BD95-597E836A8843}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minder.Service", "Minder.Service\Minder.Service.csproj", "{4AD92891-5E50-448E-BD95-597E836A8843}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

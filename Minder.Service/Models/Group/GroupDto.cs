@@ -6,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Minder.Service.Models.Conversation
-{
+namespace Minder.Service.Models.Group {
 
-    public class ConversationDto {
+    public class GroupDto {
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string ChannelId { get; set; } = string.Empty;
+        public string? TeamId { get; set; }
         public string LastMessage { get; set; } = string.Empty;
         public DateTimeOffset CreateAt { get; set; } = DateTimeOffset.Now;
         public bool Online { get; set; }
@@ -21,28 +21,34 @@ namespace Minder.Service.Models.Conversation
         public List<string>? ParticipantIds { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public List<string>? UserIds { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public List<MessageDto>? Messages { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public List<ParticipantDto>? Participants { get; set; }
 
-        public Database.Models.Conversation ToEntity() {
+        public Database.Models.Group ToEntity() {
             return new() {
                 Id = !string.IsNullOrEmpty(this.Id) ? this.Id : Guid.NewGuid().ToStringN(),
                 Title = this.Title,
+                TeamId = this.TeamId,
                 ChannelId = this.ChannelId ?? string.Empty,
                 CreateAt = this.CreateAt,
                 Participants = this.Participants != null ? this.Participants.Select(o => o.ToEntity()).ToList() : default,
             };
         }
 
-        public static ConversationDto? FromEntity(Database.Models.Conversation? entity) {
+        public static GroupDto? FromEntity(Database.Models.Group? entity) {
             if (entity == null) return default;
-            return new ConversationDto() {
+            return new GroupDto() {
                 Id = entity.Id,
                 Title = entity.Title,
-                ChannelId = entity.ChannelId,
+                ChannelId = entity.ChannelId ?? string.Empty,
+                TeamId = entity.TeamId,
                 CreateAt = entity.CreateAt,
+                LastMessage = entity.Messages?.OrderBy(o=>o.CreateAt).FirstOrDefault()?.Content ?? string.Empty,
             };
         }
     }

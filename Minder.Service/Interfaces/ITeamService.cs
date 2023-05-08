@@ -13,12 +13,6 @@ namespace Minder.Service.Interfaces {
 
         Task Delete(string teamId);
 
-        Task Invite(InviteDto model);
-
-        Task<ListInviteRes> ListInvite(ListInviteReq req);
-
-        Task ConfirmInvite(ConfirmInviteReq req);
-
         Task Leave(string teamId);
 
         Task Kick(string userId);

@@ -57,7 +57,7 @@ namespace Minder.Database.Models {
                 Id = "92dcba9b0bdd4f32a6170a1322472ead",
                 IsAdmin = true,
                 Name = "Hồ Văn Toàn",
-                Password = "CcW16ZwR+2SFn8AnpaN+dNakxXvQTI3btbcwpiugge2xYM4H2NfaAD0ZAnOcC4k8HnQLQBGLCpgCtggVfyopgg==",
+                Password = "wYoNiOClwsx0kyK9EIRqmaEqg72hAj+U12g16P2YoVo5rYlhxSpU/sHoBXvgPICRHMM1ESCAs/tBHcxov6xjgQ==",
                 RoleId = "469b14225a79448c93e4e780aa08f0cc",
                 Username = "admin@gmail.com",
                 Phone = "0336516906",

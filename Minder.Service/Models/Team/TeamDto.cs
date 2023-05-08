@@ -17,6 +17,9 @@ namespace Minder.Service.Models.Team {
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public ERegency? Regency { get; set; }
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? GroupId { get; set; }
+
         public DateTimeOffset CreateAt { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
@@ -41,6 +44,7 @@ namespace Minder.Service.Models.Team {
                 GameSetting = entity.GameSetting != null ? GameSettingDto.FromEntity(entity.GameSetting) : default,
                 Members = entity.Members != null ? entity.Members.Select(o => MemberDto.FromEntity(o)!).ToList() : default,
                 Rank = entity.GameSetting?.Rank ?? default,
+                GroupId = entity.Groups?.FirstOrDefault(o => o.ChannelId == null)?.Id
             };
         }
     }

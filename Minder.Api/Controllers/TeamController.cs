@@ -64,36 +64,6 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpPost, Route("invite")]
-        public async Task<BaseRes> Invite(InviteDto model) {
-            try {
-                await teamService.Invite(model);
-                return BaseRes.Ok();
-            } catch (Exception ex) {
-                return BaseRes.Fail(ex.Message);
-            }
-        }
-
-        [HttpPost, Route("invite/list")]
-        public async Task<BaseRes> ListInvite(ListInviteReq req) {
-            try {
-                var res = await teamService.ListInvite(req);
-                return BaseRes<ListInviteRes>.Ok(res);
-            } catch (Exception ex) {
-                return BaseRes.Fail(ex.Message);
-            }
-        }
-
-        [HttpPost, Route("invite/confirm")]
-        public async Task<BaseRes> ConfirmInvite(ConfirmInviteReq req) {
-            try {
-                await teamService.ConfirmInvite(req);
-                return BaseRes.Ok();
-            } catch (Exception ex) {
-                return BaseRes.Fail(ex.Message);
-            }
-        }
-
         [HttpGet, Route("{id}/leave")]
         public async Task<BaseRes> Leave(string id) {
             try {

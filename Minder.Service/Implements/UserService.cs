@@ -42,6 +42,7 @@ namespace Minder.Services.Implements {
             return UserDto.FromEntity(user, null, avatar, coverAvatar);
         }
 
+
         public async Task<string> Create(UserDto model) {
             this.logger.Information($"{nameof(User)} - {nameof(Create)} - Start", model);
 

@@ -16,16 +16,9 @@ namespace Minder.Api.Controllers {
             this.messageService = messageService;
         }
 
-        [HttpGet]
-        public async Task<BaseRes> List(string? searchText = null, int pageIndex = 0, int pageSize = 20, int count = 1) {
+        [HttpPost]
+        public async Task<BaseRes> List(ListMessageReq req) {
             try {
-                var req = new ListMessageReq {
-                    SearchText = searchText,
-                    PageIndex = pageIndex,
-                    PageSize = pageSize,
-                    IsCount = count == 1
-                };
-
                 var res = await this.messageService.List(req);
                 return BaseRes<ListMessageData>.Ok(res);
             } catch (Exception ex) {

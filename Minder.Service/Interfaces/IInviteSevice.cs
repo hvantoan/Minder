@@ -5,7 +5,7 @@ namespace Minder.Service.Interfaces {
 
     public interface IInviteSevice {
 
-        Task Create(InviteDto model);
+        Task Invite(InviteDto model);
 
         Task<ListInviteRes> ListInvite(ListInviteReq req);
 

@@ -6,13 +6,13 @@ namespace Minder.Database.Models {
 
     public class Message {
         public string Id { get; set; } = null!;
-        public string ConversationId { get; set; } = null!;
+        public string GroupId { get; set; } = null!;
         public string SenderId { get; set; } = null!;
         public EMessageType MessageType { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTimeOffset CreateAt { get; set; }
 
-        public virtual Conversation? Conversation { get; set; }
+        public virtual Group? Group { get; set; }
         public virtual User? User { get; set; }
     }
 
@@ -27,7 +27,7 @@ namespace Minder.Database.Models {
 
             //fk
 
-            builder.HasOne(o => o.Conversation).WithMany(o => o.Messages).HasForeignKey(o => o.ConversationId);
+            builder.HasOne(o => o.Group).WithMany(o => o.Messages).HasForeignKey(o => o.GroupId);
             builder.HasOne(o => o.User).WithMany(o => o.Messages).HasForeignKey(o => o.SenderId);
         }
     }

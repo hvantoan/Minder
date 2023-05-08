@@ -1,5 +1,5 @@
 ﻿using Minder.Extensions;
-using Minder.Service.Models.Conversation;
+using Minder.Service.Models.Group;
 using Minder.Services.Models.User;
 using Newtonsoft.Json;
 using System;
@@ -16,12 +16,12 @@ namespace Minder.Service.Models.Participant {
         public UserDto? User { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public ConversationDto? Conversation { get; set; }
+        public GroupDto? Conversation { get; set; }
 
         public Database.Models.Participant ToEntity() {
             return new() {
                 Id = !string.IsNullOrEmpty(Id) ? Id : Guid.NewGuid().ToStringN(),
-                ConversationId = ConversationId,
+                GroupId = ConversationId,
                 UserId = UserId,
                 JoinAt = JoinAt,
             };

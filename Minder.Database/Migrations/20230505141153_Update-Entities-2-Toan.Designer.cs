@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Minder.Database;
 
@@ -10,9 +11,11 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    partial class MinderContextModelSnapshot : ModelSnapshot
+    [Migration("20230505141153_Update-Entities-2-Toan")]
+    partial class UpdateEntities2Toan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,17 +165,12 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("ChannelId")
+                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<long>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1683304127817L);
-
-                    b.Property<string>("TeamId")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -180,8 +178,6 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
 
                     b.ToTable("Group", (string)null);
                 });
@@ -621,7 +617,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("DayOfBirth")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1683304127818L);
+                        .HasDefaultValue(1683295913748L);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -711,15 +707,6 @@ namespace Minder.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("GameSetting");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.Group", b =>
-                {
-                    b.HasOne("Minder.Database.Models.Team", "Team")
-                        .WithMany("Groups")
-                        .HasForeignKey("TeamId");
-
-                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
@@ -880,8 +867,6 @@ namespace Minder.Database.Migrations
             modelBuilder.Entity("Minder.Database.Models.Team", b =>
                 {
                     b.Navigation("GameSetting");
-
-                    b.Navigation("Groups");
 
                     b.Navigation("Inviteds");
 

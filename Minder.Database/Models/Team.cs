@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Minder.Database.Enums;
 
 namespace Minder.Database.Models {
 
@@ -13,6 +12,7 @@ namespace Minder.Database.Models {
         public virtual GameSetting? GameSetting { get; set; }
         public virtual ICollection<Member>? Members { get; set; }
         public virtual ICollection<Invitation>? Inviteds { get; set; }
+        public virtual ICollection<Group>? Groups { get; set; }
     }
 
     public class TeamConfig : IEntityTypeConfiguration<Team> {
@@ -29,6 +29,8 @@ namespace Minder.Database.Models {
             // fk
             builder.HasMany(o => o.Members).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
             builder.HasMany(o => o.Inviteds).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
+            builder.HasMany(o => o.Groups).WithOne(o => o.Team).HasForeignKey(o => o.TeamId).OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

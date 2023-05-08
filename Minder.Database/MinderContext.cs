@@ -34,7 +34,7 @@ namespace Minder.Database {
 
         //Chat
 
-        public virtual DbSet<Conversation> Conversations => Set<Conversation>();
+        public virtual DbSet<Group> Groups => Set<Group>();
         public virtual DbSet<Participant> Participants => Set<Participant>();
         public virtual DbSet<Message> Messages => Set<Message>();
         public virtual DbSet<Models.File> Files => Set<Models.File>();

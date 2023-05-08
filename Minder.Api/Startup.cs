@@ -66,17 +66,19 @@ namespace Minder.Api {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["JwtSecret"]!))
                     };
+
                     options.Events = new JwtBearerEvents {
                         OnMessageReceived = context => {
-                            var accessToken = context.Request.Query["accessToken"];
+                            var accessToken = context.Request.Query["access_token"];
                             var path = context.HttpContext.Request.Path;
                             if (!string.IsNullOrEmpty(accessToken) &&
-                                (path.StartsWithSegments("/hubs/chat"))) {
+                                (path.StartsWithSegments("/hubs"))) {
                                 context.Token = accessToken;
                             }
                             return Task.CompletedTask;
                         }
                     };
+                    
                 });
 
             services.AddAuthorization(options => options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
@@ -131,11 +133,15 @@ namespace Minder.Api {
             services.AddHttpContextAccessor();
             services.AddSignalR(options => {
                 options.EnableDetailedErrors = true;
+                
             }).AddJsonProtocol(options => {
                 options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+                 
             });
 
-            services.AddSingleton<AdministrativeUnitResource>();
+            services.AddSingleton<AdministrativeUnitResource>()
+                    .AddSingleton<IDictionary<string, Connection>>(new Dictionary<string, Connection>());
+
             services.AddScoped<IUserService, UserService>()
                     .AddScoped<IAuthService, AuthService>()
                     .AddScoped<IEmailService, EmailService>()
@@ -144,10 +150,10 @@ namespace Minder.Api {
                     .AddScoped<IFileService, FileService>()
                     .AddScoped<IAppInfoService, AppInfoService>()
                     .AddScoped<IStadiumService, StadiumService>()
-                    .AddScoped<IConversationService, ConversationService>()
+                    .AddScoped<IGroupService, GroupService>()
                     .AddScoped<IInviteSevice, InviteService>()
-                    .AddScoped<IMessageService, MessageService>()
-                    .AddSingleton<IDictionary<string, Connection>>(new Dictionary<string, Connection>());
+                    .AddScoped<IChatService, ChatService>()
+                    .AddScoped<IMessageService, MessageService>();
 
             services.AddScheduler();
             services.AddScoped<ExpireInvitation>();
@@ -168,7 +174,7 @@ namespace Minder.Api {
 
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatService>("/hubs/chat");
+                endpoints.MapHub<ChatHub>("/hubs/chat");
             });
             AutoMigrate(app);
 
