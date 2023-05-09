@@ -48,7 +48,8 @@
             public static ResponseMessage Invite_IsExited { get; } = new() { Code = 60, Message = "Đã gửi lời mời cho người dùng này." };
             public static ResponseMessage Invite_NotFound { get; } = new() { Code = 61, Message = "Lời mời không tồn tại." };
             public static ResponseMessage Invite_TeamNotFound { get; } = new() { Code = 62, Message = "Đội không tồn tại." };
-            public static ResponseMessage Invite_UserNotFound { get; } = new() { Code = 62, Message = "Người dùng không tồn tại." };
+            public static ResponseMessage Invite_UserNotFound { get; } = new() { Code = 63, Message = "Người dùng không tồn tại." };
+            public static ResponseMessage Invite_IsSended { get; } = new() { Code = 64, Message = "Bạn đã gửi lời mời xin vào đội này." };
         }
 
         public static class Stadium {

@@ -8,7 +8,7 @@ namespace Minder.Service.Models.Team {
         public string UserId { get; set; } = string.Empty;
         public string TeamId { get; set; } = string.Empty;
         public string? Description { get; set; } = string.Empty;
-        public EInvitationType Type { get; set; }
+        public EInvitationType Type { get; set; } = EInvitationType.Invite;
         public DateTimeOffset? CreateAt { get; set; }
     }
 

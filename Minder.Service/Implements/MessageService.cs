@@ -39,25 +39,43 @@ namespace Minder.Service.Implements {
 
             var messageDtos = messages.OrderBy(o => o.CreateAt).Select(o => MessageDto.FromEntity(o, this.current.UserId, files.GetValueOrDefault(o.SenderId), this.current.Url)).ToList();
             var size = messageDtos.Count;
+            if(size == 0) return new();
+            var curentDate = messageDtos[0]?.CreateAt.Date ?? DateTimeOffset.UtcNow.Date;
+
+            var response = new List<MessageDto>();
+
             for (int i = 0; i < messageDtos.Count; i++) {
                 var item = messageDtos[i];
 
+                if (item == null) continue;
+                if (curentDate != item.CreateAt.Date && i != 0) {
+                    var timeLine = new MessageDto() {
+                        MessageType = EMessageType.TimeLine,
+                        GroupId = item.GroupId,
+                        CreateAt = item.CreateAt
+                    };
+                    curentDate = item.CreateAt.Date;
+                    response.Add(timeLine);
+                }
+
                 if (i == 0) {
-                    item!.IsDisplayAvatar = !item.IsSend;
-                } else if (messageDtos[i - 1]!.SenderId == item!.SenderId) {
+                    item.IsDisplayAvatar = !item.IsSend;
+                } else if (messageDtos[i - 1]?.SenderId == item.SenderId) {
                     item.IsDisplayAvatar = false;
                 } else item.IsDisplayAvatar = true;
 
                 if (i < size - 1) {
-                    item.IsDisplayTime = messageDtos[i + 1]!.User?.Id != item!.User?.Id;
+                    var nextItemTime = messageDtos[i + 1]!.CreateAt;
+                    var itemTime = item.CreateAt;
+                    item.IsDisplayTime = !(itemTime.Date == nextItemTime.Date && itemTime.Hour == nextItemTime.Hour && nextItemTime.Minute - itemTime.Minute < 30);
                 } else item.IsDisplayTime = true;
 
-                messageDtos[i] = item;
+                response.Add(item);
             }
 
             return new ListMessageData() {
                 Count = await query.CountAsync(),
-                Items = messageDtos,
+                Items = response!,
             };
         }
     }

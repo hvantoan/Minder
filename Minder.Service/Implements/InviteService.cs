@@ -10,6 +10,7 @@ using Minder.Services.Common;
 using Minder.Services.Extensions;
 using Minder.Services.Resources;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,18 +60,23 @@ namespace Minder.Service.Implements {
         }
 
         public async Task Invite(InviteDto model) {
-            var hasPermisstion = await this.db.Members.AnyAsync(o => (o.Regency == ERegency.Owner || o.Regency == ERegency.Captain)
+            if (model.Type == EInvitationType.Invite) {
+                var hasPermisstion = await this.db.Members.AnyAsync(o => (o.Regency == ERegency.Owner || o.Regency == ERegency.Captain)
                 && o.UserId == this.current.UserId && o.TeamId == model.TeamId);
-            ManagedException.ThrowIf(!hasPermisstion, Messages.Team.Team_NoPermistion);
-            ManagedException.ThrowIf(model.UserId == this.current.UserId, Messages.Team.Team_NotInviteYourself);
-            var invitation = await this.db.Invites.AnyAsync(o => o.TeamId == model.TeamId && o.UserId == model.UserId);
-            ManagedException.ThrowIf(invitation, Messages.Invite.Invite_IsExited);
+                ManagedException.ThrowIf(!hasPermisstion, Messages.Team.Team_NoPermistion);
+                ManagedException.ThrowIf(model.UserId == this.current.UserId, Messages.Team.Team_NotInviteYourself);
+            }
+
+            var userId = model.Type == EInvitationType.Invited ? this.current.UserId : model.UserId;
+
+            var invitation = await this.db.Invites.AnyAsync(o => o.TeamId == model.TeamId && o.UserId == userId && o.Type == model.Type);
+            ManagedException.ThrowIf(invitation, model.Type == EInvitationType.Invite ? Messages.Invite.Invite_IsExited : Messages.Invite.Invite_IsSended);
 
             var invite = new Invitation() {
                 Id = Guid.NewGuid().ToStringN(),
                 Description = model.Description,
                 TeamId = model.TeamId,
-                UserId = model.UserId,
+                UserId = userId,
                 Type = model.Type,
                 CreateAt = DateTimeOffset.Now,
             };
@@ -88,14 +94,16 @@ namespace Minder.Service.Implements {
                     Id = Guid.NewGuid().ToStringN(),
                     Regency = ERegency.Member,
                     TeamId = invite.TeamId,
-                    UserId = this.current.UserId,
+                    UserId = invite.UserId,
                 };
                 team.Members!.Add(member);
                 var group = team.Groups!.FirstOrDefault(o => string.IsNullOrEmpty(o.ChannelId));
+
+                group ??= new Group() { Participants = new List<Participant>() };
                 group!.Participants!.Add(new Participant() {
                     Id = Guid.NewGuid().ToStringN(),
                     JoinAt = DateTime.Now,
-                    UserId = this.current.UserId,
+                    UserId = invite.UserId,
                     GroupId = group.Id,
                 });
             }

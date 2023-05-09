@@ -2,5 +2,5 @@
 
 namespace Minder.Service.Models.Message {
 
-    public class ListMessageData : BaseListRes<MessageDto?> {}
+    public class ListMessageData : BaseListRes<MessageDto> {}
 }

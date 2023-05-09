@@ -27,16 +27,10 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpGet, Route("invites")]
-        public async Task<BaseRes> ListInvite(string? searchText, int pageIndex = 0, int pageSize = 20, int count = 1) {
+        [HttpPost, Route("invites")]
+        public async Task<BaseRes> ListInvite(ListInviteReq request) {
             try {
-                var req = new ListInviteReq() {
-                    SearchText = searchText,
-                    PageIndex = pageIndex,
-                    PageSize = pageSize,
-                    IsCount = count == 1
-                };
-                var res = await inviteSevice.ListInvite(req);
+                var res = await inviteSevice.ListInvite(request);
                 return BaseRes<ListInviteRes>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
