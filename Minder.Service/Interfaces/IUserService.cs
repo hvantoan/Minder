@@ -17,5 +17,7 @@ namespace Minder.Services.Interfaces {
         Task ChangePassword(ChangePasswordReq request);
 
         Task ResetPassword(string password);
+
+        Task<ListUserResponse> List(ListUserReq req);
     }
 }

@@ -5,6 +5,7 @@ using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Interfaces;
+using Minder.Service.Models.File;
 using Minder.Service.Models.User;
 using Minder.Services.Common;
 using Minder.Services.Extensions;
@@ -14,6 +15,7 @@ using Minder.Services.Models.User;
 using Minder.Services.Resources;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,6 +44,25 @@ namespace Minder.Services.Implements {
             return UserDto.FromEntity(user, null, avatar, coverAvatar);
         }
 
+        public async Task<ListUserResponse> List(ListUserReq req) {
+            var query = this.db.Users.Include(o=>o.GameSetting).ThenInclude(o=>o!.GameTime).AsNoTracking()
+                .WhereIf(req.UserIds != null && req.UserIds.Any(), o => req.UserIds!.Contains(o.Id));
+
+            var count = query.Count();
+            var users = await query.Take(req.PageSize).Skip(req.PageIndex * req.PageSize).ToListAsync();
+
+            var userIds = users.Select(o => o.Id).ToList();
+            var file = await this.db.Files.Where(o => o.Type == EFile.Image && (o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover) && userIds.Contains(o.ItemId))
+                .Select(o => FileDto.FromEntity(o, this.current.Url)).ToListAsync();
+
+            var avatarFiles = file.Where(o => o!.ItemType == EItemType.UserAvatar).ToDictionary(k => k!.ItemId);
+            var coverFiles = file.Where(o => o!.ItemType == EItemType.UserCover).ToDictionary(k => k!.ItemId);
+
+            return new ListUserResponse {
+                Count = await query.CountAsync(),
+                Items = users.Select(o => UserDto.FromEntity(o, null, avatarFiles.GetValueOrDefault(o.Id), coverFiles.GetValueOrDefault(o.Id))).ToList()
+            };
+        }
 
         public async Task<string> Create(UserDto model) {
             this.logger.Information($"{nameof(User)} - {nameof(Create)} - Start", model);
