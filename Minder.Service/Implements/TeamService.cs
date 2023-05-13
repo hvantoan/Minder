@@ -6,6 +6,7 @@ using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Extensions;
 using Minder.Service.Interfaces;
+using Minder.Service.Models.File;
 using Minder.Service.Models.Group;
 using Minder.Service.Models.Team;
 using Minder.Services.Common;
@@ -21,41 +22,53 @@ namespace Minder.Service.Implements {
 
     public class TeamService : BaseService, ITeamService {
         private readonly IGroupService groupService;
+        private readonly IFileService fileService;
 
         public TeamService(IServiceProvider serviceProvider) : base(serviceProvider) {
-            groupService = serviceProvider.GetRequiredService<IGroupService>();
+            this.groupService = serviceProvider.GetRequiredService<IGroupService>();
+            this.fileService = serviceProvider.GetRequiredService<IFileService>();
         }
 
         public async Task<ListTeamRes> List(ListTeamReq req) {
             var members = this.db.Members.AsNoTracking().WhereIf(req.IsMyTeam, o => o.UserId == this.current.UserId)
                 .WhereIf(req.teamIds != null, o => req.teamIds!.Contains(o.TeamId));
             var teamIds = members.Select(o => o.TeamId);
-            var query = this.db.Teams.Include(o => o.GameSetting).AsNoTracking().Where(o => teamIds.Contains(o.Id));
+            var query = this.db.Teams.AsNoTracking().Where(o => teamIds.Contains(o.Id));
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
                 req.SearchText = req.SearchText.ReplaceSpace(isUnsignedUnicode: true);
                 query = query.Where(o => o.Name.Contains(req.SearchText) || o.Name.GetSumary().Contains(req.SearchText) || o.Code.ToLower().Contains(req.SearchText));
             }
+            var items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).ToListAsync();
+            var fileIds = items.Select(o => o.Id).ToList();
+            var file = await this.db.Files.Where(o => o.Type == EFile.Image && (o.ItemType == EItemType.TeamAvatar || o.ItemType == EItemType.TeamCover) && fileIds.Contains(o.ItemId))
+               .Select(o => FileDto.FromEntity(o, this.current.Url)).ToListAsync();
+            var avatarFiles = file.Where(o => o!.ItemType == EItemType.TeamAvatar).GroupBy(o => o!.ItemId).ToDictionary(k => k.Key, v => v.FirstOrDefault()?.Path);
+            var coverFiles = file.Where(o => o!.ItemType == EItemType.TeamCover).GroupBy(o => o!.ItemId).ToDictionary(k => k.Key, v => v.FirstOrDefault()?.Path);
 
-            var items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => TeamDto.FromEntity(o)).ToListAsync();
+            var response = items.Select(o => TeamDto.FromEntity(o, avatarFiles?.GetValueOrDefault(o.Id), coverFiles?.GetValueOrDefault(o.Id))).ToList();
+
             var data = await members.Where(o => o.UserId == this.current.UserId).ToListAsync();
-            foreach (var item in items) {
+            foreach (var item in response) {
                 if (item != null) {
-                    item.GameSetting = null;
                     item.Regency = data.FirstOrDefault(o => o.TeamId == item.Id)?.Regency;
                 }
             }
 
             return new ListTeamRes() {
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = items
+                Items = response
             };
         }
 
         public async Task<TeamDto?> Get(string teamId) {
-            var team = await this.db.Teams.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).Include(o => o.Members).FirstOrDefaultAsync(o => o.Id == teamId);
+            var team = await this.db.Teams.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).Include(o => o.Members).AsNoTracking().FirstOrDefaultAsync(o => o.Id == teamId);
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
-            return TeamDto.FromEntity(team);
+            team.Groups = await this.db.Groups.Where(o => o.TeamId == team.Id && o.Type == EGroup.Team).ToListAsync();
+            var avatar = await this.fileService.Get(team.Id, EItemType.TeamAvatar);
+            var coverAvatar = await this.fileService.Get(team.Id, EItemType.TeamCover);
+
+            return TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path);
         }
 
         public async Task<string> CreateOrUpdate(TeamDto model) {

@@ -86,7 +86,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task ConfirmInvite(ConfirmInviteReq req) {
-            var invite = await this.db.Invites.FirstOrDefaultAsync(o => o.UserId == this.current.UserId && o.Id == req.Id);
+            var invite = await this.db.Invites.FirstOrDefaultAsync(o => o.Id == req.Id);
             ManagedException.ThrowIf(invite == null, Messages.Invite.Invite_NotFound);
             var team = await this.db.Teams.Include(o => o.Members).Include(o => o.Groups!).ThenInclude(o => o.Participants).FirstOrDefaultAsync(o => o.Id == invite.TeamId);
             if (req.IsJoin && team != null) {

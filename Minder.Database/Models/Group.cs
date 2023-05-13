@@ -9,7 +9,7 @@ namespace Minder.Database.Models {
         public string? TeamId { get; set; }
         public string? ChannelId { get; set; }
         public DateTimeOffset CreateAt { get; set; }
-
+        public EGroup Type { get; set; }
         public Team? Team { get; set; }
         public virtual ICollection<Message>? Messages { get; set; }
         public virtual ICollection<Participant>? Participants { get; set; }

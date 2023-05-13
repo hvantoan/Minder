@@ -3,7 +3,7 @@
     public enum EItemType {
         UserAvatar = 0,
         UserCover = 1,
-        TeamAvata = 2,
+        TeamAvatar = 2,
         TeamCover = 3,
         StadiumAvatar = 4,
     }

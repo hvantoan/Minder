@@ -15,10 +15,10 @@ namespace Minder.Service.Models.Team {
         public ERank Rank { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public ERegency? Regency { get; set; }
+        public string? GroupId { get; set; } = string.Empty;
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string? GroupId { get; set; }
+        public ERegency? Regency { get; set; }
 
         public DateTimeOffset CreateAt { get; set; }
 
@@ -30,11 +30,17 @@ namespace Minder.Service.Models.Team {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public virtual ICollection<Invitation>? Inviteds { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? Avatar { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? Cover { get; set; }
     }
 
     public partial class TeamDto {
 
-        public static TeamDto? FromEntity(Database.Models.Team? entity) {
+        public static TeamDto? FromEntity(Database.Models.Team? entity, string? avatar = null, string? cover = null) {
             if (entity == null) return default;
             return new TeamDto {
                 Id = entity.Id,
@@ -44,7 +50,9 @@ namespace Minder.Service.Models.Team {
                 GameSetting = entity.GameSetting != null ? GameSettingDto.FromEntity(entity.GameSetting) : default,
                 Members = entity.Members != null ? entity.Members.Select(o => MemberDto.FromEntity(o)!).ToList() : default,
                 Rank = entity.GameSetting?.Rank ?? default,
-                GroupId = entity.Groups?.FirstOrDefault(o => o.ChannelId == null)?.Id
+                GroupId = entity.Groups?.FirstOrDefault()?.Id,
+                Avatar = avatar,
+                Cover = cover
             };
         }
     }

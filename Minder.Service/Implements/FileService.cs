@@ -82,7 +82,7 @@ namespace Minder.Service.Implements {
             string itemType = file.ItemType switch {
                 EItemType.UserAvatar => "user-avatar",
                 EItemType.UserCover => "user-cover",
-                EItemType.TeamAvata => "team-avatar",
+                EItemType.TeamAvatar => "team-avatar",
                 EItemType.TeamCover => "team-cover",
                 EItemType.StadiumAvatar => "stadium-avatar",
                 _ => "other",
