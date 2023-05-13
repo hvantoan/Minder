@@ -1,6 +1,7 @@
 ﻿using Minder.Database.Enums;
+using System;
 
-namespace Minder.Database.Models {
+namespace Minder.Services.Models.Match {
 
     public class MatchTimeDto {
         public string DisplayName { get; set; } = string.Empty;

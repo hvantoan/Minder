@@ -26,7 +26,7 @@ namespace Minder.Database.Models {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).HasMaxLength(32).IsRequired();
 
-            builder.HasOne(o => o.GameSetting).WithOne(o => o.GameTime).HasForeignKey<GameTime>(o => o.GameSettingId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(o => o.GameSetting).WithOne(o => o.GameTime).HasForeignKey<GameTime>(o => o.GameSettingId);
         }
     }
 }

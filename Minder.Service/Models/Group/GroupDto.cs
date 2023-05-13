@@ -11,7 +11,7 @@ namespace Minder.Service.Models.Group {
     public class GroupDto {
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
-        public string ChannelId { get; set; } = string.Empty;
+        public string ChannelId { get; set; } = null!;
         public string? TeamId { get; set; }
         public string LastMessage { get; set; } = string.Empty;
         public DateTimeOffset CreateAt { get; set; } = DateTimeOffset.Now;
@@ -33,8 +33,7 @@ namespace Minder.Service.Models.Group {
             return new() {
                 Id = !string.IsNullOrEmpty(this.Id) ? this.Id : Guid.NewGuid().ToStringN(),
                 Title = this.Title,
-                TeamId = this.TeamId,
-                ChannelId = this.ChannelId ?? string.Empty,
+                ChannelId = this.ChannelId,
                 CreateAt = this.CreateAt,
                 Participants = this.Participants != null ? this.Participants.Select(o => o.ToEntity()).ToList() : default,
             };
@@ -45,10 +44,9 @@ namespace Minder.Service.Models.Group {
             return new GroupDto() {
                 Id = entity.Id,
                 Title = entity.Title,
-                ChannelId = entity.ChannelId ?? string.Empty,
-                TeamId = entity.TeamId,
+                ChannelId = entity.ChannelId,
                 CreateAt = entity.CreateAt,
-                LastMessage = entity.Messages?.OrderBy(o=>o.CreateAt).FirstOrDefault()?.Content ?? string.Empty,
+                LastMessage = entity.Messages?.OrderBy(o => o.CreateAt).FirstOrDefault()?.Content ?? string.Empty,
             };
         }
     }

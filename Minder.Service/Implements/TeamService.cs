@@ -64,11 +64,12 @@ namespace Minder.Service.Implements {
         public async Task<TeamDto?> Get(string teamId) {
             var team = await this.db.Teams.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).Include(o => o.Members).AsNoTracking().FirstOrDefaultAsync(o => o.Id == teamId);
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
-            team.Groups = await this.db.Groups.Where(o => o.TeamId == team.Id && o.Type == EGroup.Team).ToListAsync();
+
+            var group = await this.db.Groups.FirstOrDefaultAsync(o => o.ChannelId == team.Id && o.Type == EGroup.Team);
             var avatar = await this.fileService.Get(team.Id, EItemType.TeamAvatar);
             var coverAvatar = await this.fileService.Get(team.Id, EItemType.TeamCover);
 
-            return TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path);
+            return TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, group?.Id);
         }
 
         public async Task<string> CreateOrUpdate(TeamDto model) {
@@ -201,7 +202,7 @@ namespace Minder.Service.Implements {
             var memberLeave = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == teamId);
             memberLeave!.IsDeleted = true;
 
-            var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.TeamId == teamId && o.Type == EGroup.Team);
+            var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.Type == EGroup.Team && o.ChannelId == teamId);
             if (groupLeave != null) {
                 var participant = groupLeave.Participants!.FirstOrDefault(o => o.UserId == this.current.UserId);
                 participant!.IsDeleted = true;
@@ -219,7 +220,7 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(memberKick == null, Messages.Team.Team_NotInTeam);
             memberKick.IsDeleted = true;
 
-            var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.TeamId == memberKick.TeamId && o.Type == EGroup.Team);
+            var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.Type == EGroup.Team && o.ChannelId == memberKick.TeamId);
             if (groupLeave != null) {
                 var participant = groupLeave.Participants!.FirstOrDefault(o => o.UserId == this.current.UserId);
                 participant!.IsDeleted = true;

@@ -6,7 +6,7 @@ namespace Minder.Database.Models {
     public class Group {
         public string Id { get; set; } = null!;
         public string Title { get; set; } = string.Empty;
-        public string? ChannelId { get; set; }
+        public string ChannelId { get; set; } = null!;
         public EGroup Type { get; set; }
 
         public bool IsDeleted { get; set; }
@@ -38,8 +38,8 @@ namespace Minder.Database.Models {
 
             //fk
 
-            builder.HasMany(o => o.Messages).WithOne(o => o.Group).HasForeignKey(o => o.GroupId).OnDelete(DeleteBehavior.Cascade);
-            builder.HasMany(o => o.Participants).WithOne(o => o.Group).HasForeignKey(o => o.GroupId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(o => o.Messages).WithOne(o => o.Group).HasForeignKey(o => o.GroupId);
+            builder.HasMany(o => o.Participants).WithOne(o => o.Group).HasForeignKey(o => o.GroupId);
 
             //index
 

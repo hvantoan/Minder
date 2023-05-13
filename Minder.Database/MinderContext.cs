@@ -15,7 +15,6 @@ namespace Minder.Database {
 
         public virtual DbSet<GameTime> GameTime => Set<GameTime>();
 
-
         //User
 
         public virtual DbSet<User> Users => Set<User>();
@@ -38,6 +37,14 @@ namespace Minder.Database {
         public virtual DbSet<Participant> Participants => Set<Participant>();
         public virtual DbSet<Message> Messages => Set<Message>();
         public virtual DbSet<Models.File> Files => Set<Models.File>();
+
+        // Match
+
+        public virtual DbSet<Match> Matches => Set<Match>();
+        public virtual DbSet<HostTeam> HostTeams => Set<HostTeam>();
+        public virtual DbSet<OpposingTeam> OpposingTeams => Set<OpposingTeam>();
+        public virtual DbSet<HostParticipant> HostParticipants => Set<HostParticipant>();
+        public virtual DbSet<OpposingParticipant> OpposingParticipants => Set<OpposingParticipant>();
 
         public MinderContext() {
         }

@@ -23,7 +23,8 @@ namespace Minder.Database.Models {
         public DateTimeOffset CreateAt { get; set; }
 
         public virtual User? User { get; set; }
-        public virtual ICollection<MatchSetting>? MatchSettings { get; set; }
+        public virtual ICollection<HostTeam>? HostTeams { get; set; }
+        public virtual ICollection<OpposingTeam>? OpposingTeams { get; set; }
     }
 
     public class StadiumConfig : IEntityTypeConfiguration<Stadium> {
@@ -60,7 +61,8 @@ namespace Minder.Database.Models {
             //fk
 
             builder.HasOne(o => o.User).WithMany(o => o.Stadiums).HasForeignKey(o => o.UserId);
-            builder.HasMany(o => o.MatchSettings).WithOne(o => o.Stadium).HasForeignKey(o => o.StadiumId);
+            builder.HasMany(o => o.HostTeams).WithOne(o => o.Stadium).HasForeignKey(o => o.StadiumId);
+            builder.HasMany(o => o.OpposingTeams).WithOne(o => o.Stadium).HasForeignKey(o => o.StadiumId);
 
             // index
 

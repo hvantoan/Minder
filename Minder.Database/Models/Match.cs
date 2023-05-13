@@ -9,8 +9,8 @@ namespace Minder.Database.Models {
         public EMatch Status { get; set; }
         public DayOfWeek? SelectedDate { get; set; }
 
-        public virtual MatchSetting? HostTeam { get; set; }
-        public virtual MatchSetting? OpposingTeam { get; set; }
+        public virtual HostTeam? HostTeam { get; set; }
+        public virtual OpposingTeam? OpposingTeam { get; set; }
     }
 
     public class MatchConfig : IEntityTypeConfiguration<Match> {
@@ -21,8 +21,8 @@ namespace Minder.Database.Models {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).HasMaxLength(32).IsRequired();
 
-            builder.HasOne(o => o.HostTeam).WithOne(o => o.Match).HasForeignKey<MatchSetting>(o => o.MatchId).OnDelete(DeleteBehavior.Cascade);
-            builder.HasOne(o => o.OpposingTeam).WithOne(o => o.Match).HasForeignKey<MatchSetting>(o => o.MatchId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(o => o.HostTeam).WithOne(o => o.Match).HasForeignKey<HostTeam>(o => o.MatchId);
+            builder.HasOne(o => o.OpposingTeam).WithOne(o => o.Match).HasForeignKey<OpposingTeam>(o => o.MatchId);
         }
     }
 }

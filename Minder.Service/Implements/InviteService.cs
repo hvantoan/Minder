@@ -97,12 +97,12 @@ namespace Minder.Service.Implements {
                     UserId = invite.UserId,
                 };
                 team.Members!.Add(member);
-                var group = team.Groups!.FirstOrDefault(o => string.IsNullOrEmpty(o.ChannelId));
+                var group = team.Groups!.FirstOrDefault(o => o.ChannelId == invite.TeamId && o.Type == EGroup.Team);
 
                 group ??= new Group() { Participants = new List<Participant>() };
                 group!.Participants!.Add(new Participant() {
                     Id = Guid.NewGuid().ToStringN(),
-                    JoinAt = DateTime.Now,
+                    JoinAt = DateTime.UtcNow,
                     UserId = invite.UserId,
                     GroupId = group.Id,
                 });
