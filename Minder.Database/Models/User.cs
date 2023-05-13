@@ -19,7 +19,9 @@ namespace Minder.Database.Models {
 
         public bool IsAdmin { get; set; }
         public bool IsActive { get; set; }
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; }
+
+
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
         public virtual GameSetting? GameSetting { get; set; }
@@ -43,7 +45,12 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Username).IsRequired();
             builder.Property(o => o.Password).IsRequired();
             builder.Property(o => o.Phone).IsRequired();
+            builder.Property(o => o.IsDeleted).HasDefaultValue(false);
             builder.Property(o => o.DayOfBirth).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).HasDefaultValue(DateTimeOffset.Now);
+
+            // filter
+
+            builder.HasQueryFilter(o => !o.IsDeleted);
 
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);

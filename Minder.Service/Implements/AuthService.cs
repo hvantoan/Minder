@@ -37,7 +37,7 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<LoginRes> WebLogin(LoginReq request) {
-            var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim() && !o.IsDelete && o.IsActive);
+            var user = await this.db.Users.AsNoTracking().FirstOrDefaultAsync(o => o.Username == request.Username.ToLower().Trim() && !o.IsDeleted && o.IsActive);
 
             ManagedException.ThrowIf(user == null, Messages.Auth.Auth_NotFound);
             ManagedException.ThrowIf(!PasswordHashser.Verify(request.Password, user.Password), Messages.Auth.Auth_IncorrectPassword);
@@ -202,7 +202,7 @@ namespace Minder.Services.Implements {
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
             ManagedException.ThrowIf(!(new EmailAddressAttribute().IsValid(model.Username)), Messages.User.User_UsernameRequest);
 
-            var user = await this.db.Users.AnyAsync(o => !o.IsDelete && o.Username == model.Username && o.IsActive);
+            var user = await this.db.Users.AnyAsync(o => !o.IsDeleted && o.Username == model.Username && o.IsActive);
             ManagedException.ThrowIf(user, Messages.User.User_Existed);
 
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);

@@ -5,8 +5,12 @@ namespace Minder.Database.Enums {
     public enum EMatch {
 
         [Description("Chuẩn bị")]
-        Prepare = 0,
+        Prepare,
 
-        Cancel = 1,
+        [Description("Hoàn thành")]
+        Complete,
+
+        [Description("Hủy")]
+        Cancel,
     }
 }

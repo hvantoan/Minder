@@ -31,7 +31,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListStadiumRes> List(ListStadiumReq req) {
-            var query = this.db.Stadiums.AsNoTracking().Where(o => !o.IsDelete);
+            var query = this.db.Stadiums.AsNoTracking().Where(o => !o.IsDeleted);
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
                 req.SearchText = req.SearchText.ReplaceSpace(isUnsignedUnicode: true);
@@ -46,7 +46,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<StadiumDto?> Get(GetStadiumReq req) {
-            var stadium = await this.db.Stadiums.AsNoTracking().FirstOrDefaultAsync(o => o.Id == req.Id && !o.IsDelete);
+            var stadium = await this.db.Stadiums.AsNoTracking().FirstOrDefaultAsync(o => o.Id == req.Id && !o.IsDeleted);
             ManagedException.ThrowIf(stadium == null, Messages.Stadium.Stadium_NotFound);
 
             var avatar = await this.fileService.Get(req.Id, EItemType.StadiumAvatar);
@@ -67,7 +67,7 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Code), Messages.Stadium.Stadium_CodeRequired);
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.Stadium.Stadium_NameRequired);
 
-            var isExitCode = await this.db.Stadiums.AnyAsync(o => o.Code == model.Code && !o.IsDelete);
+            var isExitCode = await this.db.Stadiums.AnyAsync(o => o.Code == model.Code && !o.IsDeleted);
             ManagedException.ThrowIf(isExitCode, Messages.Stadium.Stadium_CodeExited);
 
             var stadium = new Stadium() {
@@ -97,10 +97,10 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Code), Messages.Stadium.Stadium_CodeRequired);
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Name), Messages.Stadium.Stadium_NameRequired);
 
-            var isExitCode = await this.db.Stadiums.AnyAsync(o => o.Code == model.Code && o.Id != model.Id && !o.IsDelete);
+            var isExitCode = await this.db.Stadiums.AnyAsync(o => o.Code == model.Code && o.Id != model.Id && !o.IsDeleted);
             ManagedException.ThrowIf(!isExitCode, Messages.Stadium.Stadium_CodeExited);
 
-            var stadium = await this.db.Stadiums.FirstOrDefaultAsync(o => o.Id == model.Id && o.UserId == this.current.UserId && !o.IsDelete);
+            var stadium = await this.db.Stadiums.FirstOrDefaultAsync(o => o.Id == model.Id && o.UserId == this.current.UserId && !o.IsDeleted);
             ManagedException.ThrowIf(stadium == null, Messages.Stadium.Stadium_NotFound);
 
             stadium.Code = model.Code;
@@ -124,10 +124,10 @@ namespace Minder.Service.Implements {
         public async Task Delete(DeleteStadiumReq req) {
             this.logger.Information($"{nameof(Stadium)} - {nameof(Delete)} - Start", req.Id);
 
-            var stadium = await this.db.Stadiums.FirstOrDefaultAsync(o => o.Id == req.Id && o.UserId == this.current.UserId && !o.IsDelete);
+            var stadium = await this.db.Stadiums.FirstOrDefaultAsync(o => o.Id == req.Id && o.UserId == this.current.UserId && !o.IsDeleted);
             ManagedException.ThrowIf(stadium == null, Messages.Stadium.Stadium_NotFound);
 
-            stadium.IsDelete = true;
+            stadium.IsDeleted = true;
             await this.db.SaveChangesAsync();
         }
 

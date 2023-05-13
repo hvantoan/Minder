@@ -138,7 +138,7 @@ namespace Minder.Services.Implements {
         public async Task<UserDto?> UpdateMe(UserDto model) {
             this.logger.Information($"{nameof(UserService)} - {nameof(UpdateMe)} - Start", model);
 
-            var user = await this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDelete);
+            var user = await this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).FirstOrDefaultAsync(o => o.Id == this.current.UserId && !o.IsDeleted);
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
             if (!string.IsNullOrWhiteSpace(model.Name)) user.Name = model.Name;
@@ -168,9 +168,9 @@ namespace Minder.Services.Implements {
         }
 
         public async Task Delete() {
-            var user = await this.db.Users.Where(o => o.Id == this.current.UserId && !o.IsDelete).FirstOrDefaultAsync();
+            var user = await this.db.Users.Where(o => o.Id == this.current.UserId && !o.IsDeleted).FirstOrDefaultAsync();
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
-            user.IsDelete = true;
+            user.IsDeleted = true;
             await this.db.SaveChangesAsync();
         }
     }

@@ -18,9 +18,12 @@ namespace Minder.Database.Models {
         public string? District { get; set; }
         public string? Commune { get; set; }
         public string? Address { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTimeOffset UpdateAt { get; set; }
         public DateTimeOffset CreateAt { get; set; }
-        public bool IsDelete { get; set; }
+
         public virtual User? User { get; set; }
+        public virtual ICollection<MatchSetting>? MatchSettings { get; set; }
     }
 
     public class StadiumConfig : IEntityTypeConfiguration<Stadium> {
@@ -29,7 +32,7 @@ namespace Minder.Database.Models {
             builder.ToTable(nameof(Stadium));
 
             builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).HasMaxLength(32);
+            builder.Property(o => o.Id).HasMaxLength(32).IsRequired();
 
             builder.Property(o => o.Code).HasMaxLength(255).IsRequired();
             builder.Property(o => o.Name).HasMaxLength(255).IsRequired();
@@ -43,11 +46,21 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Commune).HasMaxLength(5);
             builder.Property(o => o.Address).HasMaxLength(1000);
 
-            builder.Property(o => o.CreateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
+            builder.Property(o => o.IsDeleted).HasDefaultValue(false);
+
+            builder.Property(o => o.CreateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o))
+                .HasDefaultValue(DateTimeOffset.UtcNow).IsRequired();
+            builder.Property(o => o.UpdateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o))
+                .HasDefaultValue(DateTimeOffset.UtcNow).IsRequired();
+
+            //filter
+
+            builder.HasQueryFilter(o => !o.IsDeleted);
 
             //fk
 
             builder.HasOne(o => o.User).WithMany(o => o.Stadiums).HasForeignKey(o => o.UserId);
+            builder.HasMany(o => o.MatchSettings).WithOne(o => o.Stadium).HasForeignKey(o => o.StadiumId);
 
             // index
 

@@ -11,6 +11,7 @@ namespace Minder.Database.Models {
         public EMessageType MessageType { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTimeOffset CreateAt { get; set; }
+        public DateTimeOffset UpdateAt { get; set; }
 
         public virtual Group? Group { get; set; }
         public virtual User? User { get; set; }
@@ -23,7 +24,10 @@ namespace Minder.Database.Models {
 
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).HasMaxLength(32);
-            builder.Property(o => o.CreateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
+            builder.Property(o => o.CreateAt).HasDefaultValue(DateTimeOffset.UtcNow)
+                .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
+            builder.Property(o => o.UpdateAt).HasDefaultValue(DateTimeOffset.UtcNow)
+                .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
             //fk
 

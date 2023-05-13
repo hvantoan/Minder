@@ -21,4 +21,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Minder.Database\Minder.Database.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Models\Match\" />
+	</ItemGroup>
 </Project>

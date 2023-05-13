@@ -198,13 +198,16 @@ namespace Minder.Service.Implements {
             var isOwner = await this.db.Members.AnyAsync(o => o.TeamId == teamId && o.UserId == this.current.UserId && o.Regency == ERegency.Owner);
             ManagedException.ThrowIf(isOwner, Messages.Team.Team_IsOwner);
 
-            var team = await this.db.Teams.Include(o => o.Members).Include(o => o.Groups!).ThenInclude(o => o.Participants).FirstOrDefaultAsync(o => o.Id == teamId);
-            if (team != null) {
-                team.Members = team.Members!.Where(o => o.UserId != this.current.UserId).ToList();
-                var group = team.Groups!.FirstOrDefault(o => string.IsNullOrEmpty(o.ChannelId));
-                group!.Participants = group!.Participants!.Where(o => o.UserId != this.current.UserId).ToList();
-                await this.db.SaveChangesAsync();
+            var memberLeave = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == teamId);
+            memberLeave!.IsDeleted = true;
+
+            var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.TeamId == teamId && o.Type == EGroup.Team);
+            if (groupLeave != null) {
+                var participant = groupLeave.Participants!.FirstOrDefault(o => o.UserId == this.current.UserId);
+                participant!.IsDeleted = true;
             }
+
+            await this.db.SaveChangesAsync();
         }
 
         public async Task Kick(string userId) {
@@ -214,14 +217,14 @@ namespace Minder.Service.Implements {
 
             var memberKick = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == member.TeamId && o.UserId == userId);
             ManagedException.ThrowIf(memberKick == null, Messages.Team.Team_NotInTeam);
+            memberKick.IsDeleted = true;
 
-            var team = await this.db.Teams.Include(o => o.Members).Include(o => o.Groups!).ThenInclude(o => o.Participants).FirstOrDefaultAsync(o => o.Id == member.TeamId);
-            if (team != null) {
-                team.Members = team.Members!.Where(o => o.UserId != userId).ToList();
-                var group = team.Groups!.FirstOrDefault(o => string.IsNullOrEmpty(o.ChannelId));
-                group!.Participants = group!.Participants!.Where(o => o.UserId != userId).ToList();
-                await this.db.SaveChangesAsync();
+            var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.TeamId == memberKick.TeamId && o.Type == EGroup.Team);
+            if (groupLeave != null) {
+                var participant = groupLeave.Participants!.FirstOrDefault(o => o.UserId == this.current.UserId);
+                participant!.IsDeleted = true;
             }
+
             await this.db.SaveChangesAsync();
         }
 
@@ -240,7 +243,7 @@ namespace Minder.Service.Implements {
             var users = await this.db.Users.Where(o => userIds.Contains(o.Id)).ToDictionaryAsync(k => k.Id, v => { return GetAge(v.DayOfBirth); });
             var teamIds = new List<string>();
 
-            if (req.Age.HasValue || (req.Day.HasValue && req.Time.HasValue)) {
+            if (req.Age.HasValue || (req.Day.HasValue && req.From > req.To)) {
                 foreach (var team in teams) {
                     //Filter Age
                     var isAgeAdd = false;
@@ -273,37 +276,36 @@ namespace Minder.Service.Implements {
                     //Fillter Time
                     var isTimeAdd = true;
 
-                    if (req.Day.HasValue && req.Time.HasValue) {
+                    if (req.Day.HasValue && req.From > req.To) {
                         var item = TeamDto.FromEntity(team);
-                        var (from, to) = GetTimeFromOption(req.Time.Value);
 
                         switch (req.Day) {
-                            case EDay.Monday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Monday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Monday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Monday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case EDay.Tuesday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Tuesday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Tuesday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Tuesday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case EDay.Wednesday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Wednesday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Wednesday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Wednesday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case EDay.Thursday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Thursday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Thursday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Thursday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case EDay.Friday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Friday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Friday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Friday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case EDay.Saturday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Saturday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Saturday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Saturday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case EDay.Sunday:
-                                isTimeAdd = item!.GameSetting!.GameTime!.Sunday.Any(o => from <= o && o <= to);
+                            case DayOfWeek.Sunday:
+                                isTimeAdd = item!.GameSetting!.GameTime!.Sunday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
                             case null:
@@ -329,36 +331,7 @@ namespace Minder.Service.Implements {
             });
         }
 
-        public (EGameTime, EGameTime) GetTimeFromOption(ETime time) {
-            var from = EGameTime.One;
-            var to = EGameTime.One;
-
-            switch (time) {
-                case ETime.OptionOne:
-                    from = EGameTime.One;
-                    to = EGameTime.Six;
-                    break;
-
-                case ETime.OptionTwo:
-                    from = EGameTime.Seven;
-                    to = EGameTime.Twelve;
-                    break;
-
-                case ETime.OptionThree:
-                    from = EGameTime.Thirteen;
-                    to = EGameTime.Eighteen;
-                    break;
-
-                case ETime.OptionFour:
-                    from = EGameTime.Nine;
-                    to = EGameTime.TwentyFour;
-                    break;
-            }
-
-            return (from, to);
-        }
-
-        public int GetAge(DateTimeOffset dateOfBirth) {
+        private static int GetAge(DateTimeOffset dateOfBirth) {
             DateTimeOffset today = DateTimeOffset.Now;
             int age = today.Year - dateOfBirth.Year;
 

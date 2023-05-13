@@ -1,5 +1,6 @@
 ﻿using Minder.Database.Enums;
 using Minder.Services.Models;
+using System;
 
 namespace Minder.Service.Models.Team {
 
@@ -9,7 +10,16 @@ namespace Minder.Service.Models.Team {
         public EAge? Age { get; set; }
         public EPosition? Position { get; set; }
         public EGameType? GameType { get; set; }
-        public EDay? Day { get; set; }
-        public ETime? Time { get; set; }
+
+        // Find in map
+        public decimal Lat { get; set; }
+        public decimal Long { get; set; }
+        public int Radius { get; set; }
+
+
+        // Find with time option
+        public DayOfWeek? Day { get; set; }
+        public EGameTime From { get; set; }
+        public EGameTime To { get; set; }
     }
 }

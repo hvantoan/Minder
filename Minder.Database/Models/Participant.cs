@@ -9,6 +9,8 @@ namespace Minder.Database.Models {
         public string UserId { get; set; } = null!;
         public DateTimeOffset JoinAt { get; set; }
         public string? LastSendMessageId { get; set; }
+        public bool IsDeleted { get; set; }
+
         public virtual User? User { get; set; }
         public virtual Group? Group { get; set; }
     }
@@ -23,7 +25,14 @@ namespace Minder.Database.Models {
             builder.Property(o => o.GroupId).HasMaxLength(32).IsRequired();
             builder.Property(o => o.LastSendMessageId).HasMaxLength(32);
             builder.Property(o => o.UserId).HasMaxLength(32).IsRequired();
-            builder.Property(o => o.JoinAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
+            builder.Property(o => o.IsDeleted).HasDefaultValue(false);
+            builder.Property(o => o.JoinAt).HasDefaultValue(DateTimeOffset.UtcNow)
+                .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
+
+
+            // query
+
+            builder.HasQueryFilter(o => !o.IsDeleted);
 
             //fk
 
