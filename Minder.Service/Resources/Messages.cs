@@ -36,7 +36,7 @@
             public static ResponseMessage Team_NoPermistion { get; } = new() { Code = 37, Message = "Bạn không có đủ quyền." };
             public static ResponseMessage Team_NotOut { get; } = new() { Code = 38, Message = "Bạn không thể rời đội khi đang là chủ sở hửu." };
             public static ResponseMessage Team_NotInTeam { get; } = new() { Code = 38, Message = "Người dùng không ở trong đội." };
-            public static ResponseMessage Team_NotInviteYourself{ get; } = new() { Code = 39, Message = "Không thể mời chính mình." };
+            public static ResponseMessage Team_NotInviteYourself { get; } = new() { Code = 39, Message = "Không thể mời chính mình." };
         }
 
         public static class File {
@@ -68,6 +68,12 @@
             public static ResponseMessage Conversation_NameRequire { get; } = new() { Code = 90, Message = "Tên là bắt buộc." };
             public static ResponseMessage Conversation_MinParticipant { get; } = new() { Code = 90, Message = "Hội thoại tối thiểu phải có 2 người." };
             public static ResponseMessage Conversation_NotFound { get; } = new() { Code = 90, Message = "Đoạn hội thoại không tồn tại." };
+        }
+
+        public static class Match {
+            public static ResponseMessage HostTeam_NotFount { get; } = new() { Code = 100, Message = "Đội của bạn không tồn tại." };
+            public static ResponseMessage OpposingTeam_NotFount { get; } = new() { Code = 101, Message = "Đội đối thủ không tồn tại không tồn tại." };
+            public static ResponseMessage Match_NotFount { get; } = new() { Code = 102, Message = "Trận đấu không tồn tại." };
         }
 
         public static class System {

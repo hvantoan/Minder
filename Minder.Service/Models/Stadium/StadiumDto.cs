@@ -5,7 +5,7 @@ using System;
 
 namespace Minder.Service.Models.Stadium {
 
-    public partial class StadiumDto {
+    public class StadiumDto {
         public string Id { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
@@ -24,12 +24,9 @@ namespace Minder.Service.Models.Stadium {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string? Avatar { get; set; }
-    }
 
-    public partial class StadiumDto {
-
-        public static StadiumDto? FromEntity(Database.Models.Stadium? entity, AdministrativeUnitResource? administrativeUnitResource,
-            FileDto? avatar = null) {
+        public static StadiumDto? FromEntity(Database.Models.Stadium? entity, AdministrativeUnitResource? administrativeUnitResource = null,
+           FileDto? avatar = null) {
             if (entity == null) return default;
 
             var au = administrativeUnitResource?.GetByCode(entity.Province, entity.District, entity.Commune) ?? new();

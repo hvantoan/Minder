@@ -332,6 +332,24 @@ namespace Minder.Service.Implements {
             });
         }
 
+        public async Task<ListTeamRes> Suggession(SuggessTeamReq req) {
+            var entity = await this.db.Teams.Include(o => o.TeamRejecteds).Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
+                .AsNoTracking().FirstOrDefaultAsync(o => o!.Id == req.TeamId);
+            var myTeam = TeamDto.FromEntity(entity);
+
+            var teams = await this.db.Teams.Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
+                .Where(o => o.Id != req.TeamId && !myTeam!.TeamRejectedId.Contains(o.Id))
+                .AsNoTracking().Select(o => TeamDto.FromEntity(o, null, null, null)).ToListAsync();
+
+            teams = teams.Where(o => o!.Id != req.TeamId).ToList();
+            teams = MinderExtension.SortDistance(myTeam!, teams!)!;
+
+            return new ListTeamRes() {
+                Count = teams.Count,
+                Items = teams.Take(req.Take).Skip(req.Skip).ToList(),
+            };
+        }
+
         private static int GetAge(DateTimeOffset dateOfBirth) {
             DateTimeOffset today = DateTimeOffset.Now;
             int age = today.Year - dateOfBirth.Year;

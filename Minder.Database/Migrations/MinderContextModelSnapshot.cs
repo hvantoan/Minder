@@ -169,7 +169,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("CreateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834497L);
+                        .HasDefaultValue(1684118024716L);
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -190,7 +190,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("UpdateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834497L);
+                        .HasDefaultValue(1684118024716L);
 
                     b.HasKey("Id");
 
@@ -201,64 +201,6 @@ namespace Minder.Database.Migrations
                     b.HasIndex("ChannelId", "Type");
 
                     b.ToTable("Group", (string)null);
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.HostParticipant", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("HostTeamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("MemberId")
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HostTeamId");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("HostParticipant", (string)null);
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.HostTeam", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("MatchId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("StadiumId")
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("TeamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MatchId")
-                        .IsUnique();
-
-                    b.HasIndex("StadiumId");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("HostTeam", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
@@ -301,15 +243,90 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("From")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HostTeamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("OppsingTeamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<int?>("SelectedDate")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int?>("To")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("HostTeamId")
+                        .IsUnique();
+
+                    b.HasIndex("OppsingTeamId")
+                        .IsUnique();
+
                     b.ToTable("Match", (string)null);
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.MatchParticipant", b =>
+                {
+                    b.Property<string>("MemberId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("MatchSettingId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.HasKey("MemberId", "MatchSettingId");
+
+                    b.HasIndex("MatchSettingId");
+
+                    b.ToTable("MatchParticipant", (string)null);
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.MatchSetting", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int?>("From")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SelectedDayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StadiumId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("TeamId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int?>("To")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StadiumId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("MatchSetting", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Member", b =>
@@ -358,7 +375,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("CreateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834499L);
+                        .HasDefaultValue(1684118024718L);
 
                     b.Property<string>("GroupId")
                         .IsRequired()
@@ -374,7 +391,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("UpdateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834499L);
+                        .HasDefaultValue(1684118024718L);
 
                     b.HasKey("Id");
 
@@ -383,64 +400,6 @@ namespace Minder.Database.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("Message", (string)null);
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.OpposingParticipant", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("MemberId")
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("OpposingTeamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.HasIndex("OpposingTeamId");
-
-                    b.ToTable("OpposingParticipant", (string)null);
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.OpposingTeam", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("MatchId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("StadiumId")
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("TeamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MatchId")
-                        .IsUnique();
-
-                    b.HasIndex("StadiumId");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("OpposingTeam", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Participant", b =>
@@ -462,7 +421,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("JoinAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834499L);
+                        .HasDefaultValue(1684118024719L);
 
                     b.Property<string>("LastSendMessageId")
                         .HasMaxLength(32)
@@ -717,7 +676,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("CreateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834499L);
+                        .HasDefaultValue(1684118024719L);
 
                     b.Property<string>("District")
                         .HasMaxLength(3)
@@ -751,7 +710,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("UpdateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834499L);
+                        .HasDefaultValue(1684118024719L);
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -781,7 +740,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("CreateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834500L);
+                        .HasDefaultValue(1684118024719L);
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -795,11 +754,31 @@ namespace Minder.Database.Migrations
                     b.Property<long>("UpdateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834500L);
+                        .HasDefaultValue(1684118024719L);
 
                     b.HasKey("Id");
 
                     b.ToTable("Team", (string)null);
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.TeamRejected", b =>
+                {
+                    b.Property<string>("TeamId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ItemId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<long>("CreateAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1684118024719L);
+
+                    b.HasKey("TeamId", "ItemId");
+
+                    b.ToTable("TeamRejected", (string)null);
                 });
 
             modelBuilder.Entity("Minder.Database.Models.User", b =>
@@ -811,7 +790,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("DayOfBirth")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684002834500L);
+                        .HasDefaultValue(1684118024720L);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -912,46 +891,6 @@ namespace Minder.Database.Migrations
                         .HasForeignKey("TeamId");
                 });
 
-            modelBuilder.Entity("Minder.Database.Models.HostParticipant", b =>
-                {
-                    b.HasOne("Minder.Database.Models.HostTeam", "HostTeam")
-                        .WithMany("HostParticipants")
-                        .HasForeignKey("HostTeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Minder.Database.Models.Member", null)
-                        .WithMany("HostParticipants")
-                        .HasForeignKey("MemberId");
-
-                    b.Navigation("HostTeam");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.HostTeam", b =>
-                {
-                    b.HasOne("Minder.Database.Models.Match", "Match")
-                        .WithOne("HostTeam")
-                        .HasForeignKey("Minder.Database.Models.HostTeam", "MatchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Minder.Database.Models.Stadium", "Stadium")
-                        .WithMany("HostTeams")
-                        .HasForeignKey("StadiumId");
-
-                    b.HasOne("Minder.Database.Models.Team", "Team")
-                        .WithMany("HostTeams")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Match");
-
-                    b.Navigation("Stadium");
-
-                    b.Navigation("Team");
-                });
-
             modelBuilder.Entity("Minder.Database.Models.Invitation", b =>
                 {
                     b.HasOne("Minder.Database.Models.Team", "Team")
@@ -969,6 +908,59 @@ namespace Minder.Database.Migrations
                     b.Navigation("Team");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.Match", b =>
+                {
+                    b.HasOne("Minder.Database.Models.MatchSetting", "HostTeam")
+                        .WithOne("HostMatch")
+                        .HasForeignKey("Minder.Database.Models.Match", "HostTeamId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Minder.Database.Models.MatchSetting", "OpposingTeam")
+                        .WithOne("OpposingMatch")
+                        .HasForeignKey("Minder.Database.Models.Match", "OppsingTeamId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("HostTeam");
+
+                    b.Navigation("OpposingTeam");
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.MatchParticipant", b =>
+                {
+                    b.HasOne("Minder.Database.Models.MatchSetting", "MatchSetting")
+                        .WithMany("MatchParticipants")
+                        .HasForeignKey("MatchSettingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Minder.Database.Models.Member", "Member")
+                        .WithMany("MatchParticipants")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MatchSetting");
+
+                    b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("Minder.Database.Models.MatchSetting", b =>
+                {
+                    b.HasOne("Minder.Database.Models.Stadium", "Stadium")
+                        .WithMany("MatchSettings")
+                        .HasForeignKey("StadiumId");
+
+                    b.HasOne("Minder.Database.Models.Team", "Team")
+                        .WithMany("MatchSettings")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Stadium");
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Member", b =>
@@ -1007,46 +999,6 @@ namespace Minder.Database.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.OpposingParticipant", b =>
-                {
-                    b.HasOne("Minder.Database.Models.Member", null)
-                        .WithMany("OpposingParticipants")
-                        .HasForeignKey("MemberId");
-
-                    b.HasOne("Minder.Database.Models.OpposingTeam", "OpposingTeam")
-                        .WithMany("OpposingParticipants")
-                        .HasForeignKey("OpposingTeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OpposingTeam");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.OpposingTeam", b =>
-                {
-                    b.HasOne("Minder.Database.Models.Match", "Match")
-                        .WithOne("OpposingTeam")
-                        .HasForeignKey("Minder.Database.Models.OpposingTeam", "MatchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Minder.Database.Models.Stadium", "Stadium")
-                        .WithMany("OpposingTeams")
-                        .HasForeignKey("StadiumId");
-
-                    b.HasOne("Minder.Database.Models.Team", "Team")
-                        .WithMany("OpposingTeam")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Match");
-
-                    b.Navigation("Stadium");
-
-                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Participant", b =>
@@ -1107,6 +1059,17 @@ namespace Minder.Database.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Minder.Database.Models.TeamRejected", b =>
+                {
+                    b.HasOne("Minder.Database.Models.Team", "Team")
+                        .WithMany("TeamRejecteds")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("Minder.Database.Models.User", b =>
                 {
                     b.HasOne("Minder.Database.Models.Role", "Role")
@@ -1135,28 +1098,18 @@ namespace Minder.Database.Migrations
                     b.Navigation("Participants");
                 });
 
-            modelBuilder.Entity("Minder.Database.Models.HostTeam", b =>
+            modelBuilder.Entity("Minder.Database.Models.MatchSetting", b =>
                 {
-                    b.Navigation("HostParticipants");
-                });
+                    b.Navigation("HostMatch");
 
-            modelBuilder.Entity("Minder.Database.Models.Match", b =>
-                {
-                    b.Navigation("HostTeam");
+                    b.Navigation("MatchParticipants");
 
-                    b.Navigation("OpposingTeam");
+                    b.Navigation("OpposingMatch");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Member", b =>
                 {
-                    b.Navigation("HostParticipants");
-
-                    b.Navigation("OpposingParticipants");
-                });
-
-            modelBuilder.Entity("Minder.Database.Models.OpposingTeam", b =>
-                {
-                    b.Navigation("OpposingParticipants");
+                    b.Navigation("MatchParticipants");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Permission", b =>
@@ -1173,9 +1126,7 @@ namespace Minder.Database.Migrations
 
             modelBuilder.Entity("Minder.Database.Models.Stadium", b =>
                 {
-                    b.Navigation("HostTeams");
-
-                    b.Navigation("OpposingTeams");
+                    b.Navigation("MatchSettings");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.Team", b =>
@@ -1184,13 +1135,13 @@ namespace Minder.Database.Migrations
 
                     b.Navigation("Groups");
 
-                    b.Navigation("HostTeams");
-
                     b.Navigation("Inviteds");
+
+                    b.Navigation("MatchSettings");
 
                     b.Navigation("Members");
 
-                    b.Navigation("OpposingTeam");
+                    b.Navigation("TeamRejecteds");
                 });
 
             modelBuilder.Entity("Minder.Database.Models.User", b =>

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -51,9 +52,12 @@ namespace Minder.Api {
             });
             services.AddMemoryCache();
 
-            services.AddDbContext<MinderContext>(options =>
-               options.UseSqlServer(Configuration.GetConnectionString(nameof(MinderContext))!)
-            );
+            services.AddDbContext<MinderContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString(nameof(MinderContext))!);
+                options.ConfigureWarnings(builder => {
+                    builder.Ignore(CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning);
+                });
+            });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
@@ -78,7 +82,6 @@ namespace Minder.Api {
                             return Task.CompletedTask;
                         }
                     };
-                    
                 });
 
             services.AddAuthorization(options => options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
@@ -133,10 +136,8 @@ namespace Minder.Api {
             services.AddHttpContextAccessor();
             services.AddSignalR(options => {
                 options.EnableDetailedErrors = true;
-                
             }).AddJsonProtocol(options => {
                 options.PayloadSerializerOptions.PropertyNamingPolicy = null;
-                 
             });
 
             services.AddSingleton<AdministrativeUnitResource>()
@@ -153,10 +154,12 @@ namespace Minder.Api {
                     .AddScoped<IGroupService, GroupService>()
                     .AddScoped<IInviteSevice, InviteService>()
                     .AddScoped<IChatService, ChatService>()
+                    .AddScoped<IMatchService, MatchService>()
                     .AddScoped<IMessageService, MessageService>();
 
             services.AddScheduler();
             services.AddScoped<ExpireInvitation>();
+            services.AddScoped<ExpireTeamRejected>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {

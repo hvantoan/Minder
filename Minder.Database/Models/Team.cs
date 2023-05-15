@@ -16,8 +16,8 @@ namespace Minder.Database.Models {
         public virtual ICollection<Member>? Members { get; set; }
         public virtual ICollection<Invitation>? Inviteds { get; set; }
         public virtual ICollection<Group>? Groups { get; set; }
-        public virtual ICollection<HostTeam>? HostTeams { get; set; }
-        public virtual ICollection<OpposingTeam>? OpposingTeam { get; set; }
+        public virtual ICollection<MatchSetting>? MatchSettings { get; set; }
+        public virtual ICollection<TeamRejected>? TeamRejecteds { get; set; }
     }
 
     public class TeamConfig : IEntityTypeConfiguration<Team> {
@@ -43,9 +43,8 @@ namespace Minder.Database.Models {
             // fk
             builder.HasMany(o => o.Members).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
             builder.HasMany(o => o.Inviteds).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
-
-            builder.HasMany(o => o.HostTeams).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
-            builder.HasMany(o => o.OpposingTeam).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
+            builder.HasMany(o => o.MatchSettings).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
+            builder.HasMany(o => o.TeamRejecteds).WithOne(o => o.Team).HasForeignKey(o => o.TeamId);
         }
     }
 }

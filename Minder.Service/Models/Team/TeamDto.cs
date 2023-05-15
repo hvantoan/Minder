@@ -31,11 +31,16 @@ namespace Minder.Service.Models.Team {
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public virtual ICollection<Invitation>? Inviteds { get; set; }
 
+        [JsonIgnore]
+        public virtual List<string> TeamRejectedId { get; set; } = new List<string>();
+
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string? Avatar { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string? Cover { get; set; }
+
+        public double Distance { get; set; }
     }
 
     public partial class TeamDto {
@@ -50,6 +55,7 @@ namespace Minder.Service.Models.Team {
                 GameSetting = entity.GameSetting != null ? GameSettingDto.FromEntity(entity.GameSetting) : default,
                 Members = entity.Members != null ? entity.Members.Select(o => MemberDto.FromEntity(o)!).ToList() : default,
                 Rank = entity.GameSetting?.Rank ?? default,
+                TeamRejectedId = entity.TeamRejecteds?.Select(o => o.ItemId).ToList() ?? new List<string>(),
                 GroupId = groupId,
                 Avatar = avatar,
                 Cover = cover

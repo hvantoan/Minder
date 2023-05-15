@@ -27,7 +27,7 @@ namespace Minder.Database.Migrations
                 table: "User",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834500L,
+                defaultValue: 1684118024720L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
                 oldDefaultValue: 1683818821934L);
@@ -44,7 +44,7 @@ namespace Minder.Database.Migrations
                 table: "Team",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834500L,
+                defaultValue: 1684118024719L,
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
@@ -60,14 +60,14 @@ namespace Minder.Database.Migrations
                 table: "Team",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834500L);
+                defaultValue: 1684118024719L);
 
             migrationBuilder.AlterColumn<long>(
                 name: "CreateAt",
                 table: "Stadium",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834499L,
+                defaultValue: 1684118024719L,
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
@@ -83,14 +83,14 @@ namespace Minder.Database.Migrations
                 table: "Stadium",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834499L);
+                defaultValue: 1684118024719L);
 
             migrationBuilder.AlterColumn<long>(
                 name: "JoinAt",
                 table: "Participant",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834499L,
+                defaultValue: 1684118024719L,
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
@@ -106,7 +106,7 @@ namespace Minder.Database.Migrations
                 table: "Message",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834499L,
+                defaultValue: 1684118024718L,
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
@@ -115,7 +115,7 @@ namespace Minder.Database.Migrations
                 table: "Message",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834499L);
+                defaultValue: 1684118024718L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
@@ -129,7 +129,7 @@ namespace Minder.Database.Migrations
                 table: "Group",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834497L,
+                defaultValue: 1684118024716L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
                 oldDefaultValue: 1683818821933L);
@@ -158,131 +158,102 @@ namespace Minder.Database.Migrations
                 table: "Group",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684002834497L);
+                defaultValue: 1684118024716L);
+
+            migrationBuilder.CreateTable(
+                name: "MatchSetting",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    TeamId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    StadiumId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    SelectedDayOfWeek = table.Column<int>(type: "int", nullable: true),
+                    From = table.Column<int>(type: "int", nullable: true),
+                    To = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MatchSetting", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MatchSetting_Stadium_StadiumId",
+                        column: x => x.StadiumId,
+                        principalTable: "Stadium",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_MatchSetting_Team_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Team",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TeamRejected",
+                columns: table => new
+                {
+                    TeamId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    ItemId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    CreateAt = table.Column<long>(type: "bigint", nullable: false, defaultValue: 1684118024719L)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeamRejected", x => new { x.TeamId, x.ItemId });
+                    table.ForeignKey(
+                        name: "FK_TeamRejected_Team_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Team",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Match",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    HostTeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
+                    OppsingTeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    SelectedDate = table.Column<int>(type: "int", nullable: true)
+                    SelectedDate = table.Column<int>(type: "int", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    From = table.Column<int>(type: "int", nullable: true),
+                    To = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Match", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "HostTeam",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    TeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
-                    MatchId = table.Column<string>(type: "nvarchar(32)", nullable: false),
-                    StadiumId = table.Column<string>(type: "nvarchar(32)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_HostTeam", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_HostTeam_Match_MatchId",
-                        column: x => x.MatchId,
-                        principalTable: "Match",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_HostTeam_Stadium_StadiumId",
-                        column: x => x.StadiumId,
-                        principalTable: "Stadium",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_HostTeam_Team_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Team",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OpposingTeam",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    TeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
-                    MatchId = table.Column<string>(type: "nvarchar(32)", nullable: false),
-                    StadiumId = table.Column<string>(type: "nvarchar(32)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OpposingTeam", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_OpposingTeam_Match_MatchId",
-                        column: x => x.MatchId,
-                        principalTable: "Match",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OpposingTeam_Stadium_StadiumId",
-                        column: x => x.StadiumId,
-                        principalTable: "Stadium",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_OpposingTeam_Team_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Team",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "HostParticipant",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    HostTeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Position = table.Column<int>(type: "int", nullable: false),
-                    MemberId = table.Column<string>(type: "nvarchar(32)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_HostParticipant", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_HostParticipant_HostTeam_HostTeamId",
+                        name: "FK_Match_MatchSetting_HostTeamId",
                         column: x => x.HostTeamId,
-                        principalTable: "HostTeam",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalTable: "MatchSetting",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_HostParticipant_Member_MemberId",
-                        column: x => x.MemberId,
-                        principalTable: "Member",
+                        name: "FK_Match_MatchSetting_OppsingTeamId",
+                        column: x => x.OppsingTeamId,
+                        principalTable: "MatchSetting",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "OpposingParticipant",
+                name: "MatchParticipant",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    OpposingTeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Position = table.Column<int>(type: "int", nullable: false),
-                    MemberId = table.Column<string>(type: "nvarchar(32)", nullable: true)
+                    MemberId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    MatchSettingId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Position = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OpposingParticipant", x => x.Id);
+                    table.PrimaryKey("PK_MatchParticipant", x => new { x.MemberId, x.MatchSettingId });
                     table.ForeignKey(
-                        name: "FK_OpposingParticipant_Member_MemberId",
+                        name: "FK_MatchParticipant_MatchSetting_MatchSettingId",
+                        column: x => x.MatchSettingId,
+                        principalTable: "MatchSetting",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MatchParticipant_Member_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Member",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_OpposingParticipant_OpposingTeam_OpposingTeamId",
-                        column: x => x.OpposingTeamId,
-                        principalTable: "OpposingTeam",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -292,7 +263,7 @@ namespace Minder.Database.Migrations
                 keyColumn: "Id",
                 keyValue: "92dcba9b0bdd4f32a6170a1322472ead",
                 column: "DayOfBirth",
-                value: 1684002834500L);
+                value: 1684118024720L);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Group_ChannelId_Type",
@@ -305,55 +276,30 @@ namespace Minder.Database.Migrations
                 column: "Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HostParticipant_HostTeamId",
-                table: "HostParticipant",
-                column: "HostTeamId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_HostParticipant_MemberId",
-                table: "HostParticipant",
-                column: "MemberId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_HostTeam_MatchId",
-                table: "HostTeam",
-                column: "MatchId",
+                name: "IX_Match_HostTeamId",
+                table: "Match",
+                column: "HostTeamId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_HostTeam_StadiumId",
-                table: "HostTeam",
-                column: "StadiumId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_HostTeam_TeamId",
-                table: "HostTeam",
-                column: "TeamId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OpposingParticipant_MemberId",
-                table: "OpposingParticipant",
-                column: "MemberId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OpposingParticipant_OpposingTeamId",
-                table: "OpposingParticipant",
-                column: "OpposingTeamId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OpposingTeam_MatchId",
-                table: "OpposingTeam",
-                column: "MatchId",
+                name: "IX_Match_OppsingTeamId",
+                table: "Match",
+                column: "OppsingTeamId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_OpposingTeam_StadiumId",
-                table: "OpposingTeam",
+                name: "IX_MatchParticipant_MatchSettingId",
+                table: "MatchParticipant",
+                column: "MatchSettingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MatchSetting_StadiumId",
+                table: "MatchSetting",
                 column: "StadiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OpposingTeam_TeamId",
-                table: "OpposingTeam",
+                name: "IX_MatchSetting_TeamId",
+                table: "MatchSetting",
                 column: "TeamId");
 
             migrationBuilder.AddForeignKey(
@@ -372,19 +318,16 @@ namespace Minder.Database.Migrations
                 table: "Group");
 
             migrationBuilder.DropTable(
-                name: "HostParticipant");
-
-            migrationBuilder.DropTable(
-                name: "OpposingParticipant");
-
-            migrationBuilder.DropTable(
-                name: "HostTeam");
-
-            migrationBuilder.DropTable(
-                name: "OpposingTeam");
-
-            migrationBuilder.DropTable(
                 name: "Match");
+
+            migrationBuilder.DropTable(
+                name: "MatchParticipant");
+
+            migrationBuilder.DropTable(
+                name: "TeamRejected");
+
+            migrationBuilder.DropTable(
+                name: "MatchSetting");
 
             migrationBuilder.DropIndex(
                 name: "IX_Group_ChannelId_Type",
@@ -442,7 +385,7 @@ namespace Minder.Database.Migrations
                 defaultValue: 1683818821934L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684002834500L);
+                oldDefaultValue: 1684118024720L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDelete",
@@ -458,7 +401,7 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684002834500L);
+                oldDefaultValue: 1684118024719L);
 
             migrationBuilder.AlterColumn<long>(
                 name: "CreateAt",
@@ -467,7 +410,7 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684002834499L);
+                oldDefaultValue: 1684118024719L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDelete",
@@ -483,7 +426,7 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684002834499L);
+                oldDefaultValue: 1684118024719L);
 
             migrationBuilder.AlterColumn<long>(
                 name: "CreateAt",
@@ -492,7 +435,7 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684002834499L);
+                oldDefaultValue: 1684118024718L);
 
             migrationBuilder.AlterColumn<long>(
                 name: "CreateAt",
@@ -502,7 +445,7 @@ namespace Minder.Database.Migrations
                 defaultValue: 1683818821933L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684002834497L);
+                oldDefaultValue: 1684118024716L);
 
             migrationBuilder.AlterColumn<string>(
                 name: "ChannelId",

@@ -1,9 +1,10 @@
 ﻿namespace Minder.Service {
+
     public class Enums {
 
-        public enum ECheckIndex {
-            None = 0,
-            Done = 1,
+        public enum EUpdateType {
+            Stadium = 1,
+            Time = 2,
         }
     }
 }

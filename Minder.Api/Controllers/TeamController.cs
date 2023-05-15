@@ -93,5 +93,15 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
+
+        [HttpPost, Route("suggess")]
+        public async Task<BaseRes> Suggess(SuggessTeamReq req) {
+            try {
+                var res = await teamService.Suggession(req);
+                return BaseRes<ListTeamRes?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
     }
 }
