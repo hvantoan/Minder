@@ -6,5 +6,7 @@ namespace Minder.Service.Interfaces {
     public interface IMatchService {
 
         Task SwipeCard(CreateMatchReq req);
+
+        Task<ListMatchRes> List(ListMatchReq req);
     }
 }

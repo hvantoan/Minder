@@ -8,6 +8,6 @@ namespace Minder.Service.Models.Team {
         public bool IsMyTeam { get; set; }
 
         [JsonIgnore]
-        public List<string>? teamIds { get; set; }
+        public List<string>? TeamIds { get; set; }
     }
 }

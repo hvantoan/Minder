@@ -6,6 +6,7 @@ using Minder.Service.Models.Team;
 using Minder.Services.Models;
 using System;
 using System.Threading.Tasks;
+using static Minder.Service.Enums;
 
 namespace Minder.Api.Controllers {
 
@@ -99,6 +100,16 @@ namespace Minder.Api.Controllers {
             try {
                 var res = await teamService.Suggession(req);
                 return BaseRes<ListTeamRes?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpGet, Route("auto-cal/{teamId}")]
+        public async Task<BaseRes> Automation([FromRoute] string teamId, [FromQuery] EAutoMation type = EAutoMation.Location) {
+            try {
+                var res = await teamService.Automation(teamId, type);
+                return BaseRes<object?>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

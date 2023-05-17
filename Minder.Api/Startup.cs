@@ -183,6 +183,7 @@ namespace Minder.Api {
 
             app.ApplicationServices.UseScheduler(scheduler => {
                 scheduler.Schedule<ExpireInvitation>().DailyAt(0, 0).RunOnceAtStart();
+                scheduler.Schedule<ExpireTeamRejected>().EveryMinute().RunOnceAtStart();
             }).OnError(ex => Logger.System().Error("Scheduler ERROR", ex));
         }
 

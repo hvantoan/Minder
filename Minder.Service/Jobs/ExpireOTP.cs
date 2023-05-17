@@ -8,22 +8,19 @@ using System.Threading.Tasks;
 
 namespace Minder.Service.Jobs {
 
-    public class ExpireTeamRejected : IInvocable {
+    public class ExpireOTP : IInvocable {
         private readonly MinderContext db;
 
-        public ExpireTeamRejected(IServiceProvider serviceProvider) {
+        public ExpireOTP(IServiceProvider serviceProvider) {
             this.db = serviceProvider.GetRequiredService<MinderContext>();
         }
 
         public async Task Invoke() {
-            // Has One day
-            //var periousDay = DateTimeOffset.UtcNow.AddDays(-1);
-
             var periousDay = DateTimeOffset.UtcNow.AddMinutes(-10);
-            var teamRejecteds = await this.db.TeamRejecteds.Where(o => o.CreateAt >= periousDay).ToListAsync();
+            var otps = await this.db.RegistrationInformations.Where(o => o.CreateAt >= periousDay).ToListAsync();
 
-            if (teamRejecteds.Any()) {
-                this.db.RemoveRange(teamRejecteds);
+            if (otps.Any()) {
+                this.db.RegistrationInformations.RemoveRange(otps);
                 await this.db.SaveChangesAsync();
             }
         }

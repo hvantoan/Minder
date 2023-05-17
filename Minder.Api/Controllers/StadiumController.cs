@@ -30,6 +30,7 @@ namespace Minder.Api.Controllers {
         [HttpPost, Route("list")]
         public async Task<BaseRes> List(ListStadiumReq req) {
             try {
+
                 var res = await stadiumService.List(req);
                 return BaseRes<ListStadiumRes>.Ok(res);
             } catch (Exception ex) {

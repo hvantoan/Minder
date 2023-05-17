@@ -1,7 +1,17 @@
-﻿using Minder.Services.Models;
+﻿using System.Text.Json.Serialization;
 
 namespace Minder.Service.Models.Stadium {
 
-    public class ListStadiumReq : BaseListReq {
+    public class ListStadiumReq {
+        public int PageIndex { get; set; } = 0;
+        public int PageSize { get; set; } = 0;
+        public bool IsCount { get; set; } = false;
+        public string? SearchText { get; set; }
+
+        [JsonIgnore]
+        public int Skip => PageIndex * PageSize;
+
+        [JsonIgnore]
+        public int Take => PageSize;
     }
 }

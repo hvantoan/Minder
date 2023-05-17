@@ -1,5 +1,6 @@
 ﻿using Minder.Service.Models.Team;
 using System.Threading.Tasks;
+using static Minder.Service.Enums;
 
 namespace Minder.Service.Interfaces {
 
@@ -20,5 +21,7 @@ namespace Minder.Service.Interfaces {
         Task<ListTeamRes> Find(FindTeamReq req);
 
         Task<ListTeamRes> Suggession(SuggessTeamReq req);
+
+        Task<object?> Automation(string teamId, EAutoMation type); 
     }
 }

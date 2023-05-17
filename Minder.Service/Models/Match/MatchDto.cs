@@ -1,5 +1,6 @@
 ﻿using Minder.Database.Enums;
 using System;
+using static Minder.Service.Enums;
 
 namespace Minder.Service.Models.Match {
 
@@ -9,19 +10,22 @@ namespace Minder.Service.Models.Match {
         public string? OpposingTeamId { get; set; }
         public EMatch Status { get; set; }
         public DayOfWeek? SelectedDate { get; set; }
+        public ETeamSide TeamSide { get; set; }
 
         public MatchSettingDto? HostTeam { get; set; }
         public MatchSettingDto? OpposingTeam { get; set; }
 
-        public static MatchDto? FromEntity(Minder.Database.Models.Match entity) {
+        public static MatchDto? FromEntity(Minder.Database.Models.Match entity, Minder.Database.Models.MatchSetting? hostTeam = null,
+            Minder.Database.Models.MatchSetting? opposingTeam = null, string? teamId = null) {
             if (entity == null) return default;
             return new MatchDto {
                 Id = entity.Id,
                 HostTeamId = entity.HostTeamId,
                 OpposingTeamId = entity.OppsingTeamId,
                 SelectedDate = entity.SelectedDate,
-                HostTeam = MatchSettingDto.FromEntity(entity.HostTeam),
-                OpposingTeam = MatchSettingDto.FromEntity(entity.OpposingTeam),
+                HostTeam = MatchSettingDto.FromEntity(hostTeam),
+                OpposingTeam = MatchSettingDto.FromEntity(opposingTeam),
+                TeamSide = entity.HostTeam?.TeamId == teamId ? ETeamSide.Host : ETeamSide.Opposite
             };
         }
     }

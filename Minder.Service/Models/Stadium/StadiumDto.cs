@@ -1,5 +1,4 @@
-﻿using Minder.Service.Models.File;
-using Minder.Services.Resources;
+﻿using Minder.Services.Resources;
 using Newtonsoft.Json;
 using System;
 
@@ -26,7 +25,7 @@ namespace Minder.Service.Models.Stadium {
         public string? Avatar { get; set; }
 
         public static StadiumDto? FromEntity(Database.Models.Stadium? entity, AdministrativeUnitResource? administrativeUnitResource = null,
-           FileDto? avatar = null) {
+           string? avatar = null) {
             if (entity == null) return default;
 
             var au = administrativeUnitResource?.GetByCode(entity.Province, entity.District, entity.Commune) ?? new();
@@ -43,7 +42,7 @@ namespace Minder.Service.Models.Stadium {
                 Commune = !string.IsNullOrWhiteSpace(entity.Commune) && au.TryGetValue(entity.Commune, out var commune) ? commune : default,
                 Address = entity.Address,
                 CreateAt = entity.CreateAt,
-                Avatar = avatar?.Path,
+                Avatar = avatar,
             };
         }
     }

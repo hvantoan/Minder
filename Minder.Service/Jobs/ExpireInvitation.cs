@@ -18,8 +18,10 @@ namespace Minder.Service.Jobs {
         public async Task Invoke() {
             var invitations = await this.db.Invites.Where(o => (DateTimeOffset.Now - o.CreateAt).TotalDays > 30).ToListAsync();
 
-            this.db.RemoveRange(invitations);
-            await this.db.SaveChangesAsync();
+            if (invitations.Any()) {
+                this.db.Invites.RemoveRange(invitations);
+                await this.db.SaveChangesAsync();
+            }
         }
     }
 }

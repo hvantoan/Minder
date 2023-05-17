@@ -50,7 +50,7 @@ namespace Minder.Database.Models {
 
             // filter
 
-            builder.HasQueryFilter(o => !o.IsDeleted);
+            builder.HasQueryFilter(o => !o.IsDeleted && o.IsActive);
 
             // fk
             builder.HasOne(o => o.Role).WithMany(o => o.Users).HasForeignKey(o => o.RoleId);

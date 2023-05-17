@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Minder.Api.Controllers {
 
-    [ApiController, Authorize, Route("api/matchs")]
+    [ApiController, Authorize, Route("api/matches")]
     public class MatchController : ControllerBase {
         private readonly IMatchService matchService;
 
@@ -21,6 +21,16 @@ namespace Minder.Api.Controllers {
             try {
                 await matchService.SwipeCard(req);
                 return BaseRes.Ok();
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<BaseRes> List(ListMatchReq req) {
+            try {
+                var res = await matchService.List(req);
+                return BaseRes<ListMatchRes>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

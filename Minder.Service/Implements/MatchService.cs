@@ -8,6 +8,7 @@ using Minder.Service.Models.Match;
 using Minder.Services.Common;
 using Minder.Services.Resources;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static Minder.Service.Enums;
@@ -20,6 +21,9 @@ namespace Minder.Service.Implements {
         }
 
         public async Task SwipeCard(CreateMatchReq req) {
+            var teams = await this.db.Teams.Where(o => o.Id == req.OpposingTeamId || o.Id == req.HostTeamId).ToListAsync();
+            ManagedException.ThrowIf(!teams.Any(o => o.Id == req.HostTeamId), Messages.Match.HostTeam_NotFount);
+            ManagedException.ThrowIf(!teams.Any(o => o.Id == req.OpposingTeamId), Messages.Match.HostTeam_NotFount);
             if (req.HasInvite) {
                 await Create(req);
             } else {
@@ -42,7 +46,7 @@ namespace Minder.Service.Implements {
             if (match == null) {
                 match = new Match() {
                     Id = Guid.NewGuid().ToStringN(),
-                    Status = Database.Enums.EMatch.WaitingConfirm,
+                    Status = EMatch.WaitingConfirm,
                     HostTeam = new MatchSetting() {
                         Id = Guid.NewGuid().ToStringN(),
                         TeamId = req.HostTeamId,
@@ -58,6 +62,24 @@ namespace Minder.Service.Implements {
             }
             await this.db.SaveChangesAsync();
             return match.Id;
+        }
+
+        public async Task<ListMatchRes> List(ListMatchReq req) {
+            ManagedException.ThrowIf(string.IsNullOrEmpty(req.TeamId), Messages.Match.Match_TeamIdRequire);
+
+            var teamExit = await this.db.Teams.AnyAsync(o => o.Id == req.TeamId);
+            ManagedException.ThrowIf(!teamExit, Messages.Team.Team_NotFound);
+
+            var query = this.db.Matches.AsNoTracking().Where(o => o.HostTeam!.TeamId == req.TeamId || o.OpposingTeam!.TeamId == req.TeamId);
+            var hostTeamId = await query.Select(o => o.HostTeamId).ToListAsync();
+            var opposingTeamId = await query.Select(o => o.HostTeamId).ToListAsync();
+            var matchSettings = await this.db.MatchSettings.Where(o => hostTeamId.Contains(o.Id) || opposingTeamId.Contains(o.Id)).ToDictionaryAsync(k => k.Id);
+            var count = await query.CountAsync();
+            var matchs = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
+            return new ListMatchRes() {
+                Count = count,
+                Items = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), this.current.UserId)).ToList(),
+            };
         }
 
         public async Task<MatchDto?> Update(MatchDto model, EUpdateType type) {

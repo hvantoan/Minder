@@ -202,7 +202,7 @@ namespace Minder.Services.Implements {
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Username), Messages.User.User_UsernameRequired);
             ManagedException.ThrowIf(!(new EmailAddressAttribute().IsValid(model.Username)), Messages.User.User_UsernameRequest);
 
-            var user = await this.db.Users.AnyAsync(o => !o.IsDeleted && o.Username == model.Username && o.IsActive);
+            var user = await this.db.Users.AnyAsync(o => o.Username == model.Username && o.IsActive);
             ManagedException.ThrowIf(user, Messages.User.User_Existed);
 
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Password), Messages.User.User_PasswordRequired);
