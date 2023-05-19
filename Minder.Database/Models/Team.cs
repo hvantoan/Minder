@@ -7,7 +7,8 @@ namespace Minder.Database.Models {
         public string Id { get; set; } = null!;
         public string Code { get; set; } = null!;
         public string Name { get; set; } = null!;
-
+        public bool IsAutoLocation { get; set; }
+        public bool IsAutoTime { get; set; }
         public bool IsDeleted { get; set; }
         public DateTimeOffset CreateAt { get; set; }
         public DateTimeOffset UpdateAt { get; set; }

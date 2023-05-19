@@ -45,7 +45,7 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<ListUserResponse> List(ListUserReq req) {
-            var query = this.db.Users.Include(o=>o.GameSetting).ThenInclude(o=>o!.GameTime).AsNoTracking()
+            var query = this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).AsNoTracking()
                 .WhereIf(req.UserIds != null && req.UserIds.Any(), o => req.UserIds!.Contains(o.Id));
 
             var count = query.Count();
@@ -67,12 +67,12 @@ namespace Minder.Services.Implements {
         public async Task<string> Create(UserDto model) {
             this.logger.Information($"{nameof(User)} - {nameof(Create)} - Start", model);
 
-            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username && o.IsActive);
+            var isExited = await this.db.Users.AnyAsync(o => o.Username == model.Username);
             ManagedException.ThrowIf(isExited, Messages.User.User_Existed);
             model.GameSetting ??= new();
             if (!model.GameSetting.GameTypes.Any()) model.GameSetting.GameTypes.Add(EGameType.Five);
 
-            var user = await this.db.Users.FirstOrDefaultAsync(o => o.Username == model.Username && !o.IsActive);
+            var user = await this.db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(o => o.Username == model.Username && !o.IsActive && !o.IsDeleted);
 
             if (user != null) {
                 user.Name = model.Name;

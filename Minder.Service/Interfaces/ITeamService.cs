@@ -10,7 +10,7 @@ namespace Minder.Service.Interfaces {
 
         Task<ListTeamRes> List(ListTeamReq req);
 
-        Task<string> CreateOrUpdate(TeamDto model);
+        Task<TeamDto?> CreateOrUpdate(TeamDto model);
 
         Task Delete(string teamId);
 

@@ -25,7 +25,7 @@ namespace Minder.Service.Models.Match {
                 SelectedDate = entity.SelectedDate,
                 HostTeam = MatchSettingDto.FromEntity(hostTeam),
                 OpposingTeam = MatchSettingDto.FromEntity(opposingTeam),
-                TeamSide = entity.HostTeam?.TeamId == teamId ? ETeamSide.Host : ETeamSide.Opposite
+                TeamSide = hostTeam?.TeamId == teamId ? ETeamSide.Host : ETeamSide.Opposite
             };
         }
     }

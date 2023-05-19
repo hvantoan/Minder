@@ -1,4 +1,4 @@
-﻿using Minder.Database.Enums;
+﻿                using Minder.Database.Enums;
 using Minder.Service.Models.File;
 using Minder.Service.Models.GameSetting;
 using Minder.Services.Models.Role;

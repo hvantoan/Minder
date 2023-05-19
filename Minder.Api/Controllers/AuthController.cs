@@ -69,9 +69,9 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpGet, Route("verify")]
-        public async Task<BaseRes> Verify(string otp) {
+        public async Task<BaseRes> Verify(string otp, string email) {
             try {
-                var response = await authService.Verify(new VerifyUserReq() { Code = otp });
+                var response = await authService.Verify(new VerifyUserReq() { Code = otp, Username = email });
                 return BaseRes<VerifyRes>.Ok(response);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);

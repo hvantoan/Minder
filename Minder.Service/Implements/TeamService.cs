@@ -6,7 +6,9 @@ using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Extensions;
 using Minder.Service.Interfaces;
+using Minder.Service.Models.Common;
 using Minder.Service.Models.File;
+using Minder.Service.Models.GameSetting;
 using Minder.Service.Models.Group;
 using Minder.Service.Models.Team;
 using Minder.Services.Common;
@@ -79,7 +81,7 @@ namespace Minder.Service.Implements {
             return null;
         }
 
-        public static object CalculatorCenterPoint(List<UserDto> users) {
+        public static Point CalculatorCenterPoint(List<UserDto> users) {
             var lat = decimal.Zero;
             var lng = decimal.Zero;
             int nextUser = 0;
@@ -92,13 +94,13 @@ namespace Minder.Service.Implements {
                 lng += user.GameSetting?.Longitude ?? decimal.Zero;
             }
             var count = users.Count - nextUser;
-            return new {
+            return new Point {
                 Latitude = count == 0 ? 0 : lat / count,
                 Longitude = count == 0 ? 0 : lng / count
             };
         }
 
-        private static List<int> GetTime(List<UserDto> members) {
+        private static GameTimeDto GetTime(List<UserDto> members) {
             var sunday = new List<List<int>>();
             var monday = new List<List<int>>();
             var tuesday = new List<List<int>>();
@@ -115,15 +117,32 @@ namespace Minder.Service.Implements {
                 friday.Add(user.GameSetting!.GameTime!.Friday.Select(o => (int)o).ToList());
                 saturday.Add(user.GameSetting!.GameTime!.Saturday.Select(o => (int)o).ToList());
             }
-            var chooices = new List<TimeChooice>();
-            chooices = FindMostFrequentConsecutiveData(monday, 5, 5, chooices);
-            chooices = FindMostFrequentConsecutiveData(tuesday, 5, 5, chooices);
-            chooices = FindMostFrequentConsecutiveData(wednesday, 5, 5, chooices);
-            chooices = FindMostFrequentConsecutiveData(thursday, 5, 5, chooices);
-            chooices = FindMostFrequentConsecutiveData(friday, 5, 5, chooices);
-            chooices = FindMostFrequentConsecutiveData(sunday, 5, 5, chooices);
+            var gameTime = new GameTimeDto();
+            for (var i = members.Count; i > 0; i--) {
+                var chooices = new TimeChooice[7];
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Sunday, sunday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Monday, monday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Tuesday, tuesday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Wednesday, wednesday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Thursday, thursday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Friday, friday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Saturday, saturday, 2, i, chooices);
 
-            return FindBestChooice(chooices);
+                if (chooices.ToList().Any(o => o.Length > 0)) {
+                    gameTime = new GameTimeDto() {
+                        Sunday = chooices[(int)DayOfWeek.Sunday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Monday = chooices[(int)DayOfWeek.Monday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Tuesday = chooices[(int)DayOfWeek.Tuesday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Wednesday = chooices[(int)DayOfWeek.Wednesday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Thursday = chooices[(int)DayOfWeek.Thursday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Friday = chooices[(int)DayOfWeek.Friday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Saturday = chooices[(int)DayOfWeek.Saturday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                    };
+                    break;
+                }
+            }
+
+            return gameTime;
         }
 
         public static List<int> FindBestChooice(List<TimeChooice> chooices) {
@@ -142,7 +161,7 @@ namespace Minder.Service.Implements {
             return bestObject?.Value ?? new List<int>();
         }
 
-        private static List<TimeChooice> FindMostFrequentConsecutiveData(List<List<int>> arrayLists, int minOccurrence, int minArrays, List<TimeChooice> chooices) {
+        private static TimeChooice[] FindMostFrequentConsecutiveData(DayOfWeek day, List<List<int>> arrayLists, int minOccurrence, int minArrays, TimeChooice[] chooices) {
             var numberCount = new Dictionary<int, int>();
 
             foreach (var array in arrayLists) {
@@ -163,10 +182,10 @@ namespace Minder.Service.Implements {
                     mostCount = mostCount > kvp.Value ? mostCount : kvp.Value;
                 }
             }
-            chooices.Add(new TimeChooice() {
+            chooices[(int)day] = new TimeChooice() {
                 Quantity = mostCount,
                 Value = mostFrequentConsecutiveData
-            });
+            };
             return chooices;
         }
 
@@ -193,7 +212,7 @@ namespace Minder.Service.Implements {
             return TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, group?.Id);
         }
 
-        public async Task<string> CreateOrUpdate(TeamDto model) {
+        public async Task<TeamDto?> CreateOrUpdate(TeamDto model) {
             if (string.IsNullOrEmpty(model.Id)) {
                 return await this.Create(model);
             } else {
@@ -201,7 +220,7 @@ namespace Minder.Service.Implements {
             }
         }
 
-        private async Task<string> Create(TeamDto model) {
+        private async Task<TeamDto?> Create(TeamDto model) {
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - Start", model);
 
             var isOwner = await this.db.Members.AnyAsync(o => o.UserId == this.current.UserId && o.Regency == ERegency.Owner);
@@ -259,10 +278,10 @@ namespace Minder.Service.Implements {
 
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - End", team.Id);
 
-            return team.Id;
+            return await Get(team.Id);
         }
 
-        public async Task<string> Update(TeamDto model) {
+        public async Task<TeamDto?> Update(TeamDto model) {
             this.logger.Information($"{nameof(Team)} - {nameof(Update)} - Start", model);
 
             ManagedException.ThrowIf(string.IsNullOrWhiteSpace(model.Code), Messages.Team.Team_CodeRequired);
@@ -293,11 +312,23 @@ namespace Minder.Service.Implements {
                 if (model.GameSetting.Radius != 0.0) team.GameSetting!.Radius = model.GameSetting.Radius;
                 if (model.GameSetting.Rank != ERank.None) team.GameSetting!.Rank = model.GameSetting.Rank;
             }
+            if (model.IsAutoTime) {
+                var gameTime = (GameTimeDto?)await Automation(team.Id, EAutoMation.Time);
+                team.GameSetting!.GameTime = gameTime?.ToEntity() ?? new GameTime();
+            }
+
+            if (model.IsAutoLocation) {
+                var point = (Point?)await Automation(team.Id, EAutoMation.Location);
+                if (point != null) {
+                    team.GameSetting!.Longitude = point.Longitude;
+                    team.GameSetting!.Latitude = point.Latitude;
+                }
+            }
 
             await this.db.SaveChangesAsync();
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - End", team.Id);
 
-            return team.Id;
+            return await Get(team.Id);
         }
 
         public async Task Delete(string teamId) {

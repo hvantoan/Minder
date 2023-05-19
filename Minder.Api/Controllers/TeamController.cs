@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Minder.Database.Models;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.Team;
 using Minder.Services.Models;
@@ -49,7 +48,7 @@ namespace Minder.Api.Controllers {
         public async Task<BaseRes> Save(TeamDto model) {
             try {
                 var data = await teamService.CreateOrUpdate(model);
-                return BaseSaveRes<Team>.Ok(data);
+                return BaseRes<TeamDto?>.Ok(data);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

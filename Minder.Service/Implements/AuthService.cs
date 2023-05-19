@@ -5,7 +5,6 @@ using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
-using Minder.Service.Helpers;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.Auth;
 using Minder.Service.Models.User;
@@ -96,7 +95,7 @@ namespace Minder.Services.Implements {
 
         private async Task<string> GenerateOTP(string email, EVerifyType type = EVerifyType.Register) {
             var isExit = await this.db.Users.AnyAsync(o => o.Username == email);
-            ManagedException.ThrowIf(!isExit, Messages.User.User_NotFound);
+            ManagedException.ThrowIf(isExit, Messages.User.User_NotFound);
             var userVerify = await this.db.RegistrationInformations.FirstOrDefaultAsync(o => o.Username == email);
             var otps = await this.db.RegistrationInformations.Select(o => o.OTPCode).ToListAsync();
             if (userVerify == null) {
@@ -104,13 +103,14 @@ namespace Minder.Services.Implements {
                     Id = Guid.NewGuid().ToStringN(),
                     Username = email,
                     Type = type,
-                    OTPCode = EMailHelper.GenarateOTP(otps),
+                    /// TODO: Handle Generate OTP code
+                    OTPCode = "111111", // EMailHelper.GenarateOTP(),
                     CreateAt = DateTimeOffset.Now,
                 };
                 await this.db.RegistrationInformations.AddAsync(userVerify);
             } else {
                 userVerify.CreateAt = DateTimeOffset.Now;
-                userVerify.OTPCode = EMailHelper.GenarateOTP(otps);
+                userVerify.OTPCode = "111111";// EMailHelper.GenarateOTP();
             }
             await this.db.SaveChangesAsync();
             return userVerify.OTPCode;
@@ -125,11 +125,11 @@ namespace Minder.Services.Implements {
         }
 
         public async Task<VerifyRes> Verify(VerifyUserReq request) {
-            var userVerify = await this.db.RegistrationInformations.FirstOrDefaultAsync(o => o.OTPCode == request.Code);
+            var userVerify = await this.db.RegistrationInformations.FirstOrDefaultAsync(o => o.OTPCode == request.Code && o.Username == request.Username);
             ManagedException.ThrowIf(userVerify == null || userVerify.OTPCode != request.Code, Messages.Auth.Auth_IncorresctOTP);
             switch (userVerify!.Type) {
                 case EVerifyType.Register:
-                    var registerUser = await this.db.Users.FirstOrDefaultAsync(o => o.Username == userVerify.Username);
+                    var registerUser = await this.db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(o => o.Username == userVerify.Username && !o.IsDeleted && !o.IsActive);
                     registerUser!.IsActive = true;
                     await this.db.SaveChangesAsync();
                     return new VerifyRes();

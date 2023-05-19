@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Minder.Database.Enums;
 using Minder.Exceptions;
-using Minder.Service.Helpers;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.CacheManager;
 using Minder.Services.Resources;
@@ -32,10 +31,10 @@ namespace Minder.Service.Implements {
                 Priority = CacheItemPriority.NeverRemove,
             };
 
-            string otp;
-            do {
-                otp = EMailHelper.GenarateOTP(new System.Collections.Generic.List<string>());
-            } while (string.IsNullOrWhiteSpace(otp) || cache.TryGetValue<string>(otp, out _));
+            string otp = "";
+            //do {
+            //    //otp = EMailHelper.GenarateOTP(new System.Collections.Generic.List<string>());
+            //} while (string.IsNullOrWhiteSpace(otp) || cache.TryGetValue<string>(otp, out _));
 
             var value = new CacheData() {
                 Code = otp,

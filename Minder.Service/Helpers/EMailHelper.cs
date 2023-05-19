@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -15,19 +14,15 @@ namespace Minder.Service.Helpers {
             return body;
         }
 
-        public static string GenarateOTP(List<string> otps) {
+        public static string GenarateOTP() {
             string[] arr = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
             var otp = new StringBuilder();
             string temp;
             var rand = new Random();
-            do {
-                otp.Clear();
-                for (int i = 0; i < 6; i++) {
-                    temp = arr[rand.Next(0, arr.Length)];
-                    otp.Append(temp);
-                }
-            } while (otps.Contains(otp.ToString()));
-
+            for (int i = 0; i < 6; i++) {
+                temp = arr[rand.Next(0, arr.Length)];
+                otp.Append(temp);
+            }
             return otp.ToString();
         }
 

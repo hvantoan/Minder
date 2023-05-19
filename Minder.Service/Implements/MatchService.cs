@@ -72,13 +72,13 @@ namespace Minder.Service.Implements {
 
             var query = this.db.Matches.AsNoTracking().Where(o => o.HostTeam!.TeamId == req.TeamId || o.OpposingTeam!.TeamId == req.TeamId);
             var hostTeamId = await query.Select(o => o.HostTeamId).ToListAsync();
-            var opposingTeamId = await query.Select(o => o.HostTeamId).ToListAsync();
+            var opposingTeamId = await query.Select(o => o.OppsingTeamId).ToListAsync();
             var matchSettings = await this.db.MatchSettings.Where(o => hostTeamId.Contains(o.Id) || opposingTeamId.Contains(o.Id)).ToDictionaryAsync(k => k.Id);
             var count = await query.CountAsync();
             var matchs = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
             return new ListMatchRes() {
                 Count = count,
-                Items = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), this.current.UserId)).ToList(),
+                Items = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), req.TeamId)).ToList(),
             };
         }
 

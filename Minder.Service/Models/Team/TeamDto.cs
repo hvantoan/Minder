@@ -12,6 +12,8 @@ namespace Minder.Service.Models.Team {
         public string Id { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public bool IsAutoLocation { get; set; } = false;
+        public bool IsAutoTime { get; set; } = false;
         public ERank Rank { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
