@@ -315,6 +315,7 @@ namespace Minder.Service.Implements {
             if (model.IsAutoTime) {
                 var gameTime = (GameTimeDto?)await Automation(team.Id, EAutoMation.Time);
                 team.GameSetting!.GameTime = gameTime?.ToEntity() ?? new GameTime();
+                team.IsAutoTime = true;
             }
 
             if (model.IsAutoLocation) {
@@ -323,6 +324,7 @@ namespace Minder.Service.Implements {
                     team.GameSetting!.Longitude = point.Longitude;
                     team.GameSetting!.Latitude = point.Latitude;
                 }
+                team.IsAutoLocation = true;
             }
 
             await this.db.SaveChangesAsync();
