@@ -35,5 +35,35 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
+
+        [HttpGet, Route("{matchId}")]
+        public async Task<BaseRes> List([FromRoute] string matchId) {
+            try {
+                var res = await matchService.Get(matchId);
+                return BaseRes<MatchDto?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("{matchId}/selected-time")]
+        public async Task<BaseRes> UpdateTime([FromRoute] string matchId, UpdateTimeReq req) {
+            try {
+                var res = await matchService.Update(matchId, req.TeamId, req, Service.Enums.EUpdateType.Time);
+                return BaseRes<MatchDto?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("{matchId}/selected-stadium")]
+        public async Task<BaseRes> SelectedStadium([FromRoute] string matchId, UpdateStadiumReq req) {
+            try {
+                var res = await matchService.Update(matchId, req.TeamId, req, Service.Enums.EUpdateType.Stadium);
+                return BaseRes<MatchDto?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
     }
 }

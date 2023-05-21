@@ -9,7 +9,7 @@ namespace Minder.Database.Models {
         public string HostTeamId { get; set; } = null!;
         public string OppsingTeamId { get; set; } = null!;
         public EMatch Status { get; set; }
-        public DayOfWeek? SelectedDate { get; set; }
+        public EDayOfWeek? SelectedDayOfWeek { get; set; }
         public string? Address { get; set; }
         public ETime? From { get; set; }
         public ETime? To { get; set; }

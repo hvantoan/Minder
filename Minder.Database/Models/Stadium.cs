@@ -49,9 +49,9 @@ namespace Minder.Database.Models {
             builder.Property(o => o.IsDeleted).HasDefaultValue(false);
 
             builder.Property(o => o.CreateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o))
-                .HasDefaultValue(DateTimeOffset.UtcNow).IsRequired();
+                .IsRequired();
             builder.Property(o => o.UpdateAt).HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o))
-                .HasDefaultValue(DateTimeOffset.UtcNow).IsRequired();
+                .IsRequired();
 
             //filter
 

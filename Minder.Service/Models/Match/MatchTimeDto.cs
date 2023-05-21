@@ -1,5 +1,6 @@
 ﻿using Minder.Database.Enums;
 using System;
+using static Minder.Service.Enums;
 
 namespace Minder.Services.Models.Match {
 
@@ -7,7 +8,7 @@ namespace Minder.Services.Models.Match {
         public string DisplayName { get; set; } = string.Empty;
         // Time
 
-        public DayOfWeek DayOfWeek { get; set; }
+        public EDayOfWeek DayOfWeek { get; set; }
         public DateTimeOffset Date { get; set; }
         public EGameTime From { get; set; }
         public EGameTime To { get; set; }

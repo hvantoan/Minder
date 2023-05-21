@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Minder.Database;
@@ -42,6 +44,10 @@ namespace Minder.Api {
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services) {
+            using var loggerFactory = LoggerFactory.Create(builder => {
+                builder.AddSimpleConsole(i => i.ColorBehavior = LoggerColorBehavior.Disabled);
+            });
+
             services.AddCors(options => {
                 options.AddDefaultPolicy(builder => {
                     builder.WithOrigins("http://localhost:3000")

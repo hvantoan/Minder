@@ -27,7 +27,7 @@ namespace Minder.Database.Migrations
                 table: "User",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684118024720L,
+                defaultValue: 1684581458949L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
                 oldDefaultValue: 1683818821934L);
@@ -39,14 +39,19 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.AlterColumn<long>(
-                name: "CreateAt",
+            migrationBuilder.AddColumn<bool>(
+                name: "IsAutoLocation",
                 table: "Team",
-                type: "bigint",
+                type: "bit",
                 nullable: false,
-                defaultValue: 1684118024719L,
-                oldClrType: typeof(long),
-                oldType: "bigint");
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "IsAutoTime",
+                table: "Team",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
@@ -60,16 +65,7 @@ namespace Minder.Database.Migrations
                 table: "Team",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684118024719L);
-
-            migrationBuilder.AlterColumn<long>(
-                name: "CreateAt",
-                table: "Stadium",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 1684118024719L,
-                oldClrType: typeof(long),
-                oldType: "bigint");
+                defaultValue: 0L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
@@ -83,16 +79,7 @@ namespace Minder.Database.Migrations
                 table: "Stadium",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684118024719L);
-
-            migrationBuilder.AlterColumn<long>(
-                name: "JoinAt",
-                table: "Participant",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 1684118024719L,
-                oldClrType: typeof(long),
-                oldType: "bigint");
+                defaultValue: 0L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
@@ -101,21 +88,12 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.AlterColumn<long>(
-                name: "CreateAt",
-                table: "Message",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 1684118024718L,
-                oldClrType: typeof(long),
-                oldType: "bigint");
-
             migrationBuilder.AddColumn<long>(
                 name: "UpdateAt",
                 table: "Message",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684118024718L);
+                defaultValue: 0L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDeleted",
@@ -129,7 +107,6 @@ namespace Minder.Database.Migrations
                 table: "Group",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684118024716L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
                 oldDefaultValue: 1683818821933L);
@@ -158,14 +135,14 @@ namespace Minder.Database.Migrations
                 table: "Group",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 1684118024716L);
+                defaultValue: 0L);
 
             migrationBuilder.CreateTable(
                 name: "MatchSetting",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    TeamId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    TeamId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     StadiumId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
                     SelectedDayOfWeek = table.Column<int>(type: "int", nullable: true),
                     From = table.Column<int>(type: "int", nullable: true),
@@ -183,7 +160,8 @@ namespace Minder.Database.Migrations
                         name: "FK_MatchSetting_Team_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Team",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -192,7 +170,7 @@ namespace Minder.Database.Migrations
                 {
                     TeamId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     ItemId = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    CreateAt = table.Column<long>(type: "bigint", nullable: false, defaultValue: 1684118024719L)
+                    CreateAt = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -213,7 +191,7 @@ namespace Minder.Database.Migrations
                     HostTeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
                     OppsingTeamId = table.Column<string>(type: "nvarchar(32)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    SelectedDate = table.Column<int>(type: "int", nullable: true),
+                    SelectedDayOfWeek = table.Column<int>(type: "int", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     From = table.Column<int>(type: "int", nullable: true),
                     To = table.Column<int>(type: "int", nullable: true)
@@ -248,14 +226,12 @@ namespace Minder.Database.Migrations
                         name: "FK_MatchParticipant_MatchSetting_MatchSettingId",
                         column: x => x.MatchSettingId,
                         principalTable: "MatchSetting",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_MatchParticipant_Member_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Member",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.UpdateData(
@@ -263,7 +239,7 @@ namespace Minder.Database.Migrations
                 keyColumn: "Id",
                 keyValue: "92dcba9b0bdd4f32a6170a1322472ead",
                 column: "DayOfBirth",
-                value: 1684118024720L);
+                value: 1684581458949L);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Group_ChannelId_Type",
@@ -342,6 +318,14 @@ namespace Minder.Database.Migrations
                 table: "User");
 
             migrationBuilder.DropColumn(
+                name: "IsAutoLocation",
+                table: "Team");
+
+            migrationBuilder.DropColumn(
+                name: "IsAutoTime",
+                table: "Team");
+
+            migrationBuilder.DropColumn(
                 name: "IsDeleted",
                 table: "Team");
 
@@ -385,7 +369,7 @@ namespace Minder.Database.Migrations
                 defaultValue: 1683818821934L,
                 oldClrType: typeof(long),
                 oldType: "bigint",
-                oldDefaultValue: 1684118024720L);
+                oldDefaultValue: 1684581458949L);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsDelete",
@@ -394,24 +378,6 @@ namespace Minder.Database.Migrations
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.AlterColumn<long>(
-                name: "CreateAt",
-                table: "Team",
-                type: "bigint",
-                nullable: false,
-                oldClrType: typeof(long),
-                oldType: "bigint",
-                oldDefaultValue: 1684118024719L);
-
-            migrationBuilder.AlterColumn<long>(
-                name: "CreateAt",
-                table: "Stadium",
-                type: "bigint",
-                nullable: false,
-                oldClrType: typeof(long),
-                oldType: "bigint",
-                oldDefaultValue: 1684118024719L);
-
             migrationBuilder.AddColumn<bool>(
                 name: "IsDelete",
                 table: "Stadium",
@@ -420,32 +386,13 @@ namespace Minder.Database.Migrations
                 defaultValue: false);
 
             migrationBuilder.AlterColumn<long>(
-                name: "JoinAt",
-                table: "Participant",
-                type: "bigint",
-                nullable: false,
-                oldClrType: typeof(long),
-                oldType: "bigint",
-                oldDefaultValue: 1684118024719L);
-
-            migrationBuilder.AlterColumn<long>(
-                name: "CreateAt",
-                table: "Message",
-                type: "bigint",
-                nullable: false,
-                oldClrType: typeof(long),
-                oldType: "bigint",
-                oldDefaultValue: 1684118024718L);
-
-            migrationBuilder.AlterColumn<long>(
                 name: "CreateAt",
                 table: "Group",
                 type: "bigint",
                 nullable: false,
                 defaultValue: 1683818821933L,
                 oldClrType: typeof(long),
-                oldType: "bigint",
-                oldDefaultValue: 1684118024716L);
+                oldType: "bigint");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ChannelId",

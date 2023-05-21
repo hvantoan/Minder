@@ -6,11 +6,12 @@ namespace Minder.Database.Models {
 
     public class MatchSetting {
         public string Id { get; set; } = null!;
-        public string? TeamId { get; set; }
+        public string TeamId { get; set; } = null!;
         public string? StadiumId { get; set; }
-        public DayOfWeek? SelectedDayOfWeek { get; set; }
+        public EDayOfWeek? SelectedDayOfWeek { get; set; }
         public ETime? From { get; set; }
         public ETime? To { get; set; }
+        public DateTimeOffset Date { get; set; }
 
         public virtual Match? HostMatch { get; set; }
         public virtual Match? OpposingMatch { get; set; }
@@ -28,6 +29,8 @@ namespace Minder.Database.Models {
             builder.Property(o => o.Id).HasMaxLength(32).IsRequired();
             builder.Property(o => o.StadiumId).HasMaxLength(32);
             builder.Property(o => o.TeamId).HasMaxLength(32);
+            builder.Property(o => o.Date)
+              .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
             builder.HasOne(o => o.Team).WithMany(o => o.MatchSettings).HasForeignKey(o => o.TeamId);
             builder.HasOne(o => o.Stadium).WithMany(o => o.MatchSettings).HasForeignKey(o => o.StadiumId);

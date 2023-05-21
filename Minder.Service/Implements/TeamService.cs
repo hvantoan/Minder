@@ -65,17 +65,20 @@ namespace Minder.Service.Implements {
             };
         }
 
-        public async Task<object?> Automation(string teamId, EAutoMation type) {
-            var userIds = await this.db.Members.Where(o => o.TeamId == teamId).Select(o => o.UserId).ToListAsync();
+        public async Task<object?> Automation(EAutoMation type, string hostTeamId, string? opposingTeamId = null, bool getTimeChooiceModel = false) {
+            var userIds = await this.db.Members.Where(o => o.TeamId == hostTeamId || (!string.IsNullOrEmpty(opposingTeamId) && o.TeamId == opposingTeamId))
+                .Select(o => o.UserId).ToListAsync();
             var users = await this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
-                .Where(o => userIds.Contains(o.Id)).Select(o => UserDto.FromEntity(o, null, null, null)).ToListAsync();
+                .Where(o => userIds.Contains(o.Id))
+                .Select(o => UserDto.FromEntity(o, null, null, null))
+                .ToListAsync();
 
             switch (type) {
                 case EAutoMation.Location:
                     return CalculatorCenterPoint(users!);
 
                 case EAutoMation.Time:
-                    return GetTime(users!);
+                    return GetTime(users!, getTimeChooiceModel);
             }
             ManagedException.Throw(Messages.System.System_Error);
             return null;
@@ -98,107 +101,6 @@ namespace Minder.Service.Implements {
                 Latitude = count == 0 ? 0 : lat / count,
                 Longitude = count == 0 ? 0 : lng / count
             };
-        }
-
-        private static GameTimeDto GetTime(List<UserDto> members) {
-            var sunday = new List<List<int>>();
-            var monday = new List<List<int>>();
-            var tuesday = new List<List<int>>();
-            var wednesday = new List<List<int>>();
-            var thursday = new List<List<int>>();
-            var friday = new List<List<int>>();
-            var saturday = new List<List<int>>();
-            foreach (var user in members) {
-                sunday.Add(user.GameSetting!.GameTime!.Sunday.Select(o => (int)o).ToList());
-                monday.Add(user.GameSetting!.GameTime!.Monday.Select(o => (int)o).ToList());
-                tuesday.Add(user.GameSetting!.GameTime!.Tuesday.Select(o => (int)o).ToList());
-                wednesday.Add(user.GameSetting!.GameTime!.Wednesday.Select(o => (int)o).ToList());
-                thursday.Add(user.GameSetting!.GameTime!.Thursday.Select(o => (int)o).ToList());
-                friday.Add(user.GameSetting!.GameTime!.Friday.Select(o => (int)o).ToList());
-                saturday.Add(user.GameSetting!.GameTime!.Saturday.Select(o => (int)o).ToList());
-            }
-            var gameTime = new GameTimeDto();
-            for (var i = members.Count; i > 0; i--) {
-                var chooices = new TimeChooice[7];
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Sunday, sunday, 2, i, chooices);
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Monday, monday, 2, i, chooices);
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Tuesday, tuesday, 2, i, chooices);
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Wednesday, wednesday, 2, i, chooices);
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Thursday, thursday, 2, i, chooices);
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Friday, friday, 2, i, chooices);
-                chooices = FindMostFrequentConsecutiveData(DayOfWeek.Saturday, saturday, 2, i, chooices);
-
-                if (chooices.ToList().Any(o => o.Length > 0)) {
-                    gameTime = new GameTimeDto() {
-                        Sunday = chooices[(int)DayOfWeek.Sunday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                        Monday = chooices[(int)DayOfWeek.Monday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                        Tuesday = chooices[(int)DayOfWeek.Tuesday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                        Wednesday = chooices[(int)DayOfWeek.Wednesday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                        Thursday = chooices[(int)DayOfWeek.Thursday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                        Friday = chooices[(int)DayOfWeek.Friday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                        Saturday = chooices[(int)DayOfWeek.Saturday].Value.Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
-                    };
-                    break;
-                }
-            }
-
-            return gameTime;
-        }
-
-        public static List<int> FindBestChooice(List<TimeChooice> chooices) {
-            TimeChooice? bestObject = null;
-            double bestScore = double.MinValue;
-
-            foreach (var chooice in chooices) {
-                double score = chooice.Quantity * 9 + chooice.Length * 10;
-
-                if (score > bestScore) {
-                    bestObject = chooice;
-                    bestScore = score;
-                }
-            }
-
-            return bestObject?.Value ?? new List<int>();
-        }
-
-        private static TimeChooice[] FindMostFrequentConsecutiveData(DayOfWeek day, List<List<int>> arrayLists, int minOccurrence, int minArrays, TimeChooice[] chooices) {
-            var numberCount = new Dictionary<int, int>();
-
-            foreach (var array in arrayLists) {
-                foreach (var number in array) {
-                    if (numberCount.ContainsKey(number)) {
-                        numberCount[number]++;
-                    } else {
-                        numberCount[number] = 1;
-                    }
-                }
-            }
-
-            var mostFrequentConsecutiveData = new List<int>();
-            var mostCount = 0;
-            foreach (var kvp in numberCount) {
-                if (kvp.Value >= minOccurrence && IsConsecutiveSequence(numberCount.Keys, kvp.Key, minArrays, arrayLists.Count)) {
-                    mostFrequentConsecutiveData.Add(kvp.Key);
-                    mostCount = mostCount > kvp.Value ? mostCount : kvp.Value;
-                }
-            }
-            chooices[(int)day] = new TimeChooice() {
-                Quantity = mostCount,
-                Value = mostFrequentConsecutiveData
-            };
-            return chooices;
-        }
-
-        private static bool IsConsecutiveSequence(IEnumerable<int> numbers, int startNumber, int minArrays, int totalArrays) {
-            int currentNumber = startNumber;
-            int arrayCount = 0;
-
-            while (numbers.Contains(currentNumber)) {
-                currentNumber++;
-                arrayCount++;
-            }
-
-            return arrayCount >= minArrays && arrayCount <= totalArrays;
         }
 
         public async Task<TeamDto?> Get(string teamId) {
@@ -312,19 +214,20 @@ namespace Minder.Service.Implements {
                 if (model.GameSetting.Radius != 0.0) team.GameSetting!.Radius = model.GameSetting.Radius;
                 if (model.GameSetting.Rank != ERank.None) team.GameSetting!.Rank = model.GameSetting.Rank;
             }
+            team.IsAutoTime = model.IsAutoTime;
+            team.IsAutoLocation = model.IsAutoLocation;
+
             if (model.IsAutoTime) {
-                var gameTime = (GameTimeDto?)await Automation(team.Id, EAutoMation.Time);
+                var gameTime = (GameTimeDto?)await Automation(EAutoMation.Time, team.Id);
                 team.GameSetting!.GameTime = gameTime?.ToEntity() ?? new GameTime();
-                team.IsAutoTime = true;
             }
 
             if (model.IsAutoLocation) {
-                var point = (Point?)await Automation(team.Id, EAutoMation.Location);
+                var point = (Point?)await Automation(EAutoMation.Location, team.Id);
                 if (point != null) {
                     team.GameSetting!.Longitude = point.Longitude;
                     team.GameSetting!.Latitude = point.Latitude;
                 }
-                team.IsAutoLocation = true;
             }
 
             await this.db.SaveChangesAsync();
@@ -353,15 +256,14 @@ namespace Minder.Service.Implements {
             var isOwner = await this.db.Members.AnyAsync(o => o.TeamId == teamId && o.UserId == this.current.UserId && o.Regency == ERegency.Owner);
             ManagedException.ThrowIf(isOwner, Messages.Team.Team_IsOwner);
 
-            var memberLeave = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == teamId);
+            var memberLeave = await this.db.Members.FirstOrDefaultAsync(o => o.TeamId == teamId && o.UserId == this.current.UserId);
             memberLeave!.IsDeleted = true;
 
             var groupLeave = await this.db.Groups.Include(o => o.Participants).FirstOrDefaultAsync(o => o.Type == EGroup.Team && o.ChannelId == teamId);
             if (groupLeave != null) {
-                var participant = groupLeave.Participants!.FirstOrDefault(o => o.UserId == this.current.UserId);
-                participant!.IsDeleted = true;
+                var participant = groupLeave.Participants!.FirstOrDefault(o => o.UserId == this.current.UserId && o.GroupId == groupLeave.Id);
+                if (participant != null) participant.IsDeleted = true;
             }
-
             await this.db.SaveChangesAsync();
         }
 
@@ -435,31 +337,31 @@ namespace Minder.Service.Implements {
                         var item = TeamDto.FromEntity(team);
 
                         switch (req.Day) {
-                            case DayOfWeek.Monday:
+                            case EDayOfWeek.Monday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Monday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case DayOfWeek.Tuesday:
+                            case EDayOfWeek.Tuesday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Tuesday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case DayOfWeek.Wednesday:
+                            case EDayOfWeek.Wednesday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Wednesday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case DayOfWeek.Thursday:
+                            case EDayOfWeek.Thursday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Thursday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case DayOfWeek.Friday:
+                            case EDayOfWeek.Friday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Friday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case DayOfWeek.Saturday:
+                            case EDayOfWeek.Saturday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Saturday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
-                            case DayOfWeek.Sunday:
+                            case EDayOfWeek.Sunday:
                                 isTimeAdd = item!.GameSetting!.GameTime!.Sunday.Any(o => req.From <= o && o <= req.To);
                                 break;
 
@@ -513,6 +415,123 @@ namespace Minder.Service.Implements {
             }
 
             return age;
+        }
+
+        private static object GetTime(List<UserDto> members, bool getTimeChooiceModel = false) {
+            var sunday = new List<List<int>>();
+            var monday = new List<List<int>>();
+            var tuesday = new List<List<int>>();
+            var wednesday = new List<List<int>>();
+            var thursday = new List<List<int>>();
+            var friday = new List<List<int>>();
+            var saturday = new List<List<int>>();
+
+            foreach (var user in members) {
+                sunday.Add(user.GameSetting!.GameTime!.Sunday.Select(o => (int)o).ToList());
+                monday.Add(user.GameSetting!.GameTime!.Monday.Select(o => (int)o).ToList());
+                tuesday.Add(user.GameSetting!.GameTime!.Tuesday.Select(o => (int)o).ToList());
+                wednesday.Add(user.GameSetting!.GameTime!.Wednesday.Select(o => (int)o).ToList());
+                thursday.Add(user.GameSetting!.GameTime!.Thursday.Select(o => (int)o).ToList());
+                friday.Add(user.GameSetting!.GameTime!.Friday.Select(o => (int)o).ToList());
+                saturday.Add(user.GameSetting!.GameTime!.Saturday.Select(o => (int)o).ToList());
+            }
+
+            int minLength = 5;
+            var gameTime = new GameTimeDto();
+            var timeChooices = new List<TimeChooice>();
+            for (var i = members.Count; i > 0; i--) {
+                var chooices = new TimeChooice[7];
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Sunday, sunday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Monday, monday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Tuesday, tuesday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Wednesday, wednesday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Thursday, thursday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Friday, friday, 2, i, chooices);
+                chooices = FindMostFrequentConsecutiveData(EDayOfWeek.Saturday, saturday, 2, i, chooices);
+
+                if (chooices.ToList().Any(o => o.Length > minLength)) {
+                    if (getTimeChooiceModel) {
+                        return chooices.ToList();
+                    }
+                    gameTime = new GameTimeDto() {
+                        Sunday = chooices[(int)EDayOfWeek.Sunday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Monday = chooices[(int)EDayOfWeek.Monday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Tuesday = chooices[(int)EDayOfWeek.Tuesday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Wednesday = chooices[(int)EDayOfWeek.Wednesday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Thursday = chooices[(int)EDayOfWeek.Thursday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Friday = chooices[(int)EDayOfWeek.Friday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                        Saturday = chooices[(int)EDayOfWeek.Saturday].Value.OrderBy(o => o).Select(o => Enum.Parse<EGameTime>(o.ToString())).ToList(),
+                    };
+                } else if (i == 1) {
+                    minLength--;
+                    i = members.Count;
+                }
+            }
+
+            return gameTime;
+        }
+
+        public static List<int> FindBestChooice(List<TimeChooice> chooices) {
+            TimeChooice? bestObject = null;
+            double bestScore = double.MinValue;
+
+            foreach (var chooice in chooices) {
+                double score = chooice.Quantity * 9 + chooice.Length * 10;
+
+                if (score > bestScore) {
+                    bestObject = chooice;
+                    bestScore = score;
+                }
+            }
+
+            return bestObject?.Value ?? new List<int>();
+        }
+
+        private static TimeChooice[] FindMostFrequentConsecutiveData(EDayOfWeek day, List<List<int>> arrayLists, int minOccurrence, int minArrays, TimeChooice[] chooices) {
+            var numberCount = new Dictionary<int, int>();
+
+            foreach (var array in arrayLists) {
+                foreach (var number in array) {
+                    if (numberCount.ContainsKey(number)) {
+                        numberCount[number]++;
+                    } else {
+                        numberCount[number] = 1;
+                    }
+                }
+            }
+            var mostContaint = numberCount.Values.Any() ? numberCount.Values.Max() : 0;
+            var mostFrequentConsecutiveData = new List<int>();
+            var mostCount = 0;
+
+            var hasValue = ++mostContaint;
+            do {
+                hasValue--;
+                foreach (var kvp in numberCount) {
+                    if (kvp.Value >= hasValue && IsConsecutiveSequence(numberCount.Keys, kvp.Key, minArrays, arrayLists.Count)) {
+                        mostFrequentConsecutiveData.Add(kvp.Key);
+                        mostCount = mostCount > kvp.Value ? mostCount : kvp.Value;
+                    }
+                }
+            } while (!mostFrequentConsecutiveData.Any() && hasValue > minOccurrence);
+
+            chooices[(int)day] = new TimeChooice() {
+                Day = day,
+                Quantity = mostCount,
+                Value = mostFrequentConsecutiveData
+            };
+            return chooices;
+        }
+
+        private static bool IsConsecutiveSequence(IEnumerable<int> numbers, int startNumber, int minArrays, int totalArrays) {
+            int currentNumber = startNumber;
+            int arrayCount = 0;
+
+            while (numbers.Contains(currentNumber)) {
+                currentNumber++;
+                arrayCount++;
+            }
+
+            return arrayCount >= minArrays && arrayCount <= totalArrays;
         }
     }
 }

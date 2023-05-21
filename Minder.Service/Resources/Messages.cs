@@ -75,6 +75,7 @@
             public static ResponseMessage OpposingTeam_NotFount { get; } = new() { Code = 101, Message = "Đội đối thủ không tồn tại không tồn tại." };
             public static ResponseMessage Match_NotFount { get; } = new() { Code = 102, Message = "Trận đấu không tồn tại." };
             public static ResponseMessage Match_TeamIdRequire { get; } = new() { Code = 103, Message = "TeamId không được để trống." };
+            public static ResponseMessage Match_NotFound { get; } = new() { Code = 104, Message = "Trận đấu không tồn tại." };
         }
 
         public static class System {

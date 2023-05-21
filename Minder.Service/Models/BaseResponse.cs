@@ -14,6 +14,7 @@ namespace Minder.Services.Models {
         }
 
         public static BaseRes Fail(string model) {
+            Console.WriteLine(model);
             return new BaseRes() {
                 Response = Response.Fail(model)
             };

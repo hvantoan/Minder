@@ -22,8 +22,8 @@ namespace Minder.Database.Models {
             builder.Property(o => o.MemberId).HasMaxLength(32).IsRequired();
             builder.Property(o => o.MatchSettingId).HasMaxLength(32).IsRequired();
 
-            builder.HasOne(o => o.MatchSetting).WithMany(o => o.MatchParticipants).HasForeignKey(o => o.MatchSettingId);
-            builder.HasOne(o => o.Member).WithMany(o => o.MatchParticipants).HasForeignKey(o => o.MatchSettingId);
+            builder.HasOne(o => o.MatchSetting).WithMany(o => o.MatchParticipants).HasForeignKey(o => o.MatchSettingId).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(o => o.Member).WithMany(o => o.MatchParticipants).HasForeignKey(o => o.MemberId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

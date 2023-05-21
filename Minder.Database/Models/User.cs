@@ -68,7 +68,8 @@ namespace Minder.Database.Models {
                 RoleId = "469b14225a79448c93e4e780aa08f0cc",
                 Username = "admin@gmail.com",
                 Phone = "0336516906",
-                IsActive = true
+                IsActive = true,
+                IsDeleted = false,
             });
         }
     }

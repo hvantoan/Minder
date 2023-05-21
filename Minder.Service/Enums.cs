@@ -1,4 +1,6 @@
-﻿namespace Minder.Service {
+﻿using System.ComponentModel;
+
+namespace Minder.Service {
 
     public class Enums {
 
@@ -16,5 +18,7 @@
             Host = 1,
             Opposite = 2,
         }
+
+       
     }
 }

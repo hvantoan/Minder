@@ -18,7 +18,7 @@ namespace Minder.Database.Models {
             builder.HasKey(o => new { o.TeamId, o.ItemId });
             builder.Property(x => x.TeamId).HasMaxLength(32).IsRequired();
             builder.Property(o => o.ItemId).HasMaxLength(32).IsRequired();
-            builder.Property(o => o.CreateAt).HasDefaultValue(DateTimeOffset.UtcNow)
+            builder.Property(o => o.CreateAt)
               .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
             builder.HasOne(o => o.Team).WithMany(o => o.TeamRejecteds).HasForeignKey(o => o.TeamId);

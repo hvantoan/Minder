@@ -167,9 +167,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<long>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867562L);
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -188,9 +186,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<long>("UpdateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867562L);
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -257,7 +253,7 @@ namespace Minder.Database.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<int?>("SelectedDate")
+                    b.Property<int?>("SelectedDayOfWeek")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -303,6 +299,9 @@ namespace Minder.Database.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<long>("Date")
+                        .HasColumnType("bigint");
+
                     b.Property<int?>("From")
                         .HasColumnType("int");
 
@@ -314,6 +313,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("TeamId")
+                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
@@ -373,9 +373,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867567L);
+                        .HasColumnType("bigint");
 
                     b.Property<string>("GroupId")
                         .IsRequired()
@@ -389,9 +387,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<long>("UpdateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867567L);
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -419,9 +415,7 @@ namespace Minder.Database.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<long>("JoinAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867568L);
+                        .HasColumnType("bigint");
 
                     b.Property<string>("LastSendMessageId")
                         .HasMaxLength(32)
@@ -674,9 +668,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(5)");
 
                     b.Property<long>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867569L);
+                        .HasColumnType("bigint");
 
                     b.Property<string>("District")
                         .HasMaxLength(3)
@@ -708,9 +700,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(2)");
 
                     b.Property<long>("UpdateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867569L);
+                        .HasColumnType("bigint");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -738,9 +728,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867569L);
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsAutoLocation")
                         .HasColumnType("bit");
@@ -758,9 +746,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("UpdateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867569L);
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -778,9 +764,7 @@ namespace Minder.Database.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<long>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867570L);
+                        .HasColumnType("bigint");
 
                     b.HasKey("TeamId", "ItemId");
 
@@ -796,7 +780,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("DayOfBirth")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1684496867570L);
+                        .HasDefaultValue(1684685693679L);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -940,13 +924,13 @@ namespace Minder.Database.Migrations
                     b.HasOne("Minder.Database.Models.MatchSetting", "MatchSetting")
                         .WithMany("MatchParticipants")
                         .HasForeignKey("MatchSettingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Minder.Database.Models.Member", "Member")
                         .WithMany("MatchParticipants")
                         .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("MatchSetting");
@@ -962,7 +946,9 @@ namespace Minder.Database.Migrations
 
                     b.HasOne("Minder.Database.Models.Team", "Team")
                         .WithMany("MatchSettings")
-                        .HasForeignKey("TeamId");
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Stadium");
 

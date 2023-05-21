@@ -26,7 +26,7 @@ namespace Minder.Database.Models {
             builder.Property(o => o.LastSendMessageId).HasMaxLength(32);
             builder.Property(o => o.UserId).HasMaxLength(32).IsRequired();
             builder.Property(o => o.IsDeleted).HasDefaultValue(false);
-            builder.Property(o => o.JoinAt).HasDefaultValue(DateTimeOffset.UtcNow)
+            builder.Property(o => o.JoinAt)
                 .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
 

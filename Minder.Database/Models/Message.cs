@@ -24,9 +24,9 @@ namespace Minder.Database.Models {
 
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).HasMaxLength(32);
-            builder.Property(o => o.CreateAt).HasDefaultValue(DateTimeOffset.UtcNow)
+            builder.Property(o => o.CreateAt)
                 .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
-            builder.Property(o => o.UpdateAt).HasDefaultValue(DateTimeOffset.UtcNow)
+            builder.Property(o => o.UpdateAt)
                 .HasConversion(o => o.ToUnixTimeMilliseconds(), o => DateTimeOffset.FromUnixTimeMilliseconds(o)).IsRequired();
 
             //fk

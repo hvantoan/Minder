@@ -107,7 +107,7 @@ namespace Minder.Api.Controllers {
         [HttpGet, Route("auto-cal/{teamId}")]
         public async Task<BaseRes> Automation([FromRoute] string teamId, [FromQuery] EAutoMation type = EAutoMation.Location) {
             try {
-                var res = await teamService.Automation(teamId, type);
+                var res = await teamService.Automation(type, teamId);
                 return BaseRes<object?>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);

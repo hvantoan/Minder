@@ -1,6 +1,6 @@
 ﻿using Minder.Database.Enums;
 using Minder.Services.Models;
-using System;
+using static Minder.Service.Enums;
 
 namespace Minder.Service.Models.Team {
 
@@ -13,12 +13,13 @@ namespace Minder.Service.Models.Team {
 
         // Find in map
         public decimal Lat { get; set; }
+
         public decimal Long { get; set; }
         public int Radius { get; set; }
 
-
         // Find with time option
-        public DayOfWeek? Day { get; set; }
+        public EDayOfWeek? Day { get; set; }
+
         public EGameTime From { get; set; }
         public EGameTime To { get; set; }
     }

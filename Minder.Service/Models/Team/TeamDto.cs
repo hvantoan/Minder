@@ -60,7 +60,9 @@ namespace Minder.Service.Models.Team {
                 TeamRejectedId = entity.TeamRejecteds?.Select(o => o.ItemId).ToList() ?? new List<string>(),
                 GroupId = groupId,
                 Avatar = avatar,
-                Cover = cover
+                Cover = cover,
+                IsAutoTime = entity.IsAutoTime,
+                IsAutoLocation = entity.IsAutoLocation,
             };
         }
     }

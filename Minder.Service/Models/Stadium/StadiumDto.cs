@@ -14,11 +14,11 @@ namespace Minder.Service.Models.Stadium {
 
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
-
         public AdministrativeUnit? Province { get; set; }
         public AdministrativeUnit? District { get; set; }
         public AdministrativeUnit? Commune { get; set; }
         public string? Address { get; set; }
+        public string? FullAddress => $"{Address}, {Commune?.Name}, {District?.Name}, {Province?.Name}";
         public DateTimeOffset CreateAt { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
