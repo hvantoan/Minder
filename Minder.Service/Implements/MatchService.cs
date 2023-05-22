@@ -146,10 +146,12 @@ namespace Minder.Service.Implements {
                         entity.HostTeam.SelectedDayOfWeek = timeReq.DayOfWeek;
                         entity.HostTeam.From = Enum.Parse<ETime>(timeReq.From.ToString());
                         entity.HostTeam.To = Enum.Parse<ETime>(timeReq.To.ToString());
+                        entity.HostTeam.Date = timeReq.Date;
                     } else if (entity!.OpposingTeam!.TeamId == teamId) {
                         entity.OpposingTeam.SelectedDayOfWeek = timeReq.DayOfWeek;
                         entity.OpposingTeam.From = Enum.Parse<ETime>(timeReq.From.ToString());
                         entity.OpposingTeam.To = Enum.Parse<ETime>(timeReq.To.ToString());
+                        entity.OpposingTeam.Date = timeReq.Date;
                     }
                     break;
             }
