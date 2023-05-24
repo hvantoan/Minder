@@ -67,9 +67,9 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListGroupRes> List(ListGroupReq req) {
-            var conversationIds = await this.db.Participants.Where(o => o.UserId == this.current.UserId).Select(o => o.GroupId).ToListAsync();
-            var query = this.db.Groups.AsNoTracking().Where(o => conversationIds.Contains(o.Id));
-            var participantIdsByConversation = await this.db.Participants.AsNoTracking().Where(o => conversationIds.Contains(o.GroupId))
+            var groupIds = await this.db.Participants.Where(o => o.UserId == this.current.UserId).Select(o => o.GroupId).ToListAsync();
+            var query = this.db.Groups.AsNoTracking().Where(o => groupIds.Contains(o.Id));
+            var participant = await this.db.Participants.AsNoTracking().Where(o => groupIds.Contains(o.GroupId))
                 .GroupBy(o => o.GroupId)
                 .Select(o => new {
                     ConversationId = o.Key,
@@ -85,7 +85,7 @@ namespace Minder.Service.Implements {
 
             foreach (var item in items) {
                 if (item == null) continue;
-                item.ParticipantIds = participantIdsByConversation.FirstOrDefault(o => o.ConversationId == item.Id)?.ParticipantIds;
+                item.ParticipantIds = participant.FirstOrDefault(o => o.ConversationId == item.Id)?.ParticipantIds;
             }
 
             return new ListGroupRes() {

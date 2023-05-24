@@ -65,5 +65,25 @@ namespace Minder.Api.Controllers {
                 return BaseRes.Fail(ex.Message);
             }
         }
+
+        [HttpGet, Route("{matchId}/void")]
+        public async Task<BaseRes> Void([FromRoute] string matchId) {
+            try {
+                await matchService.Void(matchId);
+                return BaseRes.Ok();
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpGet, Route("{matchId}/check")]
+        public async Task<BaseRes> Check([FromRoute] string matchId) {
+            try {
+                var res = await matchService.Check(matchId);
+                return BaseRes<object>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
     }
 }

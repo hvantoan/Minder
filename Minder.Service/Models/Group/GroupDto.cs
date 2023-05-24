@@ -1,4 +1,6 @@
-﻿using Minder.Extensions;
+﻿using Minder.Database.Models;
+using Minder.Extensions;
+using Minder.Service.Extensions;
 using Minder.Service.Models.Message;
 using Minder.Service.Models.Participant;
 using Newtonsoft.Json;
@@ -12,9 +14,10 @@ namespace Minder.Service.Models.Group {
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string ChannelId { get; set; } = null!;
-        public string? TeamId { get; set; }
         public string LastMessage { get; set; } = string.Empty;
         public DateTimeOffset CreateAt { get; set; } = DateTimeOffset.Now;
+        public EGroup Type { get; set; }
+        public string DisplayType => Type.Description();
         public bool Online { get; set; }
 
         [JsonIgnore]
@@ -46,6 +49,7 @@ namespace Minder.Service.Models.Group {
                 Title = entity.Title,
                 ChannelId = entity.ChannelId,
                 CreateAt = entity.CreateAt,
+
                 LastMessage = entity.Messages?.OrderBy(o => o.CreateAt).FirstOrDefault()?.Content ?? string.Empty,
             };
         }

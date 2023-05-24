@@ -59,6 +59,26 @@ namespace Minder.Service.Implements {
             };
         }
 
+        public async Task FindUserWipeCard(CreateInviteSwipeCardReq req) {
+            var team = await this.db.Teams.FirstOrDefaultAsync(o => o.Id == req.TeamId);
+            ManagedException.ThrowIf(team == null, Messages.Match.HostTeam_NotFount);
+            if (req.HasInvite) {
+                await Create(new InviteDto() {
+                    UserId = req.UserId,
+                    TeamId = team.Id,
+                    Description = $"Mời bạn vào đội {team.Name} của mình"
+                });
+            } else {
+                var item = new TeamRejected() {
+                    TeamId = req.TeamId,
+                    ItemId = req.UserId,
+                    Type = ETeamRejected.User
+                };
+                await this.db.TeamRejecteds.AddAsync(item);
+                await this.db.SaveChangesAsync();
+            }
+        }
+
         public async Task Invite(InviteDto model) {
             if (model.Type == EInvitationType.Invite) {
                 var hasPermisstion = await this.db.Members.AnyAsync(o => (o.Regency == ERegency.Owner || o.Regency == ERegency.Captain)

@@ -57,7 +57,7 @@ namespace Minder.Service.Models.Team {
                 GameSetting = entity.GameSetting != null ? GameSettingDto.FromEntity(entity.GameSetting) : default,
                 Members = entity.Members != null ? entity.Members.Select(o => MemberDto.FromEntity(o)!).ToList() : default,
                 Rank = entity.GameSetting?.Rank ?? default,
-                TeamRejectedId = entity.TeamRejecteds?.Select(o => o.ItemId).ToList() ?? new List<string>(),
+                TeamRejectedId = entity.TeamRejecteds?.Where(o => o.Type == ETeamRejected.Team).Select(o => o.ItemId).ToList() ?? new List<string>(),
                 GroupId = groupId,
                 Avatar = avatar,
                 Cover = cover,

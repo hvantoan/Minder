@@ -19,8 +19,8 @@ namespace Minder.Service.Jobs {
             // Has One day
             //var periousDay = DateTimeOffset.UtcNow.AddDays(-1);
 
-            var periousDay = DateTimeOffset.UtcNow.AddMinutes(-10);
-            var teamRejecteds = await this.db.TeamRejecteds.Where(o => o.CreateAt >= periousDay).ToListAsync();
+            var periousDay = DateTimeOffset.UtcNow.AddMinutes(-5);
+            var teamRejecteds = await this.db.TeamRejecteds.Where(o => o.CreateAt < periousDay).ToListAsync();
 
             if (teamRejecteds.Any()) {
                 this.db.RemoveRange(teamRejecteds);

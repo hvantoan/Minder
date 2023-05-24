@@ -11,8 +11,10 @@ using Minder.Service.Models.File;
 using Minder.Service.Models.GameSetting;
 using Minder.Service.Models.Group;
 using Minder.Service.Models.Team;
+using Minder.Service.Models.User;
 using Minder.Services.Common;
 using Minder.Services.Extensions;
+using Minder.Services.Interfaces;
 using Minder.Services.Models.User;
 using Minder.Services.Resources;
 using Newtonsoft.Json;
@@ -27,10 +29,34 @@ namespace Minder.Service.Implements {
     public class TeamService : BaseService, ITeamService {
         private readonly IGroupService groupService;
         private readonly IFileService fileService;
+        private readonly IUserService userService;
 
         public TeamService(IServiceProvider serviceProvider) : base(serviceProvider) {
             this.groupService = serviceProvider.GetRequiredService<IGroupService>();
             this.fileService = serviceProvider.GetRequiredService<IFileService>();
+            this.userService = serviceProvider.GetRequiredService<IUserService>();
+        }
+
+        public async Task<ListUserRes> SuggestUserForTeam(ListUserSuggest req) {
+            var isExited = await this.db.Teams.AnyAsync(o => o.Id == req.TeamId);
+            ManagedException.ThrowIf(!isExited, Messages.Team.Team_NotFound);
+            var entity = await this.db.Teams.Include(o => o.GameSetting).AsNoTracking().FirstOrDefaultAsync(o => o.Id == req.TeamId);
+
+            var team = TeamDto.FromEntity(entity);
+            var memberIds = await this.db.Members.AsNoTracking().Where(o => o.TeamId == req.TeamId).Select(o => o.UserId).ToListAsync();
+            var userHasRejects = await this.db.TeamRejecteds.Where(o => o.Type == ETeamRejected.User).Select(o => o.ItemId).ToListAsync();
+            var userInviteds = await this.db.Invites.Where(o => o.TeamId == req.TeamId && o.Type == EInvitationType.Invite).Select(o => o.UserId).ToListAsync();
+
+            var users = await this.db.Users.Include(o => o.GameSetting).Where(o => !memberIds.Contains(o.Id) && !userHasRejects.Contains(o.Id) && !userInviteds.Contains(o.Id))
+                .Skip(req.Skip).Take(req.Take).Select(o => UserDto.FromEntity(o, null, null, null))
+                .ToListAsync();
+
+            var res = MinderExtension.SortUserDistance(team!, users!);
+            return await this.userService.List(new ListUserReq() {
+                PageIndex = 0,
+                PageSize = res.Count,
+                UserIds = res.Select(o => o.Id!).ToList(),
+            });
         }
 
         public async Task<ListTeamRes> List(ListTeamReq req) {
@@ -82,25 +108,6 @@ namespace Minder.Service.Implements {
             }
             ManagedException.Throw(Messages.System.System_Error);
             return null;
-        }
-
-        public static Point CalculatorCenterPoint(List<UserDto> users) {
-            var lat = decimal.Zero;
-            var lng = decimal.Zero;
-            int nextUser = 0;
-            foreach (var user in users) {
-                if (user.GameSetting?.Latitude == 0 && user.GameSetting?.Longitude == 0) {
-                    nextUser++;
-                    continue;
-                }
-                lat += user.GameSetting?.Latitude ?? decimal.Zero;
-                lng += user.GameSetting?.Longitude ?? decimal.Zero;
-            }
-            var count = users.Count - nextUser;
-            return new Point {
-                Latitude = count == 0 ? 0 : lat / count,
-                Longitude = count == 0 ? 0 : lng / count
-            };
         }
 
         public async Task<TeamDto?> Get(string teamId) {
@@ -174,7 +181,7 @@ namespace Minder.Service.Implements {
 
             await this.groupService.Create(new GroupDto() {
                 UserIds = team.Members?.Select(o => o.UserId).ToList(),
-                TeamId = team.Id,
+                ChannelId = team.Id,
                 Title = team.Name,
             });
 
@@ -485,6 +492,25 @@ namespace Minder.Service.Implements {
             }
 
             return bestObject?.Value ?? new List<int>();
+        }
+
+        private static Point CalculatorCenterPoint(List<UserDto> users) {
+            var lat = decimal.Zero;
+            var lng = decimal.Zero;
+            int nextUser = 0;
+            foreach (var user in users) {
+                if (user.GameSetting?.Latitude == 0 && user.GameSetting?.Longitude == 0) {
+                    nextUser++;
+                    continue;
+                }
+                lat += user.GameSetting?.Latitude ?? decimal.Zero;
+                lng += user.GameSetting?.Longitude ?? decimal.Zero;
+            }
+            var count = users.Count - nextUser;
+            return new Point {
+                Latitude = count == 0 ? 0 : lat / count,
+                Longitude = count == 0 ? 0 : lng / count
+            };
         }
 
         private static TimeChooice[] FindMostFrequentConsecutiveData(EDayOfWeek day, List<List<int>> arrayLists, int minOccurrence, int minArrays, TimeChooice[] chooices) {

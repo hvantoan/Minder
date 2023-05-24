@@ -1,4 +1,4 @@
-﻿                using Minder.Database.Enums;
+﻿using Minder.Database.Enums;
 using Minder.Service.Models.File;
 using Minder.Service.Models.GameSetting;
 using Minder.Services.Models.Role;
@@ -8,7 +8,7 @@ using System;
 namespace Minder.Services.Models.User {
 
     public partial class UserDto {
-        public string? Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string? Username { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
@@ -29,6 +29,9 @@ namespace Minder.Services.Models.User {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public RoleDto? Role { get; set; }
+
+        [JsonIgnore]
+        public double Distance { get; set; }
     }
 
     public partial class UserDto {

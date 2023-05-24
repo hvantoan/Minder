@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Minder.Database.Enums;
+using Newtonsoft.Json;
 
 namespace Minder.Database.Models {
 
@@ -13,8 +14,12 @@ namespace Minder.Database.Models {
         public ETime? To { get; set; }
         public DateTimeOffset Date { get; set; }
 
+        [JsonIgnore]
         public virtual Match? HostMatch { get; set; }
+
+        [JsonIgnore]
         public virtual Match? OpposingMatch { get; set; }
+
         public virtual Stadium? Stadium { get; set; }
         public virtual Team? Team { get; set; }
         public virtual ICollection<MatchParticipant>? MatchParticipants { get; set; }

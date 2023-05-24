@@ -10,5 +10,7 @@ namespace Minder.Service.Interfaces {
         Task<ListInviteRes> ListInvite(ListInviteReq req);
 
         Task ConfirmInvite(ConfirmInviteReq req);
+
+        Task FindUserWipeCard(CreateInviteSwipeCardReq req);
     }
 }

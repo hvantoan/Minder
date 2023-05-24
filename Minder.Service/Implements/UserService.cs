@@ -44,21 +44,21 @@ namespace Minder.Services.Implements {
             return UserDto.FromEntity(user, null, avatar, coverAvatar);
         }
 
-        public async Task<ListUserResponse> List(ListUserReq req) {
+        public async Task<ListUserRes> List(ListUserReq req) {
             var query = this.db.Users.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).AsNoTracking()
                 .WhereIf(req.UserIds != null && req.UserIds.Any(), o => req.UserIds!.Contains(o.Id));
 
             var count = query.Count();
-            var users = await query.Take(req.PageSize).Skip(req.PageIndex * req.PageSize).ToListAsync();
+            var users = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
 
             var userIds = users.Select(o => o.Id).ToList();
             var file = await this.db.Files.Where(o => o.Type == EFile.Image && (o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover) && userIds.Contains(o.ItemId))
                 .Select(o => FileDto.FromEntity(o, this.current.Url)).ToListAsync();
 
-            var avatarFiles = file.Where(o => o!.ItemType == EItemType.UserAvatar).ToDictionary(k => k!.ItemId);
-            var coverFiles = file.Where(o => o!.ItemType == EItemType.UserCover).ToDictionary(k => k!.ItemId);
+            var avatarFiles = file.Where(o => o!.ItemType == EItemType.UserAvatar).GroupBy(o => o!.ItemId).Select(o => o.FirstOrDefault()).ToDictionary(k => k!.ItemId);
+            var coverFiles = file.Where(o => o!.ItemType == EItemType.UserCover).GroupBy(o => o!.ItemId).Select(o => o.FirstOrDefault()).ToDictionary(k => k!.ItemId);
 
-            return new ListUserResponse {
+            return new ListUserRes {
                 Count = await query.CountAsync(),
                 Items = users.Select(o => UserDto.FromEntity(o, null, avatarFiles.GetValueOrDefault(o.Id), coverFiles.GetValueOrDefault(o.Id))).ToList()
             };

@@ -1,4 +1,5 @@
 ﻿using Minder.Service.Models.Team;
+using Minder.Service.Models.User;
 using System.Threading.Tasks;
 using static Minder.Service.Enums;
 
@@ -23,5 +24,7 @@ namespace Minder.Service.Interfaces {
         Task<ListTeamRes> Suggession(SuggessTeamReq req);
 
         Task<object?> Automation(EAutoMation type, string hostTeamId, string? opposingTeamId = null, bool getTimeChooiceModel = false);
+
+        Task<ListUserRes> SuggestUserForTeam(ListUserSuggest req);
     }
 }

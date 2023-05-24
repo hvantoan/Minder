@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.Team;
+using Minder.Service.Models.User;
 using Minder.Services.Models;
 using System;
 using System.Threading.Tasks;
@@ -109,6 +110,16 @@ namespace Minder.Api.Controllers {
             try {
                 var res = await teamService.Automation(type, teamId);
                 return BaseRes<object?>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("suggest-user")]
+        public async Task<BaseRes> SuggestUserForTeam(ListUserSuggest req) {
+            try {
+                var res = await teamService.SuggestUserForTeam(req);
+                return BaseRes<ListUserRes?>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

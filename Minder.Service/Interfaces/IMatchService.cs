@@ -13,5 +13,9 @@ namespace Minder.Service.Interfaces {
         Task<MatchDto?> Get(string matchId);
 
         Task<MatchDto?> Update(string matchId, string teamId, object model, EUpdateType type);
+
+        Task Void(string id);
+
+        Task<object> Check(string matchId);
     }
 }

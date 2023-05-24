@@ -16,8 +16,8 @@ namespace Minder.Service.Jobs {
         }
 
         public async Task Invoke() {
-            var periousDay = DateTimeOffset.UtcNow.AddMinutes(-10);
-            var otps = await this.db.RegistrationInformations.Where(o => o.CreateAt >= periousDay).ToListAsync();
+            var periousDay = DateTimeOffset.UtcNow.AddMinutes(-5);
+            var otps = await this.db.RegistrationInformations.Where(o => o.CreateAt < periousDay).ToListAsync();
 
             if (otps.Any()) {
                 this.db.RegistrationInformations.RemoveRange(otps);

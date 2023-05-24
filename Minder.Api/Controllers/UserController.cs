@@ -71,7 +71,7 @@ namespace Minder.Api.Controllers {
         public async Task<BaseRes> List(ListUserReq req) {
             try {
                 var res = await userService.List(req);
-                return BaseRes<ListUserResponse>.Ok(res);
+                return BaseRes<ListUserRes>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

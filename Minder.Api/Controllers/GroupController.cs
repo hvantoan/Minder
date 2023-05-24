@@ -26,15 +26,9 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpGet]
-        public async Task<BaseRes> List(string? searchText, int pageIndex = 0, int pageSize = 20, bool count = true) {
+        [HttpPost]
+        public async Task<BaseRes> List(ListGroupReq req) {
             try {
-                var req = new ListGroupReq() {
-                    SearchText = searchText,
-                    PageIndex = pageIndex,
-                    PageSize = pageSize,
-                    IsCount = count
-                };
                 var res = await groupService.List(req);
                 return BaseRes<ListGroupRes?>.Ok(res);
             } catch (Exception ex) {

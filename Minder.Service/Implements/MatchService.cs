@@ -112,6 +112,56 @@ namespace Minder.Service.Implements {
             };
         }
 
+        public async Task Void(string id) {
+            var match = await this.db.Matches.FirstOrDefaultAsync(o => o.Id == id);
+
+            ManagedException.ThrowIf(match == null, Messages.Match.Match_NotFount);
+
+            match.Status = EMatch.Cancel;
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task<object> Check(string matchId) {
+            var entity = await this.db.Matches.Include(o => o.HostTeam).ThenInclude(o => o!.Stadium)
+                .Include(o => o.OpposingTeam).ThenInclude(o => o!.Stadium)
+                .FirstOrDefaultAsync(o => o.Id == matchId);
+            ManagedException.ThrowIf(entity == null, Messages.Match.Match_NotFount);
+            var hostTeam = entity.HostTeam;
+            var opposingTeam = entity.OpposingTeam;
+
+            if (hostTeam!.Date.Date != opposingTeam!.Date.Date || hostTeam.Date >= DateTimeOffset.UtcNow) {
+                return new {
+                    Status = false,
+                    Type = "Time",
+                    Message = "Vui lòng thống nhất thời gian"
+                };
+            }
+
+            if (hostTeam.From != opposingTeam.From || hostTeam.To != opposingTeam.To) {
+                return new {
+                    Status = false,
+                    Type = "Time",
+                    Message = "Vui lòng thống nhất thời gian"
+                };
+            }
+
+            if (hostTeam!.Stadium?.Id != opposingTeam!.Stadium?.Id || string.IsNullOrEmpty(hostTeam.Stadium?.Id)) {
+                return new {
+                    Status = false,
+                    Type = "Stadium",
+                    Message = "Vui lòng thống nhất sân đấu"
+                };
+            }
+            entity.Status = EMatch.Complete;
+            await this.db.SaveChangesAsync();
+
+            return new {
+                Status = true,
+                Type = "None",
+                Message = ""
+            };
+        }
+
         public async Task<MatchDto?> Update(string matchId, string teamId, object model, EUpdateType type) {
             var isExited = await this.db.Matches.AnyAsync(o => o.Id == matchId);
             ManagedException.ThrowIf(!isExited, Messages.Match.HostTeam_NotFount);
