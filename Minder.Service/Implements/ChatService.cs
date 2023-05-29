@@ -6,8 +6,8 @@ using Minder.Service.Extensions;
 using Minder.Service.Hubs;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.Chat;
+using Minder.Service.Models.Message;
 using Minder.Services.Common;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,13 +24,15 @@ namespace Minder.Service.Implements {
             this.connections = serviceProvider.GetRequiredService<IDictionary<string, Connection>>();
         }
 
-        public async Task SendNotify(string groupId, ENotify action, object? prarams = null) {
+        public async Task SendMessageNotify(string groupId, ENotify action, MessageDto outMessage, MessageDto currentMessage) {
+            // Send to all user connected in group
             var userIds = await this.db.Participants.Where(o => o.GroupId == groupId && o.UserId != this.current.UserId).Select(o => o.UserId).ToListAsync();
-            var connectionIds = connections.Values.Where(o => userIds.Contains(o.UserId)).Select(o => o.Id).ToList();
+            var outConnectionIds = connections.Values.Where(o => userIds.Contains(o.UserId)).Select(o => o.Id).ToList();
+            await hubContext.Clients.Clients(outConnectionIds).SendAsync(action.Description(), outMessage);
 
-            if (prarams != null) {
-                await hubContext.Clients.Clients(connectionIds).SendAsync(action.Description(), JsonConvert.SerializeObject(prarams));
-            } else await hubContext.Clients.Clients(connectionIds).SendAsync(action.Description());
+            // Send to current user
+            var curentConnectionIds = connections.Values.Where(o => o.UserId == this.current.UserId).Select(o => o.Id).ToList();
+            await hubContext.Clients.Clients(curentConnectionIds).SendAsync(action.Description(), currentMessage);
         }
 
         public async Task JoinToGroup(string groupId) {
@@ -40,7 +42,7 @@ namespace Minder.Service.Implements {
                 await hubContext.Groups.AddToGroupAsync(conection.Id, groupId);
                 conection.GroupId = groupId;
                 connections[conection.Id] = conection;
-                await SendNotify(groupId, ENotify.RecieveMessage);
+                //     await SendNotify(groupId, ENotify.RecieveMessage);
             }
         }
     }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Minder.Service.Models;
 using Minder.Service.Models.Chat;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Minder.Service.Hubs {
 
-    [Authorize]
     public class ChatHub : Hub {
         private readonly IDictionary<string, Connection> connections;
         private readonly CurrentUser currentUser;
@@ -32,8 +30,8 @@ namespace Minder.Service.Hubs {
             await base.OnConnectedAsync();
         }
 
-        public override  Task OnDisconnectedAsync(Exception exception) {
-             Console.Out.WriteLine(Context.ConnectionId);
+        public override Task OnDisconnectedAsync(Exception exception) {
+            Console.Out.WriteLine(Context.ConnectionId);
             if (connections.TryGetValue(Context.ConnectionId, out Connection? user)) {
                 connections.Remove(Context.ConnectionId);
             }

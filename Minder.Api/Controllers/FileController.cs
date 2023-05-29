@@ -36,6 +36,7 @@ namespace Minder.Api.Controllers {
                     ItemType = req.ItemType,
                     Type = EFile.Image,
                     Name = req.FileName,
+                    ImportUrl = req.ImportUrl,
                 };
 
                 await this.fileService.Create(model);

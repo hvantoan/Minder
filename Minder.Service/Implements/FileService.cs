@@ -21,13 +21,23 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<FileDto?> Get(string id, EItemType itemType, EFile type = EFile.Image) {
-            var file = await this.db.Files.AsNoTracking().OrderByDescending(o=>o.UploadDate)
+            var file = await this.db.Files.AsNoTracking().OrderByDescending(o => o.UploadDate)
                 .FirstOrDefaultAsync(o => o.Type == type && o.ItemType == itemType && o.ItemId == id);
 
             return FileDto.FromEntity(file, this.current.Url);
         }
 
         public async Task Create(FileDto model) {
+            if (!string.IsNullOrEmpty(model.ImportUrl)) {
+                try {
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
+                    byte[] file = new System.Net.WebClient().DownloadData(new Uri(model.ImportUrl));
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
+                    model.Data = file;
+                } catch (Exception) {
+                }
+            }
+
             if (model.Data == null || model.Data.Length == 0)
                 return;
             this.logger.Information($"{nameof(FileService)} - {nameof(Create)} - Start", model);
@@ -43,8 +53,60 @@ namespace Minder.Service.Implements {
 
             entity.Path = await this.UploadFile(entity, model.Data);
             await this.db.AddAsync(entity);
+            await UpdateFileType(entity.ItemType, entity.ItemId);
+
             await this.db.SaveChangesAsync();
             this.logger.Information($"{nameof(FileService)} - {nameof(Create)} - End", model);
+        }
+
+        private async Task UpdateFileType(EItemType type, string itemId) {
+            var query = this.db.Files.AsQueryable();
+            switch (type) {
+                case EItemType.UserAvatar:
+                    query = query.Where(o => o.ItemType == EItemType.UserAvatar && o.ItemId == itemId);
+                    break;
+
+                case EItemType.UserCover:
+                    query = query.Where(o => o.ItemType == EItemType.UserCover && o.ItemId == itemId);
+                    break;
+
+                case EItemType.TeamAvatar:
+                    query = query.Where(o => o.ItemType == EItemType.TeamAvatar && o.ItemId == itemId);
+                    break;
+
+                case EItemType.TeamCover:
+                    query = query.Where(o => o.ItemType == EItemType.TeamCover && o.ItemId == itemId);
+                    break;
+
+                case EItemType.StadiumAvatar:
+                    query = query.Where(o => o.ItemType == EItemType.StadiumAvatar && o.ItemId == itemId);
+                    break;
+
+                case EItemType.GroupAvatar:
+                    query = query.Where(o => o.ItemType == EItemType.GroupAvatar && o.ItemId == itemId);
+                    break;
+            }
+
+            var files = await query.ToListAsync();
+            switch (type) {
+                case EItemType.UserAvatar:
+                case EItemType.UserCover:
+                    files.ForEach(o => o.ItemType = EItemType.UserImage);
+                    break;
+
+                case EItemType.TeamAvatar:
+                case EItemType.TeamCover:
+                    files.ForEach(o => o.ItemType = EItemType.TeamImage);
+                    break;
+
+                case EItemType.StadiumAvatar:
+                    files.ForEach(o => o.ItemType = EItemType.StadiumImage);
+                    break;
+
+                case EItemType.GroupAvatar:
+                    files.ForEach(o => o.ItemType = EItemType.GroupImage);
+                    break;
+            }
         }
 
         public async Task Update(FileDto model) {

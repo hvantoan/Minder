@@ -1,5 +1,4 @@
-﻿using Minder.Database.Models;
-using Minder.Service.Models.Message;
+﻿using Minder.Service.Models.Message;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Interfaces {

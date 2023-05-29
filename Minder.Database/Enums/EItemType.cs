@@ -6,5 +6,10 @@
         TeamAvatar = 2,
         TeamCover = 3,
         StadiumAvatar = 4,
+        GroupAvatar = 5,
+        GroupImage = 6,
+        UserImage = 7,
+        TeamImage = 8,
+        StadiumImage = 9,
     }
 }

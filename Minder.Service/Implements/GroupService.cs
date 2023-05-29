@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Minder.Database.Enums;
 using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Extensions;
@@ -9,6 +10,7 @@ using Minder.Services.Common;
 using Minder.Services.Extensions;
 using Minder.Services.Resources;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -80,17 +82,22 @@ namespace Minder.Service.Implements {
                 req.SearchText = req.SearchText.ToLower().ReplaceSpace(isUnsignedUnicode: true);
                 query = query.Where(o => o.Title.Contains(req.SearchText) || o.Title.GetSumary().Contains(req.SearchText) || o.Title.ToLower().Contains(req.SearchText));
             }
-            var items = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize)
-                            .Take(req.PageSize).Select(o => GroupDto.FromEntity(o)).ToListAsync();
+            var groups = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize)
+                            .Take(req.PageSize).ToListAsync();
+            var groupSelectedIds = groups.Select(o => o.Id).ToList();
+            var files = await this.db.Files.Where(o => groupSelectedIds.Contains(o.ItemId) && o.ItemType == EItemType.GroupAvatar)
+                .ToDictionaryAsync(o => o.ItemId, v => $"{this.current.Url}/{v.Path}");
 
-            foreach (var item in items) {
-                if (item == null) continue;
-                item.ParticipantIds = participant.FirstOrDefault(o => o.ConversationId == item.Id)?.ParticipantIds;
+            var groupDtos = groups.Select(o => GroupDto.FromEntity(o, files.GetValueOrDefault(o.Id))).ToList();
+
+            foreach (var groupDto in groupDtos) {
+                if (groupDto == null) continue;
+                groupDto.ParticipantIds = participant.FirstOrDefault(o => o.ConversationId == groupDto.Id)?.ParticipantIds;
             }
 
             return new ListGroupRes() {
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = items
+                Items = groupDtos
             };
         }
 

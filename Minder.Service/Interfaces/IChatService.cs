@@ -1,4 +1,5 @@
 ﻿using Minder.Database.Enums;
+using Minder.Service.Models.Message;
 using System.Threading.Tasks;
 
 namespace Minder.Service.Interfaces {
@@ -7,6 +8,6 @@ namespace Minder.Service.Interfaces {
 
         Task JoinToGroup(string groupId);
 
-        Task SendNotify(string groupId, ENotify action, object? prarams = null);
+        Task SendMessageNotify(string groupId, ENotify action, MessageDto outMessage, MessageDto currentMessage);
     }
 }

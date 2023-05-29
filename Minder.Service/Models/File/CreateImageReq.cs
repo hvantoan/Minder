@@ -7,5 +7,6 @@ namespace Minder.Service.Models.File {
         public string FileName { get; set; } = string.Empty;
         public EItemType ItemType { get; set; } = EItemType.UserAvatar;
         public byte[]? Data { get; set; }
+        public string? ImportUrl { get; set; }
     }
 }

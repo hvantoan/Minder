@@ -20,8 +20,8 @@ namespace Minder.Service.Models.Group {
         public string DisplayType => Type.Description();
         public bool Online { get; set; }
 
-        [JsonIgnore]
-        public List<string>? ParticipantIds { get; set; }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? Avatar { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public List<string>? UserIds { get; set; }
@@ -31,6 +31,9 @@ namespace Minder.Service.Models.Group {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public List<ParticipantDto>? Participants { get; set; }
+
+        [JsonIgnore]
+        public List<string>? ParticipantIds { get; set; }
 
         public Database.Models.Group ToEntity() {
             return new() {
@@ -42,15 +45,15 @@ namespace Minder.Service.Models.Group {
             };
         }
 
-        public static GroupDto? FromEntity(Database.Models.Group? entity) {
+        public static GroupDto? FromEntity(Database.Models.Group? entity, string? avatar = null) {
             if (entity == null) return default;
             return new GroupDto() {
                 Id = entity.Id,
                 Title = entity.Title,
                 ChannelId = entity.ChannelId,
                 CreateAt = entity.CreateAt,
-
                 LastMessage = entity.Messages?.OrderBy(o => o.CreateAt).FirstOrDefault()?.Content ?? string.Empty,
+                Avatar = avatar
             };
         }
     }

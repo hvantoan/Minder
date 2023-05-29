@@ -16,6 +16,9 @@ namespace Minder.Service.Models.File {
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public byte[]? Data { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? ImportUrl { get; set; }
     }
 
     public partial class FileDto {

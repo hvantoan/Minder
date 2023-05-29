@@ -17,9 +17,7 @@ namespace Minder.Service.Models.Message {
         public bool IsDisplayTime { get; set; }
         public UserMessage? User { get; set; }
 
-        public static MessageDto? FromEntity(Database.Models.Message? entity, string conectionUserId, Database.Models.File? avatar, string? imageUrl) {
-            if (entity == null) return default;
-
+        public static MessageDto FromEntity(Database.Models.Message entity, string conectionUserId, Database.Models.File? avatar, string? imageUrl) {
             return new MessageDto {
                 Id = entity.Id,
                 GroupId = entity.GroupId,
@@ -43,7 +41,8 @@ namespace Minder.Service.Models.Message {
                 SenderId = this.SenderId,
                 MessageType = this.MessageType,
                 Content = this.Content,
-                CreateAt = this.CreateAt.ToLocalTime(),
+                CreateAt = this.CreateAt.ToUniversalTime(),
+                UpdateAt = DateTimeOffset.Now,
             };
         }
     }

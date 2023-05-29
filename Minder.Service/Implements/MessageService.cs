@@ -21,11 +21,33 @@ namespace Minder.Service.Implements {
         public async Task CreateMessage(MessageDto model) {
             var isExit = await this.db.Participants.AnyAsync(o => o.GroupId == model.GroupId && o.UserId == this.current.UserId);
             if (!isExit) return;
+
             var message = model.ToEntity();
             message.SenderId = this.current.UserId;
             await this.db.Messages.AddAsync(message);
             await this.db.SaveChangesAsync();
-            await chatService.SendNotify(model.GroupId, ENotify.RecieveMessage);
+            await SendNotify(model.GroupId, message.Id);
+        }
+
+        private async Task SendNotify(string groupId, string id) {
+            var entity = await this.db.Messages.Include(o => o.User).AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
+            if (entity == null) return;
+            var fileEntity = await this.db.Files.FirstOrDefaultAsync(o => o.ItemId == entity.SenderId && o.ItemType == EItemType.UserAvatar);
+
+            var currentMessage = MessageDto.FromEntity(entity, this.current.UserId, fileEntity, this.current.Url);
+            var outMessage = new MessageDto() {
+                Id = currentMessage.Id,
+                GroupId = currentMessage.GroupId,
+                Content = currentMessage.Content,
+                CreateAt = currentMessage.CreateAt,
+                IsDisplayTime = currentMessage.IsDisplayTime,
+                IsDisplayAvatar = currentMessage.IsDisplayAvatar,
+                IsSend = false,
+                MessageType = currentMessage.MessageType,
+                SenderId = currentMessage.SenderId,
+                User = currentMessage.User
+            };
+            await chatService.SendMessageNotify(groupId, ENotify.RecieveMessage, outMessage, currentMessage);
         }
 
         public async Task<ListMessageData> List(ListMessageReq req) {
@@ -38,8 +60,9 @@ namespace Minder.Service.Implements {
                 .GroupBy(o => o.ItemId).ToDictionaryAsync(k => k.Key, v => v.OrderBy(o => o.UploadDate).FirstOrDefault());
 
             var messageDtos = messages.OrderBy(o => o.CreateAt).Select(o => MessageDto.FromEntity(o, this.current.UserId, files.GetValueOrDefault(o.SenderId), this.current.Url)).ToList();
+
             var size = messageDtos.Count;
-            if(size == 0) return new();
+            if (size == 0) return new();
             var curentDate = messageDtos[0]?.CreateAt.Date ?? DateTimeOffset.UtcNow.Date;
 
             var response = new List<MessageDto>();
@@ -58,17 +81,22 @@ namespace Minder.Service.Implements {
                     response.Add(timeLine);
                 }
 
+                if (i < size - 1) {
+                    
+                    var nextItemTime = messageDtos[i + 1]!.CreateAt;
+                    var itemTime = item.CreateAt;
+                    item.IsDisplayTime = !(itemTime.Date == nextItemTime.Date && itemTime.Hour == nextItemTime.Hour && nextItemTime.Minute - itemTime.Minute < 10) 
+                        || item.SenderId != messageDtos[i + 1]!.SenderId;
+                } else item.IsDisplayTime = true;
+
+
                 if (i == 0) {
                     item.IsDisplayAvatar = !item.IsSend;
                 } else if (messageDtos[i - 1]?.SenderId == item.SenderId) {
                     item.IsDisplayAvatar = false;
-                } else item.IsDisplayAvatar = true;
-
-                if (i < size - 1) {
-                    var nextItemTime = messageDtos[i + 1]!.CreateAt;
-                    var itemTime = item.CreateAt;
-                    item.IsDisplayTime = !(itemTime.Date == nextItemTime.Date && itemTime.Hour == nextItemTime.Hour && nextItemTime.Minute - itemTime.Minute < 30);
-                } else item.IsDisplayTime = true;
+                } else {
+                    item.IsDisplayAvatar = true;
+                };
 
                 response.Add(item);
             }
