@@ -24,9 +24,8 @@ namespace Minder.Service.Models.Stadium {
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string? Avatar { get; set; }
 
-        public static StadiumDto? FromEntity(Database.Models.Stadium? entity, AdministrativeUnitResource? administrativeUnitResource = null,
+        public static StadiumDto FromEntity(Database.Models.Stadium entity, AdministrativeUnitResource? administrativeUnitResource = null,
            string? avatar = null) {
-            if (entity == null) return default;
 
             var au = administrativeUnitResource?.GetByCode(entity.Province, entity.District, entity.Commune) ?? new();
             return new StadiumDto {

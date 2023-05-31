@@ -78,7 +78,7 @@ namespace Minder.Services.Models {
     }
 
     public class BaseListRes<T> {
-        public List<T?> Items { get; set; } = new();
+        public List<T> Items { get; set; } = new();
         public int Count { get; set; }
     }
 

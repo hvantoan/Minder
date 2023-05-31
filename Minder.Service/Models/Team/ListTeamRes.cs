@@ -2,6 +2,6 @@
 
 namespace Minder.Service.Models.Team {
 
-    public class ListTeamRes : BaseListRes<TeamDto?> {
+    public class ListTeamRes : BaseListRes<TeamDto> {
     }
 }

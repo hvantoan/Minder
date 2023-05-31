@@ -33,7 +33,7 @@ namespace Minder.Service.Implements {
             var entity = await this.db.Matches.Include(o => o.HostTeam).Include(o => o.OpposingTeam)
                 .FirstOrDefaultAsync(o => o.Id == matchId);
 
-            var matchSettings = await this.db.MatchSettings.Include(o => o.Stadium).AsNoTracking()
+            var matchSettings = await this.db.MatchSettings.Include(o => o.Stadium).Include(o => o.Team).ThenInclude(o=>o!.GameSetting).AsNoTracking()
                 .Where(o => o.Id == entity!.OppsingTeamId || o.Id == entity.HostTeamId).ToDictionaryAsync(k => k.Id);
 
             // Get time option
@@ -43,6 +43,19 @@ namespace Minder.Service.Implements {
 
             var timeOptions = timeChooices?.Where(o => o.Length > 0).Select(o => MatchTimeOpption.FromTimeChooice(o)).ToList();
             var match = MatchDto.FromEntity(entity, matchSettings.GetValueOrDefault(entity.HostTeamId), matchSettings.GetValueOrDefault(entity.OppsingTeamId), myTeamId, timeOptions, administrativeUnit);
+
+            var itemIds = new List<string>();
+
+            if (!string.IsNullOrEmpty(match.HostTeam?.TeamId)) itemIds.Add(match.HostTeam.TeamId);
+            if (!string.IsNullOrEmpty(match.OpposingTeam?.TeamId)) itemIds.Add(match.OpposingTeam.TeamId);
+
+            var files = await this.db.Files.Where(o => itemIds.Contains(o.ItemId) && o.ItemType == EItemType.TeamAvatar)
+                .ToDictionaryAsync(k => k.ItemId!, v => $"{this.current.Url}/{v.Path}");
+
+            if (!string.IsNullOrEmpty(match.HostTeam?.TeamId))
+                match.HostTeam.Avatar = files.GetValueOrDefault(match.HostTeam.TeamId);
+            if (!string.IsNullOrEmpty(match.OpposingTeam?.TeamId))
+                match.OpposingTeam.Avatar = files.GetValueOrDefault(match.OpposingTeam.TeamId);
 
             return match;
         }
@@ -103,12 +116,29 @@ namespace Minder.Service.Implements {
             var query = this.db.Matches.AsNoTracking().Where(o => o.Status != EMatch.WaitingConfirm).Where(o => o.HostTeam!.TeamId == req.TeamId || o.OpposingTeam!.TeamId == req.TeamId);
             var hostTeamId = await query.Select(o => o.HostTeamId).ToListAsync();
             var opposingTeamId = await query.Select(o => o.OppsingTeamId).ToListAsync();
-            var matchSettings = await this.db.MatchSettings.Where(o => hostTeamId.Contains(o.Id) || opposingTeamId.Contains(o.Id)).ToDictionaryAsync(k => k.Id);
+            var matchSettings = await this.db.MatchSettings.Include(o => o.Team).Where(o => hostTeamId.Contains(o.Id) || opposingTeamId.Contains(o.Id)).ToDictionaryAsync(k => k.Id);
             var count = await query.CountAsync();
             var matchs = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
+
+            var res = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), req.TeamId)).ToList();
+
+            var hostTeamIds = res.Where(o => !string.IsNullOrEmpty(o.HostTeam?.TeamId)).Select(o => o.HostTeam!.TeamId!).ToList();
+            var oppositeIds = res.Where(o => !string.IsNullOrEmpty(o.OpposingTeam?.TeamId)).Select(o => o.OpposingTeam!.TeamId!).ToList();
+            var teamIds = hostTeamIds.Union(oppositeIds).Distinct().ToList();
+
+            var avatar = await this.db.Files.Where(o => teamIds.Contains(o.ItemId) && o.ItemType == EItemType.TeamAvatar)
+                .ToDictionaryAsync(k => k.ItemId!, v => $"{this.current.Url}/{v.Path}");
+
+            foreach (var item in res) {
+                if (!string.IsNullOrEmpty(item.HostTeam?.TeamId))
+                    item.HostTeam.Avatar = avatar.GetValueOrDefault(item.HostTeam.TeamId);
+                if (!string.IsNullOrEmpty(item.OpposingTeam?.TeamId))
+                    item.OpposingTeam.Avatar = avatar.GetValueOrDefault(item.OpposingTeam.TeamId);
+            }
+
             return new ListMatchRes() {
                 Count = count,
-                Items = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), req.TeamId)).ToList(),
+                Items = res,
             };
         }
 

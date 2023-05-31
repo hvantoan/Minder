@@ -41,8 +41,7 @@ namespace Minder.Service.Implements {
             var isExited = await this.db.Teams.AnyAsync(o => o.Id == req.TeamId);
             ManagedException.ThrowIf(!isExited, Messages.Team.Team_NotFound);
             var entity = await this.db.Teams.Include(o => o.GameSetting).AsNoTracking().FirstOrDefaultAsync(o => o.Id == req.TeamId);
-
-            var team = TeamDto.FromEntity(entity);
+            var team = TeamDto.FromEntity(entity!);
             var memberIds = await this.db.Members.AsNoTracking().Where(o => o.TeamId == req.TeamId).Select(o => o.UserId).ToListAsync();
             var userHasRejects = await this.db.TeamRejecteds.Where(o => o.Type == ETeamRejected.User).Select(o => o.ItemId).ToListAsync();
             var userInviteds = await this.db.Invites.Where(o => o.TeamId == req.TeamId && o.Type == EInvitationType.Invite).Select(o => o.UserId).ToListAsync();
@@ -60,7 +59,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListTeamRes> List(ListTeamReq req) {
-            var members = this.db.Members.AsNoTracking().WhereIf(req.IsMyTeam, o => o.UserId == this.current.UserId)
+            var members = this.db.Members.Include(o => o.User).AsNoTracking().WhereIf(req.IsMyTeam, o => o.UserId == this.current.UserId)
                 .WhereIf(req.TeamIds != null, o => req.TeamIds!.Contains(o.TeamId));
             var teamIds = members.Select(o => o.TeamId);
             var query = this.db.Teams.AsNoTracking().Where(o => teamIds.Contains(o.Id));
@@ -78,16 +77,17 @@ namespace Minder.Service.Implements {
 
             var response = items.Select(o => TeamDto.FromEntity(o, avatarFiles?.GetValueOrDefault(o.Id), coverFiles?.GetValueOrDefault(o.Id))).ToList();
 
-            var data = await members.Where(o => o.UserId == this.current.UserId).ToListAsync();
+            var data = await members.Where(o => o.UserId == this.current.UserId || o.Regency == ERegency.Owner).ToListAsync();
             foreach (var item in response) {
                 if (item != null) {
-                    item.Regency = data.FirstOrDefault(o => o.TeamId == item.Id)?.Regency;
+                    item.Owner = data.FirstOrDefault(o => o.TeamId == item.Id && o.Regency == ERegency.Owner)?.User?.Name;
+                    item.Regency = data.FirstOrDefault(o => o.TeamId == item.Id && o.UserId == this.current.UserId)?.Regency;
                 }
             }
 
             return new ListTeamRes() {
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = response
+                Items = response!
             };
         }
 
@@ -111,14 +111,27 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<TeamDto?> Get(string teamId) {
-            var team = await this.db.Teams.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).Include(o => o.Members).AsNoTracking().FirstOrDefaultAsync(o => o.Id == teamId);
+            var team = await this.db.Teams.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).Include(o => o.Members!).ThenInclude(o => o.User).AsNoTracking().FirstOrDefaultAsync(o => o.Id == teamId);
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
 
             var group = await this.db.Groups.FirstOrDefaultAsync(o => o.ChannelId == team.Id && o.Type == EGroup.Team);
             var avatar = await this.fileService.Get(team.Id, EItemType.TeamAvatar);
             var coverAvatar = await this.fileService.Get(team.Id, EItemType.TeamCover);
+            var userIds = team.Members?.Select(o => o.UserId).ToList();
 
-            return TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, group?.Id);
+            var userDtos = await this.userService.List(new ListUserReq() {
+                PageIndex = 0,
+                PageSize = userIds!.Count,
+                UserIds = userIds
+            });
+
+            var res = TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, group?.Id);
+
+            foreach (var item in res.Members ?? new List<MemberDto>()) {
+                item.User = userDtos.Items.FirstOrDefault(o => o!.Id == item.UserId);
+            }
+
+            return res;
         }
 
         public async Task<TeamDto?> CreateOrUpdate(TeamDto model) {
@@ -398,7 +411,7 @@ namespace Minder.Service.Implements {
         public async Task<ListTeamRes> Suggession(SuggessTeamReq req) {
             var entity = await this.db.Teams.Include(o => o.TeamRejecteds).Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
                 .AsNoTracking().FirstOrDefaultAsync(o => o!.Id == req.TeamId);
-            var myTeam = TeamDto.FromEntity(entity);
+            var myTeam = TeamDto.FromEntity(entity!);
 
             var teams = await this.db.Teams.Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
                 .Where(o => o.Id != req.TeamId && !myTeam!.TeamRejectedId.Contains(o.Id))

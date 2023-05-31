@@ -13,9 +13,7 @@ namespace Minder.Service.Models.Team {
     }
 
     public partial class InviteDto {
-
-        public static InviteDto? FromEntity(Database.Models.Invitation? entity) {
-            if (entity == null) return default;
+        public static InviteDto FromEntity(Database.Models.Invitation entity) {
             return new InviteDto {
                 Id = entity.Id,
                 TeamId = entity.TeamId,

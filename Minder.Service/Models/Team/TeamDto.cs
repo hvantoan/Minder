@@ -1,6 +1,7 @@
 ﻿using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Service.Models.GameSetting;
+using Minder.Services.Models.User;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -43,12 +44,14 @@ namespace Minder.Service.Models.Team {
         public string? Cover { get; set; }
 
         public double Distance { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? Owner { get; set; }
     }
 
     public partial class TeamDto {
 
-        public static TeamDto? FromEntity(Database.Models.Team? entity, string? avatar = null, string? cover = null, string? groupId = null) {
-            if (entity == null) return default;
+        public static TeamDto FromEntity(Database.Models.Team entity,string? avatar = null, string? cover = null, string? groupId = null) {
             return new TeamDto {
                 Id = entity.Id,
                 Code = entity.Code,

@@ -45,8 +45,7 @@ namespace Minder.Service.Models.Group {
             };
         }
 
-        public static GroupDto? FromEntity(Database.Models.Group? entity, string? avatar = null) {
-            if (entity == null) return default;
+        public static GroupDto FromEntity(Database.Models.Group entity, string? avatar = null) {
             return new GroupDto() {
                 Id = entity.Id,
                 Title = entity.Title,

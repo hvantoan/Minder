@@ -65,7 +65,7 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(!isExit, Messages.Conversation.Conversation_NotFound);
 
             var entity = await this.db.Groups.Include(o => o.Messages).AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
-            return GroupDto.FromEntity(entity);
+            return GroupDto.FromEntity(entity!);
         }
 
         public async Task<ListGroupRes> List(ListGroupReq req) {

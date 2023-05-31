@@ -19,9 +19,8 @@ namespace Minder.Service.Models.Match {
         public MatchSettingDto? OpposingTeam { get; set; }
         public List<MatchTimeOpption>? TimeChooices { get; set; }
 
-        public static MatchDto? FromEntity(Minder.Database.Models.Match entity, Minder.Database.Models.MatchSetting? hostTeam = null,
+        public static MatchDto FromEntity(Minder.Database.Models.Match entity, Minder.Database.Models.MatchSetting? hostTeam = null,
             Minder.Database.Models.MatchSetting? opposingTeam = null, string? teamId = null, List<MatchTimeOpption>? timeChooice = null, AdministrativeUnitResource? au = null) {
-            if (entity == null) return default;
             return new MatchDto {
                 Id = entity.Id,
                 HostTeamId = entity.HostTeamId,
