@@ -46,7 +46,7 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpPost, Route("save")]
-        public async Task<BaseRes> Save(TeamDto model) {
+        public async Task<BaseRes> Save(SaveTeamRequest model) {
             try {
                 var data = await teamService.CreateOrUpdate(model);
                 return BaseRes<TeamDto?>.Ok(data);
@@ -95,10 +95,10 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpPost, Route("suggess")]
-        public async Task<BaseRes> Suggess(SuggessTeamReq req) {
+        [HttpPost, Route("suggest")]
+        public async Task<BaseRes> Suggest(SuggessTeamReq req) {
             try {
-                var res = await teamService.Suggession(req);
+                var res = await teamService.Suggestion(req);
                 return BaseRes<ListTeamRes?>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);

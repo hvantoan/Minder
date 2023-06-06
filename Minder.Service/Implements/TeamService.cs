@@ -134,7 +134,7 @@ namespace Minder.Service.Implements {
             return res;
         }
 
-        public async Task<TeamDto?> CreateOrUpdate(TeamDto model) {
+        public async Task<TeamDto?> CreateOrUpdate(SaveTeamRequest model) {
             if (string.IsNullOrEmpty(model.Id)) {
                 return await this.Create(model);
             } else {
@@ -142,7 +142,7 @@ namespace Minder.Service.Implements {
             }
         }
 
-        private async Task<TeamDto?> Create(TeamDto model) {
+        private async Task<TeamDto?> Create(SaveTeamRequest model) {
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - Start", model);
 
             var isOwner = await this.db.Members.AnyAsync(o => o.UserId == this.current.UserId && o.Regency == ERegency.Owner);
@@ -197,6 +197,22 @@ namespace Minder.Service.Implements {
                 ChannelId = team.Id,
                 Title = team.Name,
             });
+
+            if (model.AvatarData != null && model.AvatarData.Any()) {
+                await this.fileService.Create(new FileDto() {
+                    Data = model.AvatarData,
+                    ItemId = team.Id,
+                    ItemType = EItemType.TeamAvatar,
+                });
+            }
+
+            if (model.CoverData != null && model.CoverData.Any()) {
+                await this.fileService.Create(new FileDto() {
+                    Data = model.CoverData,
+                    ItemId = team.Id,
+                    ItemType = EItemType.TeamCover,
+                });
+            }
 
             this.logger.Information($"{nameof(Team)} - {nameof(Create)} - End", team.Id);
 
@@ -408,7 +424,7 @@ namespace Minder.Service.Implements {
             });
         }
 
-        public async Task<ListTeamRes> Suggession(SuggessTeamReq req) {
+        public async Task<ListTeamRes> Suggestion(SuggessTeamReq req) {
             var entity = await this.db.Teams.Include(o => o.TeamRejecteds).Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
                 .AsNoTracking().FirstOrDefaultAsync(o => o!.Id == req.TeamId);
             var myTeam = TeamDto.FromEntity(entity!);

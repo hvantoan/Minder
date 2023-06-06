@@ -51,7 +51,8 @@ namespace Minder.Service.Models.Team {
 
     public partial class TeamDto {
 
-        public static TeamDto FromEntity(Database.Models.Team entity,string? avatar = null, string? cover = null, string? groupId = null) {
+        public static TeamDto FromEntity(Database.Models.Team entity, string? avatar = null, string? cover = null, string? groupId = null) {
+
             return new TeamDto {
                 Id = entity.Id,
                 Code = entity.Code,
@@ -60,7 +61,8 @@ namespace Minder.Service.Models.Team {
                 GameSetting = entity.GameSetting != null ? GameSettingDto.FromEntity(entity.GameSetting) : default,
                 Members = entity.Members != null ? entity.Members.Select(o => MemberDto.FromEntity(o)!).ToList() : default,
                 Rank = entity.GameSetting?.Rank ?? default,
-                TeamRejectedId = entity.TeamRejecteds?.Where(o => o.Type == ETeamRejected.Team).Select(o => o.ItemId).ToList() ?? new List<string>(),
+                TeamRejectedId = entity.TeamRejecteds != null && entity.TeamRejecteds.Any()
+                    ? entity.TeamRejecteds.Where(o => o.Type == ETeamRejected.Team).Select(o => o.ItemId).ToList() : new List<string>(),
                 GroupId = groupId,
                 Avatar = avatar,
                 Cover = cover,

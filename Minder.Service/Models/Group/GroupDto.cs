@@ -46,12 +46,13 @@ namespace Minder.Service.Models.Group {
         }
 
         public static GroupDto FromEntity(Database.Models.Group entity, string? avatar = null) {
+            var lastMessage = entity.Messages?.OrderBy(o => o.CreateAt).FirstOrDefault();
             return new GroupDto() {
                 Id = entity.Id,
                 Title = entity.Title,
                 ChannelId = entity.ChannelId,
                 CreateAt = entity.CreateAt,
-                LastMessage = entity.Messages?.OrderBy(o => o.CreateAt).FirstOrDefault()?.Content ?? string.Empty,
+                LastMessage = lastMessage != null ? $"{lastMessage.User?.Name}: {lastMessage.Content}" : "",
                 Avatar = avatar
             };
         }

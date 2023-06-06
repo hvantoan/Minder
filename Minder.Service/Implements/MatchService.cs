@@ -33,7 +33,7 @@ namespace Minder.Service.Implements {
             var entity = await this.db.Matches.Include(o => o.HostTeam).Include(o => o.OpposingTeam)
                 .FirstOrDefaultAsync(o => o.Id == matchId);
 
-            var matchSettings = await this.db.MatchSettings.Include(o => o.Stadium).Include(o => o.Team).ThenInclude(o=>o!.GameSetting).AsNoTracking()
+            var matchSettings = await this.db.MatchSettings.Include(o => o.Stadium).Include(o => o.Team).ThenInclude(o => o!.GameSetting).AsNoTracking()
                 .Where(o => o.Id == entity!.OppsingTeamId || o.Id == entity.HostTeamId).ToDictionaryAsync(k => k.Id);
 
             // Get time option
@@ -85,7 +85,9 @@ namespace Minder.Service.Implements {
                             && (o.Regency == ERegency.Owner || o.Regency == ERegency.Captain));
             ManagedException.ThrowIf(!hasPermistion, Messages.Team.Team_NoPermistion);
 
-            var match = await this.db.Matches.FirstOrDefaultAsync(o => o.Status == EMatch.WaitingConfirm && o.OpposingTeam!.TeamId == req.OpposingTeamId);
+            var teamIds = new List<string>() { req.HostTeamId, req.OpposingTeamId };
+            var match = await this.db.Matches.FirstOrDefaultAsync(o => o.Status == EMatch.WaitingConfirm
+                && teamIds.Contains(o.OpposingTeam!.TeamId) && teamIds.Contains(o.HostTeam!.TeamId));
             if (match == null) {
                 match = new Match() {
                     Id = Guid.NewGuid().ToStringN(),

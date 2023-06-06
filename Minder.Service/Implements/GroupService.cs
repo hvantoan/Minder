@@ -70,7 +70,7 @@ namespace Minder.Service.Implements {
 
         public async Task<ListGroupRes> List(ListGroupReq req) {
             var groupIds = await this.db.Participants.Where(o => o.UserId == this.current.UserId).Select(o => o.GroupId).ToListAsync();
-            var query = this.db.Groups.AsNoTracking().Where(o => groupIds.Contains(o.Id));
+            var query = this.db.Groups.Include(o => o.Messages!).ThenInclude(o => o.User).AsNoTracking().Where(o => groupIds.Contains(o.Id));
             var participant = await this.db.Participants.AsNoTracking().Where(o => groupIds.Contains(o.GroupId))
                 .GroupBy(o => o.GroupId)
                 .Select(o => new {

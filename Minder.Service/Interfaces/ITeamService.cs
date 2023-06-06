@@ -11,7 +11,7 @@ namespace Minder.Service.Interfaces {
 
         Task<ListTeamRes> List(ListTeamReq req);
 
-        Task<TeamDto?> CreateOrUpdate(TeamDto model);
+        Task<TeamDto?> CreateOrUpdate(SaveTeamRequest model);
 
         Task Delete(string teamId);
 
@@ -21,7 +21,7 @@ namespace Minder.Service.Interfaces {
 
         Task<ListTeamRes> Find(FindTeamReq req);
 
-        Task<ListTeamRes> Suggession(SuggessTeamReq req);
+        Task<ListTeamRes> Suggestion(SuggessTeamReq req);
 
         Task<object?> Automation(EAutoMation type, string hostTeamId, string? opposingTeamId = null, bool getTimeChooiceModel = false);
 
