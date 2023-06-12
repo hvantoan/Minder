@@ -35,6 +35,13 @@ namespace Minder.Service.Implements {
             await hubContext.Clients.Clients(curentConnectionIds).SendAsync(action.Description(), currentMessage);
         }
 
+        public async Task SendNotify(string groupId, ENotify action) {
+            // Send to all user connected in group
+            var userIds = await this.db.Participants.Where(o => o.GroupId == groupId).Select(o => o.UserId).ToListAsync();
+            var outConnectionIds = connections.Values.Where(o => userIds.Contains(o.UserId)).Select(o => o.Id).ToList();
+            await hubContext.Clients.Clients(outConnectionIds).SendAsync(action.Description());
+        }
+
         public async Task JoinToGroup(string groupId) {
             var isInRoom = await this.db.Participants.AnyAsync(o => o.UserId == this.current.UserId && o.GroupId == groupId);
             var conection = connections.Values.FirstOrDefault(o => o.UserId == this.current.UserId);

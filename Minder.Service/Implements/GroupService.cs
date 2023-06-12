@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Minder.Database.Enums;
 using Minder.Exceptions;
 using Minder.Extensions;
@@ -17,8 +18,10 @@ using System.Threading.Tasks;
 namespace Minder.Service.Implements {
 
     public class GroupService : BaseService, IGroupService {
+        private readonly IChatService chatService;
 
         public GroupService(IServiceProvider serviceProvider) : base(serviceProvider) {
+            this.chatService = serviceProvider.GetRequiredService<IChatService>();
         }
 
         public async Task<string> Create(GroupDto model) {
@@ -26,23 +29,29 @@ namespace Minder.Service.Implements {
 
             if (model.UserIds != null && model.UserIds.Any()) {
                 model.Participants ??= new();
-                foreach (var userId in model.UserIds) {
+                foreach (var userId in model.UserIds.Where(o => o != this.current.UserId)) {
                     model.Participants!.Add(new ParticipantDto() {
                         Id = Guid.NewGuid().ToStringN(),
                         UserId = userId
                     });
                 }
-            } else {
-                model.Participants!.Add(new ParticipantDto() {
-                    Id = Guid.NewGuid().ToStringN(),
-                    UserId = this.current.UserId,
-                });
+            }
+
+            model.Participants!.Add(new ParticipantDto() {
+                Id = Guid.NewGuid().ToStringN(),
+                UserId = this.current.UserId,
+            });
+
+            if (string.IsNullOrEmpty(model.Title)) {
+                var userIds = model.Participants.Select(o => o.UserId).ToList();
+                var users = await this.db.Users.Where(o => userIds.Contains(o.Id) && o.Id != this.current.UserId).Select(o => o.Name).ToListAsync();
+                model.Title = String.Join(", ", users.ToArray());
             }
 
             var group = model.ToEntity();
             await this.db.Groups.AddAsync(group);
             await this.db.SaveChangesAsync();
-
+            await this.chatService.SendNotify(group.Id, ENotify.ReloadGroup);
             return group.Id;
         }
 
@@ -102,8 +111,6 @@ namespace Minder.Service.Implements {
         }
 
         private async Task Validate(GroupDto model, bool isCreate = true) {
-            ManagedException.ThrowIf(string.IsNullOrEmpty(model.Title), Messages.Conversation.Conversation_NameRequire);
-
             if (!isCreate) {
                 var isExit = await this.db.Groups.AnyAsync(o => o.Id == model.Id);
                 ManagedException.ThrowIf(!isExit, Messages.Conversation.Conversation_NotFound);

@@ -5,7 +5,7 @@ namespace Minder.Database.Models {
 
     public class Group {
         public string Id { get; set; } = null!;
-        public string Title { get; set; } = string.Empty;
+        public string? Title { get; set; }
         public string ChannelId { get; set; } = null!;
         public EGroup Type { get; set; }
 

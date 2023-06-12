@@ -48,14 +48,21 @@ namespace Minder.Service.Implements {
 
             if (!string.IsNullOrEmpty(match.HostTeam?.TeamId)) itemIds.Add(match.HostTeam.TeamId);
             if (!string.IsNullOrEmpty(match.OpposingTeam?.TeamId)) itemIds.Add(match.OpposingTeam.TeamId);
+            if (!string.IsNullOrEmpty(match.OpposingTeam?.StadiumId)) itemIds.Add(match.OpposingTeam.StadiumId);
+            if (!string.IsNullOrEmpty(match.HostTeam?.StadiumId)) itemIds.Add(match.HostTeam.StadiumId);
 
-            var files = await this.db.Files.Where(o => itemIds.Contains(o.ItemId) && o.ItemType == EItemType.TeamAvatar)
+            var files = await this.db.Files.Where(o => itemIds.Contains(o.ItemId) && (o.ItemType == EItemType.TeamAvatar || o.ItemType == EItemType.StadiumAvatar))
                 .ToDictionaryAsync(k => k.ItemId!, v => $"{this.current.Url}/{v.Path}");
 
             if (!string.IsNullOrEmpty(match.HostTeam?.TeamId))
                 match.HostTeam.Avatar = files.GetValueOrDefault(match.HostTeam.TeamId);
             if (!string.IsNullOrEmpty(match.OpposingTeam?.TeamId))
                 match.OpposingTeam.Avatar = files.GetValueOrDefault(match.OpposingTeam.TeamId);
+
+            if (!string.IsNullOrEmpty(match.HostTeam?.StadiumId))
+                match.HostTeam.Stadium!.Avatar = files.GetValueOrDefault(match.HostTeam.StadiumId);
+            if (!string.IsNullOrEmpty(match.OpposingTeam?.StadiumId))
+                match.OpposingTeam.Stadium!.Avatar = files.GetValueOrDefault(match.OpposingTeam.StadiumId);
 
             return match;
         }

@@ -47,10 +47,16 @@ namespace Minder.Service.Implements {
             var userInviteds = await this.db.Invites.Where(o => o.TeamId == req.TeamId && o.Type == EInvitationType.Invite).Select(o => o.UserId).ToListAsync();
 
             var users = await this.db.Users.Include(o => o.GameSetting).Where(o => !memberIds.Contains(o.Id) && !userHasRejects.Contains(o.Id) && !userInviteds.Contains(o.Id))
-                .Skip(req.Skip).Take(req.Take).Select(o => UserDto.FromEntity(o, null, null, null))
+                .Skip(req.Skip).Take(req.Take)
                 .ToListAsync();
 
-            var res = MinderExtension.SortUserDistance(team!, users!);
+            var userIds = users.Select(o => o.Id).ToList();
+            var file = await this.db.Files.Where(o => o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover && userIds.Contains(o.ItemId)).ToListAsync();
+            var avatars = file.Where(o => o.ItemType == EItemType.UserAvatar).ToDictionary(k => k.ItemId, v => $"{this.current.Url}/{v.Path}");
+            var covers = file.Where(o => o.ItemType == EItemType.UserCover).ToDictionary(k => k.ItemId, v => $"{this.current.Url}/{v.Path}");
+
+            var responseUser = users.Select(o => UserDto.FromEntity(o, null, avatars.GetValueOrDefault(o.Id), covers.GetValueOrDefault(o.Id))).ToList();
+            var res = MinderExtension.SortUserDistance(team!, responseUser!);
             return await this.userService.List(new ListUserReq() {
                 PageIndex = 0,
                 PageSize = res.Count,
@@ -196,6 +202,7 @@ namespace Minder.Service.Implements {
                 UserIds = team.Members?.Select(o => o.UserId).ToList(),
                 ChannelId = team.Id,
                 Title = team.Name,
+                Type = EGroup.Team
             });
 
             if (model.AvatarData != null && model.AvatarData.Any()) {
@@ -429,10 +436,15 @@ namespace Minder.Service.Implements {
                 .AsNoTracking().FirstOrDefaultAsync(o => o!.Id == req.TeamId);
             var myTeam = TeamDto.FromEntity(entity!);
 
-            var teams = await this.db.Teams.Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime)
-                .Where(o => o.Id != req.TeamId && !myTeam!.TeamRejectedId.Contains(o.Id))
-                .AsNoTracking().Select(o => TeamDto.FromEntity(o, null, null, null)).ToListAsync();
+            var queryTeams = this.db.Teams.Include(o => o.Members).Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).AsNoTracking()
+                .Where(o => o.Id != req.TeamId && !myTeam!.TeamRejectedId.Contains(o.Id));
 
+            var teamIds = await queryTeams.Select(o => o.Id).ToListAsync();
+            var files = await this.db.Files.Where(o => teamIds.Contains(o.ItemId) && (o.ItemType == EItemType.TeamAvatar || o.ItemType == EItemType.TeamCover)).ToListAsync();
+            var avatars = files.Where(o => o.ItemType == EItemType.TeamAvatar).ToDictionary(k => k.ItemId, v => $"{this.current.Url}/{v.Path}");
+            var covers = files.Where(o => o.ItemType == EItemType.TeamCover).ToDictionary(k => k.ItemId, v => $"{this.current.Url}/{v.Path}");
+
+            var teams = await queryTeams.Select(o => TeamDto.FromEntity(o, avatars.GetValueOrDefault(o.Id), covers.GetValueOrDefault(o.Id), null)).ToListAsync();
             teams = teams.Where(o => o!.Id != req.TeamId).ToList();
             teams = MinderExtension.SortDistance(myTeam!, teams!)!;
 

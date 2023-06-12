@@ -12,11 +12,11 @@ namespace Minder.Service.Models.Group {
 
     public class GroupDto {
         public string Id { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public string ChannelId { get; set; } = null!;
+        public string? Title { get; set; }
+        public string ChannelId { get; set; } = string.Empty;
         public string LastMessage { get; set; } = string.Empty;
         public DateTimeOffset CreateAt { get; set; } = DateTimeOffset.Now;
-        public EGroup Type { get; set; }
+        public EGroup Type { get; set; } = EGroup.User;
         public string DisplayType => Type.Description();
         public bool Online { get; set; }
 
@@ -46,7 +46,7 @@ namespace Minder.Service.Models.Group {
         }
 
         public static GroupDto FromEntity(Database.Models.Group entity, string? avatar = null) {
-            var lastMessage = entity.Messages?.OrderBy(o => o.CreateAt).FirstOrDefault();
+            var lastMessage = entity.Messages?.OrderByDescending(o => o.CreateAt).FirstOrDefault();
             return new GroupDto() {
                 Id = entity.Id,
                 Title = entity.Title,

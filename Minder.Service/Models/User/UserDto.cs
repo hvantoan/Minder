@@ -1,5 +1,4 @@
 ﻿using Minder.Database.Enums;
-using Minder.Service.Models.File;
 using Minder.Service.Models.GameSetting;
 using Minder.Services.Models.Role;
 using Newtonsoft.Json;
@@ -36,7 +35,7 @@ namespace Minder.Services.Models.User {
 
     public partial class UserDto {
 
-        public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null, FileDto? avatar = null, FileDto? cover = null) {
+        public static UserDto? FromEntity(Database.Models.User? entity, Database.Models.Role? roleEntity = null, string? avatar = null, string? cover = null) {
             if (entity == null) return default;
             entity.Role ??= roleEntity;
 
@@ -48,8 +47,8 @@ namespace Minder.Services.Models.User {
                 DayOfBirth = entity.DayOfBirth,
                 Sex = entity.Sex,
                 Description = entity.Description,
-                Avatar = avatar?.Path,
-                Cover = cover?.Path,
+                Avatar = avatar,
+                Cover = cover,
                 Role = RoleDto.FromEntity(entity.Role),
                 GameSetting = GameSettingDto.FromEntity(entity.GameSetting ?? new()) ?? new(),
             };

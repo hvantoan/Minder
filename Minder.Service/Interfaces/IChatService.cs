@@ -9,5 +9,7 @@ namespace Minder.Service.Interfaces {
         Task JoinToGroup(string groupId);
 
         Task SendMessageNotify(string groupId, ENotify action, MessageDto outMessage, MessageDto currentMessage);
+
+        Task SendNotify(string groupId, ENotify action);
     }
 }

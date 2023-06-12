@@ -5,7 +5,6 @@ using Minder.Database.Models;
 using Minder.Exceptions;
 using Minder.Extensions;
 using Minder.Service.Interfaces;
-using Minder.Service.Models.File;
 using Minder.Service.Models.User;
 using Minder.Services.Common;
 using Minder.Services.Extensions;
@@ -41,7 +40,7 @@ namespace Minder.Services.Implements {
 
             var avatar = await this.fileService.Get(user.Id, EItemType.UserAvatar);
             var coverAvatar = await this.fileService.Get(user.Id, EItemType.UserCover);
-            return UserDto.FromEntity(user, null, avatar, coverAvatar);
+            return UserDto.FromEntity(user, null, avatar?.Path, coverAvatar?.Path);
         }
 
         public async Task<ListUserRes> List(ListUserReq req) {
@@ -52,11 +51,10 @@ namespace Minder.Services.Implements {
             var users = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
 
             var userIds = users.Select(o => o.Id).ToList();
-            var file = await this.db.Files.Where(o => o.Type == EFile.Image && (o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover) && userIds.Contains(o.ItemId))
-                .Select(o => FileDto.FromEntity(o, this.current.Url)).ToListAsync();
+            var file = await this.db.Files.Where(o => o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover && userIds.Contains(o.ItemId)).ToListAsync();
 
-            var avatarFiles = file.Where(o => o!.ItemType == EItemType.UserAvatar).GroupBy(o => o!.ItemId).Select(o => o.FirstOrDefault()).ToDictionary(k => k!.ItemId);
-            var coverFiles = file.Where(o => o!.ItemType == EItemType.UserCover).GroupBy(o => o!.ItemId).Select(o => o.FirstOrDefault()).ToDictionary(k => k!.ItemId);
+            var avatarFiles = file.Where(o => o.ItemType == EItemType.UserAvatar).ToDictionary(k => k!.ItemId, v => $"{this.current.Url}/{v.Path}");
+            var coverFiles = file.Where(o => o.ItemType == EItemType.UserCover).ToDictionary(k => k!.ItemId, v => $"{this.current.Url}/{v.Path}");
 
             return new ListUserRes {
                 Count = await query.CountAsync(),
