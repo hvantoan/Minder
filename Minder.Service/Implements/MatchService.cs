@@ -41,7 +41,7 @@ namespace Minder.Service.Implements {
             var teamIds = matchSettings.Values.Select(o => o.TeamId).ToList();
             var myTeamId = await this.db.Members.Where(o => teamIds.Contains(o.TeamId) && o.UserId == this.current.UserId).Select(o => o.TeamId).FirstOrDefaultAsync();
 
-            var timeOptions = timeChooices?.Where(o => o.Length > 0).Select(o => MatchTimeOpption.FromTimeChooice(o)).ToList();
+            var timeOptions = timeChooices?.Select(o => MatchTimeOpption.FromTimeChooice(o)).Where(o => o.Opptions != null && o.Opptions.Any()).ToList();
             var match = MatchDto.FromEntity(entity, matchSettings.GetValueOrDefault(entity.HostTeamId), matchSettings.GetValueOrDefault(entity.OppsingTeamId), myTeamId, timeOptions, administrativeUnit);
 
             var itemIds = new List<string>();

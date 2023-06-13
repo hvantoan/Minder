@@ -20,10 +20,10 @@ namespace Minder.Service.Models.Common {
                 DayOfWeek = time.Day,
                 Date = GetDateFromDayOfWeek(time.Day),
                 Opptions = listConsecutive.Select(o => new TimeItem() {
-                    From = o.First(),
-                    To = o.Last(),
+                    From = o.Min(),
+                    To = o.Max(),
                     MemberCount = time.Quantity
-                }).ToList()
+                }).Where(o => o.To - o.From > 0).ToList()
             };
         }
 
@@ -63,16 +63,12 @@ namespace Minder.Service.Models.Common {
     public class TimeItem {
         public int? From { get; set; }
         public int? To { get; set; }
-        public string DisplayTime => $"{TimeToString(this.From)} - {TimeToString(this.To)}";
+        public string DisplayTime => TimeToString(this.From ?? 0, this.To ?? 0);
         public int MemberCount { get; set; }
 
-        private static string TimeToString(int? time) {
-            if (time == null) return "";
-            if (time > 12) {
-                return $"{time - 12}PM";
-            } else {
-                return $"{time}AM";
-            }
+        private static string TimeToString(int from, int to) {
+            to++;
+            return $"{(from < 10 ? $"0{from}" : from)}:00h - {(to < 10 ? $"0{to}" : to)}:00h";
         }
     }
 }
