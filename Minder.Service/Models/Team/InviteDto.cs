@@ -10,9 +10,11 @@ namespace Minder.Service.Models.Team {
         public string? Description { get; set; } = string.Empty;
         public EInvitationType Type { get; set; } = EInvitationType.Invite;
         public DateTimeOffset? CreateAt { get; set; }
+        public TeamDto? Team { get; set; }
     }
 
     public partial class InviteDto {
+
         public static InviteDto FromEntity(Database.Models.Invitation entity) {
             return new InviteDto {
                 Id = entity.Id,

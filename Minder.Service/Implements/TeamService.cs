@@ -68,7 +68,7 @@ namespace Minder.Service.Implements {
             var members = this.db.Members.Include(o => o.User).AsNoTracking().WhereIf(req.IsMyTeam, o => o.UserId == this.current.UserId)
                 .WhereIf(req.TeamIds != null, o => req.TeamIds!.Contains(o.TeamId));
             var teamIds = members.Select(o => o.TeamId);
-            var query = this.db.Teams.AsNoTracking().Where(o => teamIds.Contains(o.Id));
+            var query = this.db.Teams.Include(o => o.GameSetting).ThenInclude(o => o!.GameTime).AsNoTracking().Where(o => teamIds.Contains(o.Id));
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
                 req.SearchText = req.SearchText.ReplaceSpace(isUnsignedUnicode: true);
@@ -121,9 +121,28 @@ namespace Minder.Service.Implements {
             ManagedException.ThrowIf(team == null, Messages.Team.Team_NotFound);
 
             var group = await this.db.Groups.FirstOrDefaultAsync(o => o.ChannelId == team.Id && o.Type == EGroup.Team);
+
             var avatar = await this.fileService.Get(team.Id, EItemType.TeamAvatar);
             var coverAvatar = await this.fileService.Get(team.Id, EItemType.TeamCover);
             var userIds = team.Members?.Select(o => o.UserId).ToList();
+
+            string? id = null;
+            if (group == null) {
+                id = await this.groupService.Create(new GroupDto() {
+                    ChannelId = team.Id,
+                    UserIds = userIds,
+                    Title = team.Name,
+                    Type = EGroup.Team,
+                });
+                var file = await fileService.Get(teamId, EItemType.TeamAvatar);
+                if (file != null) {
+                    await fileService.Create(new FileDto() {
+                        ItemId = id,
+                        ItemType = EItemType.GroupAvatar,
+                        ImportUrl = file!.Path
+                    });
+                }
+            } else id = group?.Id;
 
             var userDtos = await this.userService.List(new ListUserReq() {
                 PageIndex = 0,
@@ -131,7 +150,7 @@ namespace Minder.Service.Implements {
                 UserIds = userIds
             });
 
-            var res = TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, group?.Id);
+            var res = TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, id);
 
             foreach (var item in res.Members ?? new List<MemberDto>()) {
                 item.User = userDtos.Items.FirstOrDefault(o => o!.Id == item.UserId);

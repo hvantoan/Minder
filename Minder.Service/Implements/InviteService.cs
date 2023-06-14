@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Minder.Database.Enums;
 using Minder.Database.Models;
 using Minder.Exceptions;
@@ -17,8 +18,10 @@ using System.Threading.Tasks;
 namespace Minder.Service.Implements {
 
     public class InviteService : BaseService, IInviteSevice {
+        private readonly ITeamService teamService;
 
         public InviteService(IServiceProvider serviceProvider) : base(serviceProvider) {
+            this.teamService = serviceProvider.GetRequiredService<ITeamService>();
         }
 
         public async Task Create(InviteDto model) {
@@ -44,7 +47,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task<ListInviteRes> ListInvite(ListInviteReq req) {
-            var query = this.db.Invites
+            var query = this.db.Invites.Include(o => o.Team)
                     .WhereIf(string.IsNullOrEmpty(req.TeamId), o => o.Type == EInvitationType.Invite && o.UserId == this.current.UserId)
                     .WhereIf(!string.IsNullOrEmpty(req.TeamId), o => o.Type == EInvitationType.Invited && o.TeamId == req.TeamId);
 
@@ -53,9 +56,13 @@ namespace Minder.Service.Implements {
                 query = query.Where(o => o.User!.Name.ReplaceSpace(true).Contains(req.SearchText));
             }
 
+            var response = await query.OrderBy(o => o.CreateAt).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => InviteDto.FromEntity(o)).ToListAsync();
+            var teams = await this.teamService.List(new ListTeamReq() { TeamIds = response.Select(o => o.TeamId).ToList() });
+            response.ForEach(o => o.Team = teams.Items.FirstOrDefault(t => t.Id == o.TeamId));
+
             return new() {
                 Count = await query.CountIf(req.IsCount, o => o.Id),
-                Items = await query.OrderBy(o => o.CreateAt).Skip(req.PageIndex * req.PageSize).Take(req.PageSize).Select(o => InviteDto.FromEntity(o)).ToListAsync(),
+                Items = response,
             };
         }
 
