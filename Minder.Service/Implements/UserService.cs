@@ -48,7 +48,7 @@ namespace Minder.Services.Implements {
                 .WhereIf(req.UserIds != null && req.UserIds.Any(), o => req.UserIds!.Contains(o.Id));
 
             var count = query.Count();
-            var users = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
+            var users = await query.OrderBy(o => o.Id).Skip(req.Skip).Take(req.Take).ToListAsync();
 
             var userIds = users.Select(o => o.Id).ToList();
             var file = await this.db.Files.Where(o => o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover && userIds.Contains(o.ItemId)).ToListAsync();

@@ -35,6 +35,7 @@ namespace Minder.Database.Models {
             //filter
 
             builder.HasQueryFilter(o => !o.IsDeleted);
+         
 
             //fk
 

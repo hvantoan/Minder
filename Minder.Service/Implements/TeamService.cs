@@ -47,7 +47,8 @@ namespace Minder.Service.Implements {
             var userInviteds = await this.db.Invites.Where(o => o.TeamId == req.TeamId && o.Type == EInvitationType.Invite).Select(o => o.UserId).ToListAsync();
 
             var users = await this.db.Users.Include(o => o.GameSetting).Where(o => !memberIds.Contains(o.Id) && !userHasRejects.Contains(o.Id) && !userInviteds.Contains(o.Id))
-                .Skip(req.Skip).Take(req.Take)
+                .OrderBy(o => o.DayOfBirth)
+                .Skip(req.Skip).Take(req.Take).Distinct()
                 .ToListAsync();
 
             var userIds = users.Select(o => o.Id).ToList();
@@ -82,11 +83,14 @@ namespace Minder.Service.Implements {
             var coverFiles = file.Where(o => o!.ItemType == EItemType.TeamCover).GroupBy(o => o!.ItemId).ToDictionary(k => k.Key, v => v.FirstOrDefault()?.Path);
 
             var response = items.Select(o => TeamDto.FromEntity(o, avatarFiles?.GetValueOrDefault(o.Id), coverFiles?.GetValueOrDefault(o.Id))).ToList();
+            var teamResIds = response.Select(o => o.Id).ToList();
+            var data = await members.Where(o => o.UserId == this.current.UserId).ToListAsync();
 
-            var data = await members.Where(o => o.UserId == this.current.UserId || o.Regency == ERegency.Owner).ToListAsync();
+            var ownerDic = await this.db.Members.Include(o=>o.User).AsNoTracking().Where(o => teamResIds.Contains(o.TeamId) && o.Regency == ERegency.Owner)
+                .ToDictionaryAsync(k => k.TeamId, v => v.User?.Name);
             foreach (var item in response) {
                 if (item != null) {
-                    item.Owner = data.FirstOrDefault(o => o.TeamId == item.Id && o.Regency == ERegency.Owner)?.User?.Name;
+                    item.Owner = ownerDic.GetValueOrDefault(item.Id);
                     item.Regency = data.FirstOrDefault(o => o.TeamId == item.Id && o.UserId == this.current.UserId)?.Regency;
                 }
             }

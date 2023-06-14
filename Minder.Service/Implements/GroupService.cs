@@ -89,7 +89,7 @@ namespace Minder.Service.Implements {
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
                 req.SearchText = req.SearchText.ToLower().ReplaceSpace(isUnsignedUnicode: true);
-                query = query.Where(o => o.Title.Contains(req.SearchText) || o.Title.GetSumary().Contains(req.SearchText) || o.Title.ToLower().Contains(req.SearchText));
+                query = query.Where(o => !string.IsNullOrEmpty(o.Title) && (o.Title.Contains(req.SearchText) || o.Title.GetSumary().Contains(req.SearchText) || o.Title.ToLower().Contains(req.SearchText)));
             }
             var groups = await query.OrderBy(o => o.Id).Skip(req.PageIndex * req.PageSize)
                             .Take(req.PageSize).ToListAsync();
