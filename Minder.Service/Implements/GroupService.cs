@@ -19,9 +19,11 @@ namespace Minder.Service.Implements {
 
     public class GroupService : BaseService, IGroupService {
         private readonly IChatService chatService;
+        private readonly IFileService fileService;
 
         public GroupService(IServiceProvider serviceProvider) : base(serviceProvider) {
             this.chatService = serviceProvider.GetRequiredService<IChatService>();
+            this.fileService = serviceProvider.GetRequiredService<IFileService>();
         }
 
         public async Task<string> Create(GroupDto model) {
@@ -55,13 +57,18 @@ namespace Minder.Service.Implements {
             return group.Id;
         }
 
-        public async Task Update(GroupDto model) {
-            await Validate(model, isCreate: false);
+        public async Task Update(UpdateGroupReq req) {
+            var entity = await this.db.Groups.FirstOrDefaultAsync(o => o.Id == req.GroupId);
+            entity!.Title = req.GroupName;
 
-            var entity = await this.db.Groups.FirstOrDefaultAsync(o => o.Id == model.Id);
-            await Console.Out.WriteLineAsync(entity?.Id);
-            entity!.Title = model.Title;
-
+            if (req.Avatar != null && req.Avatar.Any()) {
+                await this.fileService.Create(new Models.File.FileDto() {
+                    Data = req.Avatar,
+                    ItemId = req.GroupId,
+                    ItemType = EItemType.GroupAvatar,
+                    Type = EFile.Image
+                });
+            }
             await this.db.SaveChangesAsync();
         }
 

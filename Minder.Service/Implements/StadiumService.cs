@@ -8,9 +8,11 @@ using Minder.Extensions;
 using Minder.Service.Extensions;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.File;
+using Minder.Service.Models.Match;
 using Minder.Service.Models.Stadium;
 using Minder.Services.Common;
 using Minder.Services.Extensions;
+using Minder.Services.Models.User;
 using Minder.Services.Resources;
 using System;
 using System.Collections.Generic;
@@ -31,8 +33,38 @@ namespace Minder.Service.Implements {
             this.fileService = serviceProvider.GetRequiredService<IFileService>();
         }
 
+        public async Task<ListStadiumRes> ListSuggestForMatch(string matchId) {
+            var match = await this.db.Matches.Include(o => o.HostTeam).Include(o => o.OpposingTeam).FirstOrDefaultAsync(o => o.Id == matchId);
+            if (match != null) {
+                var teamIds = new List<string> { match.HostTeam?.TeamId ?? "", match.OpposingTeam?.TeamId ?? "" };
+                var userIds = await this.db.Members.Where(o => teamIds.Contains(o.TeamId)).Select(o => o.UserId).Distinct().ToListAsync();
+                var users = await this.db.Users.Include(o => o.GameSetting).AsNoTracking().Where(o => userIds.Contains(o.Id)).Select(o => UserDto.FromEntity(o, null, null, null)).ToListAsync();
+                var stadiums = await this.db.Stadiums.AsNoTracking().ToListAsync();
+
+                var userPoints = users.Select(o => new Point(o!.GameSetting!.Latitude, o.GameSetting.Longitude)).ToList();
+                var stadiumPoints = stadiums.Select(o => new Point(o.Latitude, o.Longitude, o.Id)).ToList();
+                var stadiumIds = SuggestStadium(userPoints, stadiumPoints);
+
+                return await this.List(new ListStadiumReq { IsCount = true, StadiumIds = stadiumIds }); ;
+            }
+            return new ListStadiumRes();
+        }
+
+        private static List<string> SuggestStadium(List<Point> userPoints, List<Point> stadiumPoints) {
+            Point centerPoint = new(userPoints.Average(p => p.X), userPoints.Average(p => p.Y));
+
+            KdTree kdTree = new();
+            kdTree.BuildTree(stadiumPoints);
+
+            int k = 20;
+            List<Point> nearestPoints = kdTree.FindNearestPoints(centerPoint, k);
+
+            return nearestPoints.Select(o => o.StadiumId!).ToList();
+        }
+
         public async Task<ListStadiumRes> List(ListStadiumReq req) {
-            var query = this.db.Stadiums.AsNoTracking().Where(o => !o.IsDeleted);
+            var query = this.db.Stadiums.AsNoTracking().Where(o => !o.IsDeleted)
+                 .WhereIf(req.StadiumIds != null && req.StadiumIds.Any(), o => req.StadiumIds!.Contains(o.Id));
 
             if (!string.IsNullOrEmpty(req.SearchText)) {
                 req.SearchText = req.SearchText.ReplaceSpace(isUnsignedUnicode: true);

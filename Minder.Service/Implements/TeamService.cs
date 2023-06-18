@@ -85,9 +85,9 @@ namespace Minder.Service.Implements {
             var response = items.Select(o => TeamDto.FromEntity(o, avatarFiles?.GetValueOrDefault(o.Id), coverFiles?.GetValueOrDefault(o.Id))).ToList();
             var teamResIds = response.Select(o => o.Id).ToList();
             var data = await members.Where(o => o.UserId == this.current.UserId).ToListAsync();
-
             var ownerDic = await this.db.Members.Include(o=>o.User).AsNoTracking().Where(o => teamResIds.Contains(o.TeamId) && o.Regency == ERegency.Owner)
                 .ToDictionaryAsync(k => k.TeamId, v => v.User?.Name);
+
             foreach (var item in response) {
                 if (item != null) {
                     item.Owner = ownerDic.GetValueOrDefault(item.Id);
@@ -541,42 +541,6 @@ namespace Minder.Service.Implements {
 
             return gameTime;
         }
-
-        public static List<int> FindBestChooice(List<TimeChooice> chooices) {
-            TimeChooice? bestObject = null;
-            double bestScore = double.MinValue;
-
-            foreach (var chooice in chooices) {
-                double score = chooice.Quantity * 9 + chooice.Length * 10;
-
-                if (score > bestScore) {
-                    bestObject = chooice;
-                    bestScore = score;
-                }
-            }
-
-            return bestObject?.Value ?? new List<int>();
-        }
-
-        private static Point CalculatorCenterPoint(List<UserDto> users) {
-            var lat = decimal.Zero;
-            var lng = decimal.Zero;
-            int nextUser = 0;
-            foreach (var user in users) {
-                if (user.GameSetting?.Latitude == 0 && user.GameSetting?.Longitude == 0) {
-                    nextUser++;
-                    continue;
-                }
-                lat += user.GameSetting?.Latitude ?? decimal.Zero;
-                lng += user.GameSetting?.Longitude ?? decimal.Zero;
-            }
-            var count = users.Count - nextUser;
-            return new Point {
-                Latitude = count == 0 ? 0 : lat / count,
-                Longitude = count == 0 ? 0 : lng / count
-            };
-        }
-
         private static TimeChooice[] FindMostFrequentConsecutiveData(EDayOfWeek day, List<List<int>> arrayLists, int minOccurrence, int minArrays, TimeChooice[] chooices) {
             var numberCount = new Dictionary<int, int>();
 
@@ -623,5 +587,42 @@ namespace Minder.Service.Implements {
 
             return arrayCount >= minArrays && arrayCount <= totalArrays;
         }
+
+        public static List<int> FindBestChooice(List<TimeChooice> chooices) {
+            TimeChooice? bestObject = null;
+            double bestScore = double.MinValue;
+
+            foreach (var chooice in chooices) {
+                double score = chooice.Quantity * 9 + chooice.Length * 10;
+
+                if (score > bestScore) {
+                    bestObject = chooice;
+                    bestScore = score;
+                }
+            }
+
+            return bestObject?.Value ?? new List<int>();
+        }
+
+        private static Point CalculatorCenterPoint(List<UserDto> users) {
+            var lat = decimal.Zero;
+            var lng = decimal.Zero;
+            int nextUser = 0;
+            foreach (var user in users) {
+                if (user.GameSetting?.Latitude == 0 && user.GameSetting?.Longitude == 0) {
+                    nextUser++;
+                    continue;
+                }
+                lat += user.GameSetting?.Latitude ?? decimal.Zero;
+                lng += user.GameSetting?.Longitude ?? decimal.Zero;
+            }
+            var count = users.Count - nextUser;
+            return new Point {
+                Latitude = count == 0 ? 0 : lat / count,
+                Longitude = count == 0 ? 0 : lng / count
+            };
+        }
+
+        
     }
 }

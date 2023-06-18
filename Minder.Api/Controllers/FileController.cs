@@ -17,6 +17,16 @@ namespace Minder.Api.Controllers {
             this.fileService = fileService;
         }
 
+        [HttpPost, Route("list/{id}")]
+        public async Task<BaseRes> ListById([FromRoute] string id, [FromQuery] EItemType type = EItemType.GroupImage) {
+            try {
+                var res = await fileService.ListById(id, type);
+                return BaseRes<ListFileRes>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
         [HttpPost, Route("update")]
         public async Task<BaseRes> Update(FileDto model) {
             try {

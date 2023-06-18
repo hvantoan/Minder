@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Minder.Service.Models.Stadium {
 
@@ -7,6 +8,8 @@ namespace Minder.Service.Models.Stadium {
         public int PageSize { get; set; } = 0;
         public bool IsCount { get; set; } = false;
         public string? SearchText { get; set; }
+
+        public List<string>? StadiumIds { get; set; }
 
         [JsonIgnore]
         public int Skip => PageIndex * PageSize;

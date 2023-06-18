@@ -47,13 +47,15 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpPost, Route("update")]
-        public async Task<BaseRes> Update(GroupDto model) {
+        public async Task<BaseRes> Update(UpdateGroupReq req) {
             try {
-                await groupService.Update(model);
+                await groupService.Update(req);
                 return BaseRes.Ok();
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }
         }
+
+       
     }
 }

@@ -30,8 +30,17 @@ namespace Minder.Api.Controllers {
         [HttpPost, Route("list")]
         public async Task<BaseRes> List(ListStadiumReq req) {
             try {
-
                 var res = await stadiumService.List(req);
+                return BaseRes<ListStadiumRes>.Ok(res);
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("{matchId}/suggest-for-match")]
+        public async Task<BaseRes> SuggestForMatch(string matchId) {
+            try {
+                var res = await stadiumService.ListSuggestForMatch(matchId);
                 return BaseRes<ListStadiumRes>.Ok(res);
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
@@ -52,7 +61,7 @@ namespace Minder.Api.Controllers {
         public async Task<BaseRes> InitStadiumData() {
             try {
                 await stadiumService.InitialData();
-                return BaseRes.Ok();    
+                return BaseRes.Ok();
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

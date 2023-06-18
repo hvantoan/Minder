@@ -17,5 +17,7 @@ namespace Minder.Service.Interfaces {
         Task Delete(string id, File? entity);
 
         Task<FileResult> DownLoad(string id);
+
+        Task<ListFileRes> ListById(string id, EItemType type);
     }
 }

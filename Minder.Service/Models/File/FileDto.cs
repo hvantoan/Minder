@@ -23,9 +23,7 @@ namespace Minder.Service.Models.File {
 
     public partial class FileDto {
 
-        public static FileDto? FromEntity(Database.Models.File? entity, string? currentUrl) {
-            if (entity == null) return default;
-
+        public static FileDto FromEntity(Database.Models.File entity, string? currentUrl) {
             return new FileDto {
                 Id = entity.Id,
                 Name = entity.Name,

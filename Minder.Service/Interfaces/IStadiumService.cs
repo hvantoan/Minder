@@ -14,5 +14,7 @@ namespace Minder.Service.Interfaces {
         Task Delete(DeleteStadiumReq req);
 
         Task InitialData();
+
+        Task<ListStadiumRes> ListSuggestForMatch(string matchId);
     }
 }

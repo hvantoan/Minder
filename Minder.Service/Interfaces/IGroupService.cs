@@ -11,7 +11,7 @@ namespace Minder.Service.Interfaces {
 
         Task<string> Create(GroupDto model);
 
-        Task Update(GroupDto model);
+        Task Update(UpdateGroupReq req);
 
         Task Delete(string id);
     }

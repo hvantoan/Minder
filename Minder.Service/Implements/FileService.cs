@@ -20,11 +20,17 @@ namespace Minder.Service.Implements {
         public FileService(IServiceProvider serviceProvider) : base(serviceProvider) {
         }
 
+        public async Task<ListFileRes> ListById(string id, EItemType type) {
+            return new ListFileRes() {
+                Items = await this.db.Files.Where(o => o.ItemId == id && o.ItemType == type).Select(o => FileDto.FromEntity(o, this.current.Url)).ToListAsync()
+            };
+        }
+
         public async Task<FileDto?> Get(string id, EItemType itemType, EFile type = EFile.Image) {
             var file = await this.db.Files.AsNoTracking().OrderByDescending(o => o.UploadDate)
                 .FirstOrDefaultAsync(o => o.Type == type && o.ItemType == itemType && o.ItemId == id);
 
-            return FileDto.FromEntity(file, this.current.Url);
+            return FileDto.FromEntity(file ?? new(), this.current.Url);
         }
 
         public async Task Create(FileDto model) {
