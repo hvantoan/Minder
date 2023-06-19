@@ -16,6 +16,10 @@ namespace Minder.Service.Interfaces {
 
         Task Void(string id);
 
-        Task<object> Check(string matchId);
+        Task ConfirmSettingMatch(string matchId, string teamId);
+
+        Task AddTimeOpption(AddTimeOpptionReq req);
+
+        Task MemberConfirm(string userId, string matchId);
     }
 }

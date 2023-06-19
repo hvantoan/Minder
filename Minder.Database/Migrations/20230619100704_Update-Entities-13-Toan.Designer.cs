@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Minder.Database;
 
@@ -11,9 +12,11 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    partial class MinderContextModelSnapshot : ModelSnapshot
+    [Migration("20230619100704_Update-Entities-13-Toan")]
+    partial class UpdateEntities13Toan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -849,7 +852,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("DayOfBirth")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1687171020401L);
+                        .HasDefaultValue(1687169224092L);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");

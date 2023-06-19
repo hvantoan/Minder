@@ -7,19 +7,19 @@ using System.Linq;
 
 namespace Minder.Service.Models.Common {
 
-    public class MatchTimeOpption {
+    public class TimeOpptionDto {
         public EDayOfWeek DayOfWeek { get; set; }
         public string DisplayDay => DayOfWeek.Description();
         public DateTimeOffset Date { get; set; }
-        public List<TimeItem>? Opptions { get; set; }
+        public List<TimeItemDto>? Opptions { get; set; }
 
-        public static MatchTimeOpption FromTimeChooice(TimeChooice time) {
+        public static TimeOpptionDto FromTimeChooice(TimeChooice time) {
             var listConsecutive = CutIntoConsecutiveLists(time.Value);
 
-            return new MatchTimeOpption {
+            return new TimeOpptionDto {
                 DayOfWeek = time.Day,
                 Date = GetDateFromDayOfWeek(time.Day),
-                Opptions = listConsecutive.Select(o => new TimeItem() {
+                Opptions = listConsecutive.Select(o => new TimeItemDto() {
                     From = o.Min(),
                     To = o.Max(),
                     MemberCount = time.Quantity
@@ -60,7 +60,7 @@ namespace Minder.Service.Models.Common {
         }
     }
 
-    public class TimeItem {
+    public class TimeItemDto {
         public int? From { get; set; }
         public int? To { get; set; }
         public string DisplayTime => TimeToString(this.From ?? 0, this.To ?? 0);

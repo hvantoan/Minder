@@ -10,10 +10,13 @@ namespace Minder.Database.Enums {
         [Description("Chuẩn bị")]
         Prepare = 1,
 
+        [Description("Đơi thành viên xác nhận")]
+        WaitingMemberConfirm = 2,
+
         [Description("Hoàn thành")]
-        Complete = 2,
+        Complete = 3,
 
         [Description("Hủy")]
-        Cancel = 3,
+        Cancel = 4,
     }
 }

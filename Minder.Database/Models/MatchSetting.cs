@@ -13,6 +13,7 @@ namespace Minder.Database.Models {
         public ETime? From { get; set; }
         public ETime? To { get; set; }
         public DateTimeOffset Date { get; set; }
+        public bool HasConfirm { get; set; }
 
         [JsonIgnore]
         public virtual Match? HostMatch { get; set; }
@@ -22,7 +23,6 @@ namespace Minder.Database.Models {
 
         public virtual Stadium? Stadium { get; set; }
         public virtual Team? Team { get; set; }
-        public virtual ICollection<MatchParticipant>? MatchParticipants { get; set; }
     }
 
     public class MatchSettingSettingConfig : IEntityTypeConfiguration<MatchSetting> {
@@ -39,7 +39,6 @@ namespace Minder.Database.Models {
 
             builder.HasOne(o => o.Team).WithMany(o => o.MatchSettings).HasForeignKey(o => o.TeamId);
             builder.HasOne(o => o.Stadium).WithMany(o => o.MatchSettings).HasForeignKey(o => o.StadiumId);
-            builder.HasMany(o => o.MatchParticipants).WithOne(o => o.MatchSetting).HasForeignKey(o => o.MatchSettingId);
         }
     }
 }

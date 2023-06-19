@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Minder.Database;
 
@@ -11,9 +12,11 @@ using Minder.Database;
 namespace Minder.Database.Migrations
 {
     [DbContext(typeof(MinderContext))]
-    partial class MinderContextModelSnapshot : ModelSnapshot
+    [Migration("20230619070103_Update-Entities-11-Toan")]
+    partial class UpdateEntities11Toan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,14 +256,8 @@ namespace Minder.Database.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<long>("SelectedDate")
-                        .HasColumnType("bigint");
-
                     b.Property<int?>("SelectedDayOfWeek")
                         .HasColumnType("int");
-
-                    b.Property<string>("StadiumId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -320,9 +317,6 @@ namespace Minder.Database.Migrations
 
                     b.Property<int?>("From")
                         .HasColumnType("int");
-
-                    b.Property<bool>("HasConfirm")
-                        .HasColumnType("bit");
 
                     b.Property<int?>("SelectedDayOfWeek")
                         .HasColumnType("int");
@@ -849,7 +843,7 @@ namespace Minder.Database.Migrations
                     b.Property<long>("DayOfBirth")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasDefaultValue(1687171020401L);
+                        .HasDefaultValue(1687158063204L);
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");

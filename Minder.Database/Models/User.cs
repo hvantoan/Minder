@@ -21,7 +21,6 @@ namespace Minder.Database.Models {
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
 
-
         public virtual Role? Role { get; set; }
         public virtual Team? Team { get; set; }
         public virtual GameSetting? GameSetting { get; set; }
@@ -30,6 +29,7 @@ namespace Minder.Database.Models {
         public virtual ICollection<Invitation>? Inviteds { get; set; }
         public virtual ICollection<Message>? Messages { get; set; }
         public virtual ICollection<Participant>? Participants { get; set; }
+        public virtual ICollection<MatchParticipant>? MatchParticipants { get; set; }
     }
 
     public class UserConfig : IEntityTypeConfiguration<User> {
@@ -59,6 +59,7 @@ namespace Minder.Database.Models {
             builder.HasMany(o => o.Stadiums).WithOne(o => o.User).HasForeignKey(o => o.UserId);
             builder.HasMany(o => o.Messages).WithOne(o => o.User).HasForeignKey(o => o.SenderId);
             builder.HasMany(o => o.Participants).WithOne(o => o.User).HasForeignKey(o => o.UserId);
+            builder.HasMany(o => o.MatchParticipants).WithOne(o => o.User).HasForeignKey(o => o.UserId);
 
             builder.HasData(new User() {
                 Id = "92dcba9b0bdd4f32a6170a1322472ead",

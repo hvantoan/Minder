@@ -15,6 +15,7 @@ namespace Minder.Service.Models.Match {
         public ETime? From { get; set; }
         public ETime? To { get; set; }
         public DateTimeOffset Date { get; set; }
+        public bool HasConfirm { get; set; }
 
         public MatchDto? HostMatch { get; set; }
         public MatchDto? OpposingMatch { get; set; }
@@ -48,6 +49,7 @@ namespace Minder.Service.Models.Match {
                 TeamName = entity?.Team?.Name,
                 Latitude = entity?.Team?.GameSetting?.Latitude ?? decimal.Zero,
                 Longitude = entity?.Team?.GameSetting?.Longitude ?? decimal.Zero,
+                HasConfirm = entity?.HasConfirm ?? false,
             };
         }
     }

@@ -7,6 +7,7 @@ using Minder.Extensions;
 using Minder.Service.Interfaces;
 using Minder.Service.Models.Common;
 using Minder.Service.Models.Match;
+using Minder.Service.Models.Stadium;
 using Minder.Service.Models.Team;
 using Minder.Services.Common;
 using Minder.Services.Resources;
@@ -20,11 +21,89 @@ namespace Minder.Service.Implements {
 
     public class MatchService : BaseService, IMatchService {
         private readonly ITeamService teamService;
+        private readonly IStadiumService stadiumService;
         private readonly AdministrativeUnitResource administrativeUnit;
 
         public MatchService(IServiceProvider serviceProvider) : base(serviceProvider) {
             this.teamService = serviceProvider.GetRequiredService<ITeamService>();
+            this.stadiumService = serviceProvider.GetRequiredService<IStadiumService>();
             this.administrativeUnit = serviceProvider.GetRequiredService<AdministrativeUnitResource>();
+        }
+
+        public async Task MemberConfirm(string userId, string matchId) {
+            var match = await this.db.Matches.Include(o => o.Participants).FirstOrDefaultAsync(o => o.Id == matchId && o.Status == EMatch.WaitingMemberConfirm);
+            if (match != null) {
+                match.Participants ??= new List<MatchParticipant>();
+                var isExit = match.Participants.Any(o => o.UserId == userId);
+                if (isExit) {
+                    var participant = match.Participants.FirstOrDefault(o => o.UserId == userId);
+                    participant!.IsAccept = !participant.IsAccept;
+                } else {
+                    match.Participants.Add(new MatchParticipant() {
+                        Id = Guid.NewGuid().ToStringN(),
+                        IsAccept = true,
+                        MatchId = matchId,
+                        Position = 0,
+                        UserId = userId,
+                    });
+                }
+                await this.db.SaveChangesAsync();
+            }
+        }
+
+        public async Task AddTimeOpption(AddTimeOpptionReq req) {
+            var match = await this.db.Matches.AsNoTracking().FirstOrDefaultAsync(o => o.Id == req.MatchId && o.Status == EMatch.Prepare);
+            if (match != null) {
+                var item = new TimeOpption() {
+                    Id = Guid.NewGuid().ToStringN(),
+                    Date = req.Date,
+                    DayOfWeek = (EDayOfWeek)req.Date.DayOfWeek,
+                    MatchId = req.MatchId,
+                    TimeItems = new List<TimeItem>() {
+                        new TimeItem() {
+                            Id = Guid.NewGuid().ToStringN(),
+                            From = req.From,
+                            To = req.To,
+                            MemberCount = 0
+                        }
+                    }
+                };
+                await this.db.TimeOpptions.AddAsync(item);
+                await this.db.SaveChangesAsync();
+            }
+        }
+
+        public async Task ConfirmSettingMatch(string matchId, string teamId) {
+            var match = await this.db.Matches.Include(o => o.HostTeam).Include(o => o.OpposingTeam).Include(o => o.Participants).FirstOrDefaultAsync(o => o.Id == matchId);
+            if (match != null) {
+                if (match.HostTeam != null && match.HostTeam.TeamId == teamId && match.HostTeam.From != null
+                    && match.HostTeam.To != null && match.HostTeam.StadiumId != null) {
+                    match.HostTeam.HasConfirm = !match.HostTeam.HasConfirm;
+                }
+
+                if (match.OpposingTeam != null && match.OpposingTeam.TeamId == teamId && match.OpposingTeam.From != null
+                    && match.OpposingTeam.To != null && match.OpposingTeam.StadiumId != null) {
+                    match.OpposingTeam.HasConfirm = !match.OpposingTeam.HasConfirm;
+                }
+
+                if (match.OpposingTeam!.HasConfirm && match.OpposingTeam.HasConfirm) {
+                    match.StadiumId = match.HostTeam!.StadiumId;
+                    match.SelectedDayOfWeek = match.HostTeam!.SelectedDayOfWeek;
+                    match.From = match.HostTeam!.From;
+                    match.To = match.HostTeam!.To;
+                    match.SelectedDate = match!.HostTeam.Date;
+                    match.Status = EMatch.WaitingMemberConfirm;
+                } else {
+                    match.StadiumId = null;
+                    match.SelectedDayOfWeek = null;
+                    match.From = null;
+                    match.To = null;
+                    match.SelectedDate = DateTimeOffset.MinValue;
+                    match.Participants = null;
+                    match.Status = EMatch.Prepare;
+                }
+            }
+            await this.db.SaveChangesAsync();
         }
 
         public async Task<MatchDto?> Get(string matchId) {
@@ -41,9 +120,38 @@ namespace Minder.Service.Implements {
             var teamIds = matchSettings.Values.Select(o => o.TeamId).ToList();
             var myTeamId = await this.db.Members.Where(o => teamIds.Contains(o.TeamId) && o.UserId == this.current.UserId).Select(o => o.TeamId).FirstOrDefaultAsync();
 
-            var timeOptions = timeChooices?.Select(o => MatchTimeOpption.FromTimeChooice(o)).Where(o => o.Opptions != null && o.Opptions.Any()).ToList();
-            var match = MatchDto.FromEntity(entity, matchSettings.GetValueOrDefault(entity.HostTeamId), matchSettings.GetValueOrDefault(entity.OppsingTeamId), myTeamId, timeOptions, administrativeUnit);
+            var timeOptions = timeChooices?.Select(o => TimeOpptionDto.FromTimeChooice(o)).Where(o => o.Opptions != null && o.Opptions.Any()).ToList();
+            var timeCustom = await this.db.TimeOpptions.Include(o => o.TimeItems).AsNoTracking().Where(o => o.MatchId == entity.Id).ToListAsync();
 
+            var timeOpptionRes = new List<TimeOpptionDto>();
+            if (timeOptions != null) {
+                foreach (var time in timeCustom) {
+                    if (time.TimeItems == null || !time.TimeItems.Any()) continue;
+                    var hasDay = timeOptions.FirstOrDefault(o => o.Date.Date == time.Date.Date);
+                    if (hasDay != null) {
+                        var temp = time.TimeItems!.Select(o => new TimeItemDto() {
+                            From = o.From,
+                            To = o.To,
+                            MemberCount = 0
+                        });
+
+                        hasDay.Opptions ??= new();
+                        hasDay.Opptions.AddRange(temp);
+                        timeOpptionRes.Add(hasDay);
+                    } else {
+                        var timeOpp = new TimeOpptionDto() {
+                            Date = time.Date,
+                            DayOfWeek = time.DayOfWeek,
+                            Opptions = time.TimeItems!.Select(o => new TimeItemDto() {
+                                From = o.From,
+                                To = o.To,
+                                MemberCount = 0
+                            }).ToList()
+                        };
+                    }
+                }
+            }
+            var match = MatchDto.FromEntity(entity, matchSettings.GetValueOrDefault(entity.HostTeamId), matchSettings.GetValueOrDefault(entity.OppsingTeamId), myTeamId, timeOptions, administrativeUnit);
             var itemIds = new List<string>();
 
             if (!string.IsNullOrEmpty(match.HostTeam?.TeamId)) itemIds.Add(match.HostTeam.TeamId);
@@ -129,8 +237,23 @@ namespace Minder.Service.Implements {
             var count = await query.CountAsync();
             var matchs = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
 
-            var res = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), req.TeamId)).ToList();
+            var matchIds = matchs.Select(o => o.Id).ToList();
+            var matchParticipants = await this.db.MatchParticipants.AsNoTracking().Where(o => matchIds.Contains(o.MatchId)).ToListAsync();
+            var userIds = matchParticipants.Select(o => o.UserId).OrderBy(o => o).Distinct().ToList();
 
+            var images = await this.db.Files.Where(o => userIds.Contains(o.ItemId) && o.ItemType == EItemType.UserAvatar && o.Type == EFile.Image)
+                .ToDictionaryAsync(k => k.ItemId, v => $"{this.current.Url}/{v.Path}");
+
+            var participants = matchParticipants.Select(o => new MatchParticipantDto() {
+                Avatar = images.GetValueOrDefault(o.UserId),
+                Email = o.User?.Username,
+                Phone = o.User?.Phone,
+                Name = o.User?.Name,
+                UserId = o.UserId,
+                MatchId = o.MatchId
+            }).GroupBy(o => o.MatchId).ToDictionary(k => k.Key, v => v.ToList());
+
+            var res = matchs.Select(o => MatchDto.FromEntity(o, matchSettings.GetValueOrDefault(o.HostTeamId), matchSettings.GetValueOrDefault(o.OppsingTeamId), req.TeamId, participants: participants)).ToList();
             var hostTeamIds = res.Where(o => !string.IsNullOrEmpty(o.HostTeam?.TeamId)).Select(o => o.HostTeam!.TeamId!).ToList();
             var oppositeIds = res.Where(o => !string.IsNullOrEmpty(o.OpposingTeam?.TeamId)).Select(o => o.OpposingTeam!.TeamId!).ToList();
             var teamIds = hostTeamIds.Union(oppositeIds).Distinct().ToList();
@@ -138,11 +261,24 @@ namespace Minder.Service.Implements {
             var avatar = await this.db.Files.Where(o => teamIds.Contains(o.ItemId) && o.ItemType == EItemType.TeamAvatar)
                 .ToDictionaryAsync(k => k.ItemId!, v => $"{this.current.Url}/{v.Path}");
 
+            var stadiumIds = res.Where(o => o.SelectedStadiumId != null).Select(o => o.SelectedStadiumId!).ToList();
+
+            var stadium = new List<StadiumDto>();
+            if (stadiumIds != null && stadiumIds.Any()) {
+                var data = await this.stadiumService.List(new Models.Stadium.ListStadiumReq() {
+                    StadiumIds = stadiumIds,
+                });
+                stadium = data.Items;
+            }
+
             foreach (var item in res) {
                 if (!string.IsNullOrEmpty(item.HostTeam?.TeamId))
                     item.HostTeam.Avatar = avatar.GetValueOrDefault(item.HostTeam.TeamId);
                 if (!string.IsNullOrEmpty(item.OpposingTeam?.TeamId))
                     item.OpposingTeam.Avatar = avatar.GetValueOrDefault(item.OpposingTeam.TeamId);
+
+                if (!string.IsNullOrEmpty(item.SelectedStadiumId))
+                    item.Stadium = stadium.FirstOrDefault(o => o.Id == item.SelectedStadiumId);
             }
 
             return new ListMatchRes() {
@@ -160,47 +296,6 @@ namespace Minder.Service.Implements {
             await this.db.SaveChangesAsync();
         }
 
-        public async Task<object> Check(string matchId) {
-            var entity = await this.db.Matches.Include(o => o.HostTeam).ThenInclude(o => o!.Stadium)
-                .Include(o => o.OpposingTeam).ThenInclude(o => o!.Stadium)
-                .FirstOrDefaultAsync(o => o.Id == matchId);
-            ManagedException.ThrowIf(entity == null, Messages.Match.Match_NotFount);
-            var hostTeam = entity.HostTeam;
-            var opposingTeam = entity.OpposingTeam;
-
-            if (hostTeam!.Date.Date != opposingTeam!.Date.Date || hostTeam.Date >= DateTimeOffset.UtcNow) {
-                return new {
-                    Status = false,
-                    Type = "Time",
-                    Message = "Vui lòng thống nhất thời gian"
-                };
-            }
-
-            if (hostTeam.From != opposingTeam.From || hostTeam.To != opposingTeam.To) {
-                return new {
-                    Status = false,
-                    Type = "Time",
-                    Message = "Vui lòng thống nhất thời gian"
-                };
-            }
-
-            if (hostTeam!.Stadium?.Id != opposingTeam!.Stadium?.Id || string.IsNullOrEmpty(hostTeam.Stadium?.Id)) {
-                return new {
-                    Status = false,
-                    Type = "Stadium",
-                    Message = "Vui lòng thống nhất sân đấu"
-                };
-            }
-            entity.Status = EMatch.Complete;
-            await this.db.SaveChangesAsync();
-
-            return new {
-                Status = true,
-                Type = "None",
-                Message = ""
-            };
-        }
-
         public async Task<MatchDto?> Update(string matchId, string teamId, object model, EUpdateType type) {
             var isExited = await this.db.Matches.AnyAsync(o => o.Id == matchId);
             ManagedException.ThrowIf(!isExited, Messages.Match.HostTeam_NotFount);
@@ -210,12 +305,9 @@ namespace Minder.Service.Implements {
                             && (o.Regency == ERegency.Owner || o.Regency == ERegency.Captain));
             ManagedException.ThrowIf(!hasPermistion, Messages.Team.Team_NoPermistion);
 
-            var entity = await this.db.Matches
-               .Include(o => o.HostTeam).ThenInclude(o => o!.Stadium)
-               .Include(o => o.HostTeam).ThenInclude(o => o!.MatchParticipants)
-               .Include(o => o.OpposingTeam).ThenInclude(o => o!.Stadium)
-               .Include(o => o.OpposingTeam).ThenInclude(o => o!.MatchParticipants)
-               .FirstOrDefaultAsync(o => o.Id == matchId);
+            var entity = await this.db.Matches.Include(o => o.HostTeam).ThenInclude(o => o!.Stadium)
+                           .Include(o => o.OpposingTeam).ThenInclude(o => o!.Stadium)
+                           .FirstOrDefaultAsync(o => o.Id == matchId);
 
             switch (type) {
                 case EUpdateType.Stadium:

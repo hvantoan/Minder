@@ -76,11 +76,31 @@ namespace Minder.Api.Controllers {
             }
         }
 
-        [HttpGet, Route("{matchId}/check")]
-        public async Task<BaseRes> Check([FromRoute] string matchId) {
+        [HttpGet, Route("{matchId}/confirm-setting-match")]
+        public async Task<BaseRes> ConfirmSettingMatch([FromRoute] string matchId, string teamId) {
             try {
-                var res = await matchService.Check(matchId);
-                return BaseRes<object>.Ok(res);
+                await matchService.ConfirmSettingMatch(matchId, teamId);
+                return BaseRes.Ok();
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpGet, Route("{matchId}/member-confirm")]
+        public async Task<BaseRes> MemberConfirm([FromRoute] string matchId, string userId) {
+            try {
+                await matchService.MemberConfirm(userId, matchId);
+                return BaseRes.Ok();
+            } catch (Exception ex) {
+                return BaseRes.Fail(ex.Message);
+            }
+        }
+
+        [HttpPost, Route("add-time-opption")]
+        public async Task<BaseRes> AddTime(AddTimeOpptionReq req) {
+            try {
+                await matchService.AddTimeOpption(req);
+                return BaseRes.Ok();
             } catch (Exception ex) {
                 return BaseRes.Fail(ex.Message);
             }

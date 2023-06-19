@@ -44,6 +44,8 @@ namespace Minder.Database {
         public virtual DbSet<Match> Matches => Set<Match>();
         public virtual DbSet<MatchSetting> MatchSettings => Set<MatchSetting>();
         public virtual DbSet<MatchParticipant> MatchParticipants => Set<MatchParticipant>();
+        public virtual DbSet<TimeOpption> TimeOpptions => Set<TimeOpption>();
+        public virtual DbSet<TimeItem> TimeItems => Set<TimeItem>();
 
         public MinderContext() {
         }
