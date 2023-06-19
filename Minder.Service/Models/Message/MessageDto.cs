@@ -1,7 +1,9 @@
 ﻿using Minder.Database.Enums;
 using Minder.Extensions;
 using Minder.Service.Models.User;
+using Newtonsoft.Json;
 using System;
+using System.Linq;
 
 namespace Minder.Service.Models.Message {
 
@@ -15,7 +17,14 @@ namespace Minder.Service.Models.Message {
         public bool IsSend { get; set; }
         public bool IsDisplayAvatar { get; set; }
         public bool IsDisplayTime { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string? ImagePath { get; set; }
+
         public UserMessage? User { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public byte[]? File { get; set; }
 
         public static MessageDto FromEntity(Database.Models.Message entity, string conectionUserId, Database.Models.File? avatar, string? imageUrl) {
             return new MessageDto {
@@ -39,7 +48,7 @@ namespace Minder.Service.Models.Message {
                 Id = string.IsNullOrWhiteSpace(this.Id) ? Guid.NewGuid().ToStringN() : this.Id,
                 GroupId = this.GroupId,
                 SenderId = this.SenderId,
-                MessageType = this.MessageType,
+                MessageType = this.File != null && this.File.Any() ? EMessageType.Image : this.MessageType,
                 Content = this.Content,
                 CreateAt = this.CreateAt.ToUniversalTime(),
                 UpdateAt = DateTimeOffset.Now,

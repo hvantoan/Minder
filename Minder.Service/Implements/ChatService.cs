@@ -24,15 +24,15 @@ namespace Minder.Service.Implements {
             this.connections = serviceProvider.GetRequiredService<IDictionary<string, Connection>>();
         }
 
-        public async Task SendMessageNotify(string groupId, ENotify action, MessageDto outMessage, MessageDto currentMessage) {
+        public async Task SendMessageNotify(string groupId, ENotify action) {
             // Send to all user connected in group
             var userIds = await this.db.Participants.Where(o => o.GroupId == groupId && o.UserId != this.current.UserId).Select(o => o.UserId).ToListAsync();
             var outConnectionIds = connections.Values.Where(o => userIds.Contains(o.UserId)).Select(o => o.Id).ToList();
-            await hubContext.Clients.Clients(outConnectionIds).SendAsync(action.Description(), outMessage);
+            await hubContext.Clients.Clients(outConnectionIds).SendAsync(action.Description());
 
             // Send to current user
             var curentConnectionIds = connections.Values.Where(o => o.UserId == this.current.UserId).Select(o => o.Id).ToList();
-            await hubContext.Clients.Clients(curentConnectionIds).SendAsync(action.Description(), currentMessage);
+            await hubContext.Clients.Clients(curentConnectionIds).SendAsync(action.Description());
         }
 
         public async Task SendNotify(string groupId, ENotify action) {

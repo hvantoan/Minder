@@ -38,7 +38,7 @@ namespace Minder.Api.Controllers {
         }
 
         [HttpPost, Route("{matchId}/suggest-for-match")]
-        public async Task<BaseRes> SuggestForMatch(string matchId) {
+        public async Task<BaseRes> SuggestForMatch(string matchId) {    
             try {
                 var res = await stadiumService.ListSuggestForMatch(matchId);
                 return BaseRes<ListStadiumRes>.Ok(res);

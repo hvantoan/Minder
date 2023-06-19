@@ -13,9 +13,11 @@ namespace Minder.Service.Implements {
 
     public class MessageService : BaseService, IMessageService {
         private readonly IChatService chatService;
+        private readonly IFileService fileService;
 
         public MessageService(IServiceProvider serviceProvider) : base(serviceProvider) {
             chatService = serviceProvider.GetRequiredService<IChatService>();
+            fileService = serviceProvider.GetRequiredService<IFileService>();
         }
 
         public async Task CreateMessage(MessageDto model) {
@@ -23,9 +25,13 @@ namespace Minder.Service.Implements {
             if (!isExit) return;
 
             var message = model.ToEntity();
+
             message.SenderId = this.current.UserId;
             await this.db.Messages.AddAsync(message);
             await this.db.SaveChangesAsync();
+            if (model.File != null && model.File.Any()) {
+                await fileService.Create(new Models.File.FileDto() { ItemId = message.Id, Data = model.File, ItemType = EItemType.GroupImage, Name = message.Content, Type = EFile.Image });
+            }
             await SendNotify(model.GroupId, message.Id);
         }
 
@@ -33,21 +39,7 @@ namespace Minder.Service.Implements {
             var entity = await this.db.Messages.Include(o => o.User).AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
             if (entity == null) return;
             var fileEntity = await this.db.Files.FirstOrDefaultAsync(o => o.ItemId == entity.SenderId && o.ItemType == EItemType.UserAvatar);
-
-            var currentMessage = MessageDto.FromEntity(entity, this.current.UserId, fileEntity, this.current.Url);
-            var outMessage = new MessageDto() {
-                Id = currentMessage.Id,
-                GroupId = currentMessage.GroupId,
-                Content = currentMessage.Content,
-                CreateAt = currentMessage.CreateAt,
-                IsDisplayTime = currentMessage.IsDisplayTime,
-                IsDisplayAvatar = currentMessage.IsDisplayAvatar,
-                IsSend = false,
-                MessageType = currentMessage.MessageType,
-                SenderId = currentMessage.SenderId,
-                User = currentMessage.User
-            };
-            await chatService.SendMessageNotify(groupId, ENotify.RecieveMessage, outMessage, currentMessage);
+            await chatService.SendMessageNotify(groupId, ENotify.RecieveMessage);
         }
 
         public async Task<ListMessageData> List(ListMessageReq req) {
@@ -82,13 +74,11 @@ namespace Minder.Service.Implements {
                 }
 
                 if (i < size - 1) {
-                    
                     var nextItemTime = messageDtos[i + 1]!.CreateAt;
                     var itemTime = item.CreateAt;
-                    item.IsDisplayTime = !(itemTime.Date == nextItemTime.Date && itemTime.Hour == nextItemTime.Hour && nextItemTime.Minute - itemTime.Minute < 10) 
+                    item.IsDisplayTime = !(itemTime.Date == nextItemTime.Date && itemTime.Hour == nextItemTime.Hour && nextItemTime.Minute - itemTime.Minute < 10)
                         || item.SenderId != messageDtos[i + 1]!.SenderId;
                 } else item.IsDisplayTime = true;
-
 
                 if (i == 0) {
                     item.IsDisplayAvatar = !item.IsSend;
@@ -101,6 +91,13 @@ namespace Minder.Service.Implements {
                 response.Add(item);
             }
 
+            var messageIds = response.Where(o => o.MessageType == EMessageType.Image).Select(o => o.Id).ToList();
+            var imageSend = await this.db.Files.Where(o => messageIds.Contains(o.ItemId) && o.ItemType == EItemType.GroupImage && o.Type == EFile.Image)
+                .ToDictionaryAsync(k => k.ItemId, v => $"{this.current.Url}/{v.Path}");
+
+            foreach (var mes in response.Where(o => o.MessageType == EMessageType.Image)) {
+                mes.ImagePath = imageSend.GetValueOrDefault(mes.Id);
+            }
             return new ListMessageData() {
                 Count = await query.CountAsync(),
                 Items = response!,

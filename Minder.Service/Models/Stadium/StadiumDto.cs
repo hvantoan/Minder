@@ -18,7 +18,7 @@ namespace Minder.Service.Models.Stadium {
         public AdministrativeUnit? District { get; set; }
         public AdministrativeUnit? Commune { get; set; }
         public string? Address { get; set; }
-        public string? FullAddress => $"{Address}, {Commune?.Name}, {District?.Name}, {Province?.Name}";
+        public string? FullAddress => $"{Address}, {Commune?.Name.Replace("Phường", "P.")}, {District?.Name.Replace("Quận", "Q.")}, {Province?.Name.Replace("Thành phố", "Tp.")}";
         public DateTimeOffset CreateAt { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
@@ -26,7 +26,6 @@ namespace Minder.Service.Models.Stadium {
 
         public static StadiumDto FromEntity(Database.Models.Stadium entity, AdministrativeUnitResource? administrativeUnitResource = null,
            string? avatar = null) {
-
             var au = administrativeUnitResource?.GetByCode(entity.Province, entity.District, entity.Commune) ?? new();
             return new StadiumDto {
                 Id = entity.Id,
