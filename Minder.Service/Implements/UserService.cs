@@ -38,9 +38,9 @@ namespace Minder.Services.Implements {
                 .FirstOrDefaultAsync();
             ManagedException.ThrowIf(user == null, Messages.User.User_NotFound);
 
-            var avatar = await this.fileService.Get(user.Id, EItemType.UserAvatar);
-            var coverAvatar = await this.fileService.Get(user.Id, EItemType.UserCover);
-            return UserDto.FromEntity(user, null, avatar?.Path, coverAvatar?.Path);
+            var file = await this.db.Files.Where(o => o.ItemId == user.Id && (o.ItemType == EItemType.UserAvatar || o.ItemType == EItemType.UserCover))
+                 .Select(o => new { o.ItemId, o.ItemType, Path = $"{this.current.Url}/{o.Path}" }).ToArrayAsync();
+            return UserDto.FromEntity(user, null, file.FirstOrDefault(o=> o.ItemType == EItemType.UserAvatar)?.Path, file.FirstOrDefault(o => o.ItemType == EItemType.UserCover)?.Path);
         }
 
         public async Task<ListUserRes> List(ListUserReq req) {

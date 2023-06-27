@@ -85,7 +85,7 @@ namespace Minder.Service.Implements {
             var response = items.Select(o => TeamDto.FromEntity(o, avatarFiles?.GetValueOrDefault(o.Id), coverFiles?.GetValueOrDefault(o.Id))).ToList();
             var teamResIds = response.Select(o => o.Id).ToList();
             var data = await members.Where(o => o.UserId == this.current.UserId).ToListAsync();
-            var ownerDic = await this.db.Members.Include(o=>o.User).AsNoTracking().Where(o => teamResIds.Contains(o.TeamId) && o.Regency == ERegency.Owner)
+            var ownerDic = await this.db.Members.Include(o => o.User).AsNoTracking().Where(o => teamResIds.Contains(o.TeamId) && o.Regency == ERegency.Owner)
                 .ToDictionaryAsync(k => k.TeamId, v => v.User?.Name);
 
             foreach (var item in response) {
@@ -126,8 +126,8 @@ namespace Minder.Service.Implements {
 
             var group = await this.db.Groups.FirstOrDefaultAsync(o => o.ChannelId == team.Id && o.Type == EGroup.Team);
 
-            var avatar = await this.fileService.Get(team.Id, EItemType.TeamAvatar);
-            var coverAvatar = await this.fileService.Get(team.Id, EItemType.TeamCover);
+            var images = await this.db.Files.Where(o => o.ItemId == team.Id && (o.ItemType == EItemType.TeamAvatar || o.ItemType == EItemType.TeamCover))
+                    .Select(o => new { o.ItemId, o.ItemType, Path = $"{this.current.Url}/{o.Path}" }).ToArrayAsync();
             var userIds = team.Members?.Select(o => o.UserId).ToList();
 
             string? id = null;
@@ -138,7 +138,7 @@ namespace Minder.Service.Implements {
                     Title = team.Name,
                     Type = EGroup.Team,
                 });
-                var file = await fileService.Get(teamId, EItemType.TeamAvatar);
+                var file = images.FirstOrDefault(o => o.ItemType == EItemType.TeamAvatar);
                 if (file != null) {
                     await fileService.Create(new FileDto() {
                         ItemId = id,
@@ -154,7 +154,7 @@ namespace Minder.Service.Implements {
                 UserIds = userIds
             });
 
-            var res = TeamDto.FromEntity(team, avatar?.Path, coverAvatar?.Path, id);
+            var res = TeamDto.FromEntity(team, images.FirstOrDefault(o => o.ItemType == EItemType.TeamAvatar)?.Path, images.FirstOrDefault(o => o.ItemType == EItemType.TeamCover)?.Path, id);
 
             foreach (var item in res.Members ?? new List<MemberDto>()) {
                 item.User = userDtos.Items.FirstOrDefault(o => o!.Id == item.UserId);
@@ -541,6 +541,7 @@ namespace Minder.Service.Implements {
 
             return gameTime;
         }
+
         private static TimeChooice[] FindMostFrequentConsecutiveData(EDayOfWeek day, List<List<int>> arrayLists, int minOccurrence, int minArrays, TimeChooice[] chooices) {
             var numberCount = new Dictionary<int, int>();
 
@@ -622,7 +623,5 @@ namespace Minder.Service.Implements {
                 Longitude = count == 0 ? 0 : lng / count
             };
         }
-
-        
     }
 }

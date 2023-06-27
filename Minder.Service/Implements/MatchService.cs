@@ -31,7 +31,7 @@ namespace Minder.Service.Implements {
         }
 
         public async Task MemberConfirm(string userId, string matchId) {
-            var match = await this.db.Matches.Include(o => o.Participants).FirstOrDefaultAsync(o => o.Id == matchId && o.Status == EMatch.WaitingMemberConfirm);
+            var match = await this.db.Matches.Include(o => o.Participants).FirstOrDefaultAsync(o => o.Id == matchId && (o.Status == EMatch.WaitingMemberConfirm || o.Status == EMatch.Complete));
             if (match != null) {
                 match.Participants ??= new List<MatchParticipant>();
                 var isExit = match.Participants.Any(o => o.UserId == userId);
@@ -47,6 +47,7 @@ namespace Minder.Service.Implements {
                         UserId = userId,
                     });
                 }
+                if (match.Participants.Count() >= 8) match.Status = EMatch.Complete;
                 await this.db.SaveChangesAsync();
             }
         }
@@ -238,7 +239,7 @@ namespace Minder.Service.Implements {
             var matchs = await query.Skip(req.Skip).Take(req.Take).ToListAsync();
 
             var matchIds = matchs.Select(o => o.Id).ToList();
-            var matchParticipants = await this.db.MatchParticipants.AsNoTracking().Where(o => matchIds.Contains(o.MatchId)).ToListAsync();
+            var matchParticipants = await this.db.MatchParticipants.Include(o => o.User).AsNoTracking().Where(o => matchIds.Contains(o.MatchId)).ToListAsync();
             var userIds = matchParticipants.Select(o => o.UserId).OrderBy(o => o).Distinct().ToList();
 
             var images = await this.db.Files.Where(o => userIds.Contains(o.ItemId) && o.ItemType == EItemType.UserAvatar && o.Type == EFile.Image)
